@@ -79,9 +79,9 @@ public struct AffineTransform: Equatable, Sendable, CustomDebugStringConvertible
         )
     }
 
-    public static func rotation(radians: Double, center: SIMD2<Double>) -> AffineTransform {
-        let sine = sin(radians)
-        let cosine = cos(radians)
+    public static func rotation(angle: Angle, center: SIMD2<Double>) -> AffineTransform {
+        let sine = sin(angle.radians)
+        let cosine = cos(angle.radians)
         return AffineTransform(
             linearTransform: SIMD4(x: cosine, y: -sine, z: sine, w: cosine),
             translation: SIMD2(
@@ -89,10 +89,6 @@ public struct AffineTransform: Equatable, Sendable, CustomDebugStringConvertible
                 y: -center.x * sine - center.y * cosine + center.y
             )
         )
-    }
-
-    public static func rotation(degrees: Double, center: SIMD2<Double>) -> AffineTransform {
-        rotation(radians: degrees * (.pi / 180.0), center: center)
     }
 
     public static let identity = AffineTransform(

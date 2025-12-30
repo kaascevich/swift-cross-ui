@@ -67,7 +67,7 @@ extension RoundedRectangle: Shape {
                 .addArc(
                     center: SIMD2(x: bounds.maxX - effectiveRadius, y: bounds.y + effectiveRadius),
                     radius: effectiveRadius,
-                    startAngle: .radians(.pi * 1.5),
+                    startAngle: .degrees(270.0),
                     endAngle: .zero,
                     clockwise: true
                 )
@@ -77,23 +77,23 @@ extension RoundedRectangle: Shape {
                         x: bounds.maxX - effectiveRadius, y: bounds.maxY - effectiveRadius),
                     radius: effectiveRadius,
                     startAngle: .zero,
-                    endAngle: .radians(.pi * 0.5),
+                    endAngle: .degrees(90.0),
                     clockwise: true
                 )
                 .addLine(to: SIMD2(x: bounds.x + effectiveRadius, y: bounds.maxY))
                 .addArc(
                     center: SIMD2(x: bounds.x + effectiveRadius, y: bounds.maxY - effectiveRadius),
                     radius: effectiveRadius,
-                    startAngle: .radians(.pi * 0.5),
-                    endAngle: .radians(.pi),
+                    startAngle: .degrees(90.0),
+                    endAngle: .degrees(180.0),
                     clockwise: true
                 )
                 .addLine(to: SIMD2(x: bounds.x, y: bounds.y + effectiveRadius))
                 .addArc(
                     center: SIMD2(x: bounds.x + effectiveRadius, y: bounds.y + effectiveRadius),
                     radius: effectiveRadius,
-                    startAngle: .radians(.pi),
-                    endAngle: .radians(.pi * 1.5),
+                    startAngle: .degrees(90.0),
+                    endAngle: .degrees(270.0),
                     clockwise: true
                 )
         }
@@ -108,8 +108,8 @@ extension RoundedRectangle: Shape {
                         center: SIMD2(
                             x: bounds.maxX - effectiveRadius, y: bounds.y + effectiveRadius),
                         radius: effectiveRadius,
-                        startAngle: .radians(.pi * 1.5),
-                        endAngle: .radians(.pi * 1.75),
+                        startAngle: .degrees(270.0),
+                        endAngle: .degrees(315.0),
                         clockwise: true
                     )
             } else: {
@@ -156,7 +156,7 @@ extension RoundedRectangle: Shape {
                         center: SIMD2(
                             x: bounds.maxX - effectiveRadius, y: bounds.y + effectiveRadius),
                         radius: effectiveRadius,
-                        startAngle: .radians(.pi * 1.75),
+                        startAngle: .degrees(315.0),
                         endAngle: .zero,
                         clockwise: true
                     )
@@ -166,7 +166,7 @@ extension RoundedRectangle: Shape {
                             x: bounds.maxX - effectiveRadius, y: bounds.maxY - effectiveRadius),
                         radius: effectiveRadius,
                         startAngle: .zero,
-                        endAngle: .radians(.pi * 0.25),
+                        endAngle: .degrees(45.0),
                         clockwise: true
                     )
             } else: {
@@ -241,8 +241,8 @@ extension RoundedRectangle: Shape {
                         center: SIMD2(
                             x: bounds.maxX - effectiveRadius, y: bounds.maxY - effectiveRadius),
                         radius: effectiveRadius,
-                        startAngle: .radians(.pi * 0.25),
-                        endAngle: .radians(.pi * 0.5),
+                        startAngle: .degrees(45.0),
+                        endAngle: .degrees(90.0),
                         clockwise: true
                     )
                     .addLine(to: SIMD2(x: bounds.x + effectiveRadius, y: bounds.maxY))
@@ -250,8 +250,8 @@ extension RoundedRectangle: Shape {
                         center: SIMD2(
                             x: bounds.x + effectiveRadius, y: bounds.maxY - effectiveRadius),
                         radius: effectiveRadius,
-                        startAngle: .radians(.pi * 0.5),
-                        endAngle: .radians(.pi * 0.75),
+                        startAngle: .degrees(90.0),
+                        endAngle: .degrees(135.0),
                         clockwise: true
                     )
             } else: {
@@ -326,16 +326,16 @@ extension RoundedRectangle: Shape {
                         center: SIMD2(
                             x: bounds.x + effectiveRadius, y: bounds.maxY - effectiveRadius),
                         radius: effectiveRadius,
-                        startAngle: .radians(.pi * 0.75),
-                        endAngle: .radians(.pi),
+                        startAngle: .degrees(135.0),
+                        endAngle: .degrees(180.0),
                         clockwise: true
                     )
                     .addLine(to: SIMD2(x: bounds.x, y: bounds.y + effectiveRadius))
                     .addArc(
                         center: SIMD2(x: bounds.x + effectiveRadius, y: bounds.y + effectiveRadius),
                         radius: effectiveRadius,
-                        startAngle: .radians(.pi),
-                        endAngle: .radians(.pi * 1.25),
+                        startAngle: .degrees(180.0),
+                        endAngle: .degrees(225.0),
                         clockwise: true
                     )
             } else: {
@@ -409,8 +409,8 @@ extension RoundedRectangle: Shape {
                     .addArc(
                         center: SIMD2(x: bounds.x + effectiveRadius, y: bounds.y + effectiveRadius),
                         radius: effectiveRadius,
-                        startAngle: .radians(.pi * 1.25),
-                        endAngle: .radians(.pi * 1.5),
+                        startAngle: .degrees(225.0),
+                        endAngle: .degrees(270.0),
                         clockwise: true
                     )
             } else: {

@@ -3,8 +3,8 @@ import Foundation  // for sin, cos
 import SwiftCrossUI
 
 struct ArcShape: StyledShape {
-    var startAngle: Double
-    var endAngle: Double
+    var startAngle: Angle
+    var endAngle: Angle
     var clockwise: Bool
 
     var strokeColor: Color? = Color.green
@@ -60,9 +60,9 @@ struct TestCurveShape: StyledShape {
                             height: bounds.height * 0.5.squareRoot()
                         )
                     )
-                    .applyTransform(.rotation(degrees: 60.0, center: bounds.center))
+                    .applyTransform(.rotation(angle: .degrees(60.0), center: bounds.center))
             )
-            .applyTransform(.rotation(degrees: -15.0, center: bounds.center))
+            .applyTransform(.rotation(angle: .degrees(-15.0), center: bounds.center))
     }
 }
 
@@ -81,28 +81,28 @@ struct PathsApp: App {
 
                             HStack {
                                 ArcShape(
-                                    startAngle: .pi * 2.0 / 3.0,
-                                    endAngle: .pi * 1.5,
+                                    startAngle: .degrees(120.0),
+                                    endAngle: .degrees(270.0),
                                     clockwise: true
                                 )
 
                                 ArcShape(
-                                    startAngle: .pi * 1.5,
-                                    endAngle: .pi * 1.0 / 3.0,
+                                    startAngle: .degrees(270.0),
+                                    endAngle: .degrees(60.0),
                                     clockwise: true
                                 )
                             }
 
                             HStack {
                                 ArcShape(
-                                    startAngle: .pi * 1.5,
-                                    endAngle: .pi * 2.0 / 3.0,
+                                    startAngle: .degrees(270.0),
+                                    endAngle: .degrees(120.0),
                                     clockwise: true
                                 )
 
                                 ArcShape(
-                                    startAngle: .pi * 1.0 / 3.0,
-                                    endAngle: .pi * 1.5,
+                                    startAngle: .degrees(60.0),
+                                    endAngle: .degrees(270.0),
                                     clockwise: true
                                 )
                             }
@@ -113,28 +113,28 @@ struct PathsApp: App {
 
                             HStack {
                                 ArcShape(
-                                    startAngle: .pi * 1.5,
-                                    endAngle: .pi * 2.0 / 3.0,
+                                    startAngle: .degrees(270.0),
+                                    endAngle: .degrees(120.0),
                                     clockwise: false
                                 )
 
                                 ArcShape(
-                                    startAngle: .pi * 1.0 / 3.0,
-                                    endAngle: .pi * 1.5,
+                                    startAngle: .degrees(60.0),
+                                    endAngle: .degrees(270.0),
                                     clockwise: false
                                 )
                             }
 
                             HStack {
                                 ArcShape(
-                                    startAngle: .pi * 2.0 / 3.0,
-                                    endAngle: .pi * 1.5,
+                                    startAngle: .degrees(120.0),
+                                    endAngle: .degrees(270.0),
                                     clockwise: false
                                 )
 
                                 ArcShape(
-                                    startAngle: .pi * 1.5,
-                                    endAngle: .pi * 1.0 / 3.0,
+                                    startAngle: .degrees(270.0),
+                                    endAngle: .degrees(60.0),
                                     clockwise: false
                                 )
                             }
