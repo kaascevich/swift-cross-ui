@@ -102,8 +102,8 @@ extension UIKitBackend {
                     path.addArc(
                         withCenter: CGPoint(x: center.x, y: center.y),
                         radius: CGFloat(radius),
-                        startAngle: CGFloat(startAngle),
-                        endAngle: CGFloat(endAngle),
+                        startAngle: CGFloat(startAngle.radians),
+                        endAngle: CGFloat(endAngle.radians),
                         clockwise: clockwise
                     )
                 case .transform(let transform):

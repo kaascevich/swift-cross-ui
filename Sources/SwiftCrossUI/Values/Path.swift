@@ -212,8 +212,8 @@ public struct Path: Sendable {
         case arc(
             center: SIMD2<Double>,
             radius: Double,
-            startAngle: Double,
-            endAngle: Double,
+            startAngle: Angle,
+            endAngle: Angle,
             clockwise: Bool
         )
         case transform(AffineTransform)
@@ -297,21 +297,24 @@ public struct Path: Sendable {
     /// - Parameters:
     ///   - center: The location of the center of the circle.
     ///   - radius: The radius of the circle.
-    ///   - startAngle: The angle of the start of the arc, measured in radians clockwise from
-    //      right. Must be between 0 and 2pi (inclusive).
-    ///   - endAngle: The angle of the end of the arc, measured in radians clockwise from right.
-    ///     Must be between 0 and 2pi (inclusive).
+    ///   - startAngle: The angle of the start of the arc, clockwise from right.
+    ///     Must be between 0 and 2pi radians (inclusive).
+    ///   - endAngle: The angle of the end of the arc, clockwise from right.
+    ///     Must be between 0 and 2pi radians (inclusive).
     ///   - clockwise: `true` if the arc is to be drawn clockwise, `false` if the arc is to
     ///     be drawn counter-clockwise. Used to determine which of the two possible arcs to
     ///     draw between the given start and end angles.
     public consuming func addArc(
         center: SIMD2<Double>,
         radius: Double,
-        startAngle: Double,
-        endAngle: Double,
+        startAngle: Angle,
+        endAngle: Angle,
         clockwise: Bool
     ) -> Path {
-        assert((0.0...(2.0 * .pi)).contains(startAngle) && (0.0...(2.0 * .pi)).contains(endAngle))
+        assert(
+            (0.0...(2.0 * .pi)).contains(startAngle.radians)
+                && (0.0...(2.0 * .pi)).contains(endAngle.radians)
+        )
         actions.append(
             .arc(
                 center: center,

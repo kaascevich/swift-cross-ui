@@ -1610,8 +1610,8 @@ public final class AppKitBackend: AppBackend {
                     path.appendArc(
                         withCenter: NSPoint(x: center.x, y: center.y),
                         radius: CGFloat(radius),
-                        startAngle: CGFloat(startAngle * 180.0 / .pi),
-                        endAngle: CGFloat(endAngle * 180.0 / .pi),
+                        startAngle: CGFloat(startAngle.radians * 180.0 / .pi),
+                        endAngle: CGFloat(endAngle.radians * 180.0 / .pi),
                         // Due to being in a flipped coordinate system (before the
                         // correction gets applied), we have to reverse all arcs.
                         clockwise: !clockwise

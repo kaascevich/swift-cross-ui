@@ -1573,6 +1573,9 @@ public final class WinUIBackend: AppBackend {
                     let endAngle,
                     let clockwise
                 ):
+                    let startAngle = startAngle.radians
+                    let endAngle = endAngle.radians
+
                     let startPoint = Point(
                         x: Float(center.x + radius * cos(startAngle)),
                         y: Float(center.y + radius * sin(startAngle))

@@ -1488,8 +1488,8 @@ public final class GtkBackend: AppBackend {
                         center.x,
                         center.y,
                         radius,
-                        startAngle,
-                        endAngle
+                        startAngle.radians,
+                        endAngle.radians
                     )
                 case .transform(let transform):
                     var matrix = cairo_matrix_t()
