@@ -19,21 +19,46 @@ package struct EnvironmentModifier<Child: View>: View {
         )
     }
 
-    package func update<Backend: AppBackend>(
+    package func computeLayout<Backend: AppBackend>(
         _ widget: Backend.Widget,
         children: any ViewGraphNodeChildren,
-        proposedSize: SIMD2<Int>,
+        proposedSize: ProposedViewSize,
         environment: EnvironmentValues,
-        backend: Backend,
-        dryRun: Bool
-    ) -> ViewUpdateResult {
-        body.update(
+        backend: Backend
+    ) -> ViewLayoutResult {
+        body.computeLayout(
             widget,
             children: children,
             proposedSize: proposedSize,
             environment: modification(environment),
-            backend: backend,
-            dryRun: dryRun
+            backend: backend
         )
+    }
+
+    package func commit<Backend: AppBackend>(
+        _ widget: Backend.Widget,
+        children: any ViewGraphNodeChildren,
+        layout: ViewLayoutResult,
+        environment: EnvironmentValues,
+        backend: Backend
+    ) {
+        body.commit(
+            widget,
+            children: children,
+            layout: layout,
+            environment: modification(environment),
+            backend: backend
+        )
+    }
+}
+
+extension View {
+    /// Modifies the environment of the View its applied to
+    public func environment<T>(_ keyPath: WritableKeyPath<EnvironmentValues, T>, _ newValue: T)
+        -> some View
+    {
+        EnvironmentModifier(self) { environment in
+            environment.with(keyPath, newValue)
+        }
     }
 }
