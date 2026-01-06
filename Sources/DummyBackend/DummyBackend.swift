@@ -71,8 +71,10 @@ public final class DummyBackend: AppBackend {
         window.minimumSize = minimumSize
     }
 
-    public func setResizeHandler(ofWindow window: Window, to action: @escaping (SIMD2<Int>) -> Void)
-    {
+    public func setResizeHandler(
+        ofWindow window: Window,
+        to action: @escaping (SIMD2<Int>) -> Void
+    ) {
         window.resizeHandler = action
     }
 

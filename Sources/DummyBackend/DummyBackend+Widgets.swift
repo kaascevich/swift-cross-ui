@@ -26,10 +26,8 @@ extension DummyBackend {
         public var isShown = false
         public var cornerRadius = 0
         public var size = SIMD2<Int>.zero
-        public var naturalSize: SIMD2<Int> {
-            SIMD2<Int>.zero
-        }
-        
+        public var naturalSize: SIMD2<Int> { .zero }
+
         public func getChildren() -> [Widget] {
             []
         }
@@ -53,6 +51,10 @@ extension DummyBackend {
         public var action: (() -> Void)?
         public var menu: Menu?
         public var isEnabled = true
+
+        override public var naturalSize: SIMD2<Int> {
+            SIMD2(30, 10)
+        }
     }
     
     public class ToggleButton: Widget {
@@ -92,7 +94,7 @@ extension DummyBackend {
         public var isEnabled = true
         
         override public var naturalSize: SIMD2<Int> {
-            SIMD2(20, 10)
+            SIMD2(100, 10)
         }
     }
     
@@ -131,12 +133,24 @@ extension DummyBackend {
         public var rgbaData: [UInt8] = []
         public var pixelWidth = 0
         public var pixelHeight = 0
+
+        override public var naturalSize: SIMD2<Int> {
+            SIMD2(pixelWidth, pixelHeight)
+        }
     }
     
-    public class ProgressSpinner: Widget {}
+    public class ProgressSpinner: Widget {
+        override public var naturalSize: SIMD2<Int> {
+            SIMD2(10, 10)
+        }
+    }
 
     public class ProgressBar: Widget {
         public var fraction: Double?
+
+        override public var naturalSize: SIMD2<Int> {
+            SIMD2(100, 10)
+        }
     }
 
     public class Table: Widget {
@@ -149,7 +163,17 @@ extension DummyBackend {
             cells
         }
     }
-    
+
+    public class WebView: Widget {
+        public var url: URL?
+        public var navigationHandler: ((URL) -> Void)?
+
+        public func navigate(to url: URL) {
+            self.url = url
+            navigationHandler?(url)
+        }
+    }
+
     public class Container: Widget {
         public var children: [(widget: Widget, position: SIMD2<Int>)] = []
         
@@ -243,16 +267,6 @@ extension DummyBackend {
         
         public override func getChildren() -> [Widget] {
             [leadingChild, trailingChild]
-        }
-    }
-
-    public class WebView: Widget {
-        public var url: URL?
-        public var navigationHandler: ((URL) -> Void)?
-
-        public func navigate(to url: URL) {
-            self.url = url
-            navigationHandler?(url)
         }
     }
 
