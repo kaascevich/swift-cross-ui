@@ -8,7 +8,7 @@
 public struct WindowGroup<Content: View>: Scene {
     public typealias Node = WindowGroupNode<Content>
 
-    public var commands: Commands = .empty
+//    public var commands: Commands = .empty
 
     /// Storing the window group contents lazily allows us to recompute the view
     /// when the window size changes without having to recompute the whole app.

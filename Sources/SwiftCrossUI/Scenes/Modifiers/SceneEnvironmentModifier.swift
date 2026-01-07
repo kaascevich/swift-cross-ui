@@ -36,7 +36,7 @@ struct SceneEnvironmentModifier<Content: Scene>: Scene {
     var content: Content
     var modification: (EnvironmentValues) -> EnvironmentValues
 
-    var commands: Commands { content.commands }
+//    var commands: Commands { content.commands }
 
     init(
         _ content: Content,
