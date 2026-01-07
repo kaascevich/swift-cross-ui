@@ -3,10 +3,17 @@
 /// of wrapping a root view.
 ///
 /// Implementing scenes yourself is considered an advanced use-case.
+@MainActor
 public protocol Scene {
     /// The node type used to manage this scene in the scene graph.
     associatedtype Node: SceneGraphNode where Node.NodeScene == Self
+    /// The scene's content (composed of other scenes).
+    associatedtype Content: Scene
 
-//    /// The commands to be propagated up from the scene.
-//    var commands: Commands { get }
+    /// The view's contents.
+    @SceneBuilder var body: Content { get }
+}
+
+extension Scene {
+    public typealias Node = Content.Node
 }

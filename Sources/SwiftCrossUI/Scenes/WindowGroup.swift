@@ -8,17 +8,13 @@
 public struct WindowGroup<Content: View>: Scene {
     public typealias Node = WindowGroupNode<Content>
 
-//    public var commands: Commands = .empty
-
     /// Storing the window group contents lazily allows us to recompute the view
     /// when the window size changes without having to recompute the whole app.
     /// This allows the window group contents to remain linked to the app state
     /// instead of getting frozen in time when the app's body gets evaluated.
     var content: () -> Content
 
-    var body: Content {
-        content()
-    }
+    public let body = EmptyScene()
 
     /// The title of the window (shown in the title bar on most OSes).
     var title: String

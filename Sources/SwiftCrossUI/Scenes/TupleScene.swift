@@ -1,21 +1,17 @@
 // This file was generated using gyb. Do not edit it directly. Edit
 // TupleScene.swift.gyb instead.
 
-public struct TupleScene2<Scene0: Scene, Scene1: Scene>: Scene {
+nonisolated public struct TupleScene2<Scene0: Scene, Scene1: Scene>: Scene {
     public typealias Node = TupleSceneNode2<Scene0, Scene1>
 
     var scene0: Scene0
     var scene1: Scene1
 
-//    public var commands: Commands
+    public let body = EmptyScene()
 
     public init(_ scene0: Scene0, _ scene1: Scene1) {
         self.scene0 = scene0
         self.scene1 = scene1
-
-//        commands = Commands.empty
-//            .overlayed(with: scene0.commands)
-//            .overlayed(with: scene1.commands)
     }
 }
 
@@ -38,29 +34,29 @@ public final class TupleSceneNode2<Scene0: Scene, Scene1: Scene>: SceneGraphNode
         _ newScene: NodeScene?,
         backend: Backend,
         environment: EnvironmentValues
-    ) {
-        node0.update(newScene?.scene0, backend: backend, environment: environment)
-        node1.update(newScene?.scene1, backend: backend, environment: environment)
+    ) -> SceneUpdateResult {
+        return SceneUpdateResult(
+            childResults: [
+                node0.update(newScene?.scene0, backend: backend, environment: environment),
+                node1.update(newScene?.scene1, backend: backend, environment: environment),
+            ]
+        )
     }
 }
-public struct TupleScene3<Scene0: Scene, Scene1: Scene, Scene2: Scene>: Scene {
+
+nonisolated public struct TupleScene3<Scene0: Scene, Scene1: Scene, Scene2: Scene>: Scene {
     public typealias Node = TupleSceneNode3<Scene0, Scene1, Scene2>
 
     var scene0: Scene0
     var scene1: Scene1
     var scene2: Scene2
 
-//    public var commands: Commands
+    public let body = EmptyScene()
 
     public init(_ scene0: Scene0, _ scene1: Scene1, _ scene2: Scene2) {
         self.scene0 = scene0
         self.scene1 = scene1
         self.scene2 = scene2
-
-//        commands = Commands.empty
-//            .overlayed(with: scene0.commands)
-//            .overlayed(with: scene1.commands)
-//            .overlayed(with: scene2.commands)
     }
 }
 
@@ -85,13 +81,20 @@ public final class TupleSceneNode3<Scene0: Scene, Scene1: Scene, Scene2: Scene>:
         _ newScene: NodeScene?,
         backend: Backend,
         environment: EnvironmentValues
-    ) {
-        node0.update(newScene?.scene0, backend: backend, environment: environment)
-        node1.update(newScene?.scene1, backend: backend, environment: environment)
-        node2.update(newScene?.scene2, backend: backend, environment: environment)
+    ) -> SceneUpdateResult {
+        return SceneUpdateResult(
+            childResults: [
+                node0.update(newScene?.scene0, backend: backend, environment: environment),
+                node1.update(newScene?.scene1, backend: backend, environment: environment),
+                node2.update(newScene?.scene2, backend: backend, environment: environment),
+            ]
+        )
     }
 }
-public struct TupleScene4<Scene0: Scene, Scene1: Scene, Scene2: Scene, Scene3: Scene>: Scene {
+
+nonisolated public struct TupleScene4<Scene0: Scene, Scene1: Scene, Scene2: Scene, Scene3: Scene>:
+    Scene
+{
     public typealias Node = TupleSceneNode4<Scene0, Scene1, Scene2, Scene3>
 
     var scene0: Scene0
@@ -99,19 +102,13 @@ public struct TupleScene4<Scene0: Scene, Scene1: Scene, Scene2: Scene, Scene3: S
     var scene2: Scene2
     var scene3: Scene3
 
-//    public var commands: Commands
+    public let body = EmptyScene()
 
     public init(_ scene0: Scene0, _ scene1: Scene1, _ scene2: Scene2, _ scene3: Scene3) {
         self.scene0 = scene0
         self.scene1 = scene1
         self.scene2 = scene2
         self.scene3 = scene3
-
-//        commands = Commands.empty
-//            .overlayed(with: scene0.commands)
-//            .overlayed(with: scene1.commands)
-//            .overlayed(with: scene2.commands)
-//            .overlayed(with: scene3.commands)
     }
 }
 
@@ -140,14 +137,19 @@ public final class TupleSceneNode4<Scene0: Scene, Scene1: Scene, Scene2: Scene, 
         _ newScene: NodeScene?,
         backend: Backend,
         environment: EnvironmentValues
-    ) {
-        node0.update(newScene?.scene0, backend: backend, environment: environment)
-        node1.update(newScene?.scene1, backend: backend, environment: environment)
-        node2.update(newScene?.scene2, backend: backend, environment: environment)
-        node3.update(newScene?.scene3, backend: backend, environment: environment)
+    ) -> SceneUpdateResult {
+        return SceneUpdateResult(
+            childResults: [
+                node0.update(newScene?.scene0, backend: backend, environment: environment),
+                node1.update(newScene?.scene1, backend: backend, environment: environment),
+                node2.update(newScene?.scene2, backend: backend, environment: environment),
+                node3.update(newScene?.scene3, backend: backend, environment: environment),
+            ]
+        )
     }
 }
-public struct TupleScene5<
+
+nonisolated public struct TupleScene5<
     Scene0: Scene, Scene1: Scene, Scene2: Scene, Scene3: Scene, Scene4: Scene
 >: Scene {
     public typealias Node = TupleSceneNode5<Scene0, Scene1, Scene2, Scene3, Scene4>
@@ -158,7 +160,7 @@ public struct TupleScene5<
     var scene3: Scene3
     var scene4: Scene4
 
-//    public var commands: Commands
+    public let body = EmptyScene()
 
     public init(
         _ scene0: Scene0, _ scene1: Scene1, _ scene2: Scene2, _ scene3: Scene3, _ scene4: Scene4
@@ -168,13 +170,6 @@ public struct TupleScene5<
         self.scene2 = scene2
         self.scene3 = scene3
         self.scene4 = scene4
-
-//        commands = Commands.empty
-//            .overlayed(with: scene0.commands)
-//            .overlayed(with: scene1.commands)
-//            .overlayed(with: scene2.commands)
-//            .overlayed(with: scene3.commands)
-//            .overlayed(with: scene4.commands)
     }
 }
 
@@ -205,15 +200,20 @@ public final class TupleSceneNode5<
         _ newScene: NodeScene?,
         backend: Backend,
         environment: EnvironmentValues
-    ) {
-        node0.update(newScene?.scene0, backend: backend, environment: environment)
-        node1.update(newScene?.scene1, backend: backend, environment: environment)
-        node2.update(newScene?.scene2, backend: backend, environment: environment)
-        node3.update(newScene?.scene3, backend: backend, environment: environment)
-        node4.update(newScene?.scene4, backend: backend, environment: environment)
+    ) -> SceneUpdateResult {
+        return SceneUpdateResult(
+            childResults: [
+                node0.update(newScene?.scene0, backend: backend, environment: environment),
+                node1.update(newScene?.scene1, backend: backend, environment: environment),
+                node2.update(newScene?.scene2, backend: backend, environment: environment),
+                node3.update(newScene?.scene3, backend: backend, environment: environment),
+                node4.update(newScene?.scene4, backend: backend, environment: environment),
+            ]
+        )
     }
 }
-public struct TupleScene6<
+
+nonisolated public struct TupleScene6<
     Scene0: Scene, Scene1: Scene, Scene2: Scene, Scene3: Scene, Scene4: Scene, Scene5: Scene
 >: Scene {
     public typealias Node = TupleSceneNode6<Scene0, Scene1, Scene2, Scene3, Scene4, Scene5>
@@ -225,7 +225,7 @@ public struct TupleScene6<
     var scene4: Scene4
     var scene5: Scene5
 
-//    public var commands: Commands
+    public let body = EmptyScene()
 
     public init(
         _ scene0: Scene0, _ scene1: Scene1, _ scene2: Scene2, _ scene3: Scene3, _ scene4: Scene4,
@@ -237,14 +237,6 @@ public struct TupleScene6<
         self.scene3 = scene3
         self.scene4 = scene4
         self.scene5 = scene5
-
-//        commands = Commands.empty
-//            .overlayed(with: scene0.commands)
-//            .overlayed(with: scene1.commands)
-//            .overlayed(with: scene2.commands)
-//            .overlayed(with: scene3.commands)
-//            .overlayed(with: scene4.commands)
-//            .overlayed(with: scene5.commands)
     }
 }
 
@@ -277,16 +269,21 @@ public final class TupleSceneNode6<
         _ newScene: NodeScene?,
         backend: Backend,
         environment: EnvironmentValues
-    ) {
-        node0.update(newScene?.scene0, backend: backend, environment: environment)
-        node1.update(newScene?.scene1, backend: backend, environment: environment)
-        node2.update(newScene?.scene2, backend: backend, environment: environment)
-        node3.update(newScene?.scene3, backend: backend, environment: environment)
-        node4.update(newScene?.scene4, backend: backend, environment: environment)
-        node5.update(newScene?.scene5, backend: backend, environment: environment)
+    ) -> SceneUpdateResult {
+        return SceneUpdateResult(
+            childResults: [
+                node0.update(newScene?.scene0, backend: backend, environment: environment),
+                node1.update(newScene?.scene1, backend: backend, environment: environment),
+                node2.update(newScene?.scene2, backend: backend, environment: environment),
+                node3.update(newScene?.scene3, backend: backend, environment: environment),
+                node4.update(newScene?.scene4, backend: backend, environment: environment),
+                node5.update(newScene?.scene5, backend: backend, environment: environment),
+            ]
+        )
     }
 }
-public struct TupleScene7<
+
+nonisolated public struct TupleScene7<
     Scene0: Scene, Scene1: Scene, Scene2: Scene, Scene3: Scene, Scene4: Scene, Scene5: Scene,
     Scene6: Scene
 >: Scene {
@@ -300,7 +297,7 @@ public struct TupleScene7<
     var scene5: Scene5
     var scene6: Scene6
 
-//    public var commands: Commands
+    public let body = EmptyScene()
 
     public init(
         _ scene0: Scene0, _ scene1: Scene1, _ scene2: Scene2, _ scene3: Scene3, _ scene4: Scene4,
@@ -313,15 +310,6 @@ public struct TupleScene7<
         self.scene4 = scene4
         self.scene5 = scene5
         self.scene6 = scene6
-
-//        commands = Commands.empty
-//            .overlayed(with: scene0.commands)
-//            .overlayed(with: scene1.commands)
-//            .overlayed(with: scene2.commands)
-//            .overlayed(with: scene3.commands)
-//            .overlayed(with: scene4.commands)
-//            .overlayed(with: scene5.commands)
-//            .overlayed(with: scene6.commands)
     }
 }
 
@@ -357,17 +345,22 @@ public final class TupleSceneNode7<
         _ newScene: NodeScene?,
         backend: Backend,
         environment: EnvironmentValues
-    ) {
-        node0.update(newScene?.scene0, backend: backend, environment: environment)
-        node1.update(newScene?.scene1, backend: backend, environment: environment)
-        node2.update(newScene?.scene2, backend: backend, environment: environment)
-        node3.update(newScene?.scene3, backend: backend, environment: environment)
-        node4.update(newScene?.scene4, backend: backend, environment: environment)
-        node5.update(newScene?.scene5, backend: backend, environment: environment)
-        node6.update(newScene?.scene6, backend: backend, environment: environment)
+    ) -> SceneUpdateResult {
+        return SceneUpdateResult(
+            childResults: [
+                node0.update(newScene?.scene0, backend: backend, environment: environment),
+                node1.update(newScene?.scene1, backend: backend, environment: environment),
+                node2.update(newScene?.scene2, backend: backend, environment: environment),
+                node3.update(newScene?.scene3, backend: backend, environment: environment),
+                node4.update(newScene?.scene4, backend: backend, environment: environment),
+                node5.update(newScene?.scene5, backend: backend, environment: environment),
+                node6.update(newScene?.scene6, backend: backend, environment: environment),
+            ]
+        )
     }
 }
-public struct TupleScene8<
+
+nonisolated public struct TupleScene8<
     Scene0: Scene, Scene1: Scene, Scene2: Scene, Scene3: Scene, Scene4: Scene, Scene5: Scene,
     Scene6: Scene, Scene7: Scene
 >: Scene {
@@ -384,7 +377,7 @@ public struct TupleScene8<
     var scene6: Scene6
     var scene7: Scene7
 
-//    public var commands: Commands
+    public let body = EmptyScene()
 
     public init(
         _ scene0: Scene0, _ scene1: Scene1, _ scene2: Scene2, _ scene3: Scene3, _ scene4: Scene4,
@@ -398,16 +391,6 @@ public struct TupleScene8<
         self.scene5 = scene5
         self.scene6 = scene6
         self.scene7 = scene7
-
-//        commands = Commands.empty
-//            .overlayed(with: scene0.commands)
-//            .overlayed(with: scene1.commands)
-//            .overlayed(with: scene2.commands)
-//            .overlayed(with: scene3.commands)
-//            .overlayed(with: scene4.commands)
-//            .overlayed(with: scene5.commands)
-//            .overlayed(with: scene6.commands)
-//            .overlayed(with: scene7.commands)
     }
 }
 
@@ -447,18 +430,23 @@ public final class TupleSceneNode8<
         _ newScene: NodeScene?,
         backend: Backend,
         environment: EnvironmentValues
-    ) {
-        node0.update(newScene?.scene0, backend: backend, environment: environment)
-        node1.update(newScene?.scene1, backend: backend, environment: environment)
-        node2.update(newScene?.scene2, backend: backend, environment: environment)
-        node3.update(newScene?.scene3, backend: backend, environment: environment)
-        node4.update(newScene?.scene4, backend: backend, environment: environment)
-        node5.update(newScene?.scene5, backend: backend, environment: environment)
-        node6.update(newScene?.scene6, backend: backend, environment: environment)
-        node7.update(newScene?.scene7, backend: backend, environment: environment)
+    ) -> SceneUpdateResult {
+        return SceneUpdateResult(
+            childResults: [
+                node0.update(newScene?.scene0, backend: backend, environment: environment),
+                node1.update(newScene?.scene1, backend: backend, environment: environment),
+                node2.update(newScene?.scene2, backend: backend, environment: environment),
+                node3.update(newScene?.scene3, backend: backend, environment: environment),
+                node4.update(newScene?.scene4, backend: backend, environment: environment),
+                node5.update(newScene?.scene5, backend: backend, environment: environment),
+                node6.update(newScene?.scene6, backend: backend, environment: environment),
+                node7.update(newScene?.scene7, backend: backend, environment: environment),
+            ]
+        )
     }
 }
-public struct TupleScene9<
+
+nonisolated public struct TupleScene9<
     Scene0: Scene, Scene1: Scene, Scene2: Scene, Scene3: Scene, Scene4: Scene, Scene5: Scene,
     Scene6: Scene, Scene7: Scene, Scene8: Scene
 >: Scene {
@@ -476,7 +464,7 @@ public struct TupleScene9<
     var scene7: Scene7
     var scene8: Scene8
 
-//    public var commands: Commands
+    public let body = EmptyScene()
 
     public init(
         _ scene0: Scene0, _ scene1: Scene1, _ scene2: Scene2, _ scene3: Scene3, _ scene4: Scene4,
@@ -491,17 +479,6 @@ public struct TupleScene9<
         self.scene6 = scene6
         self.scene7 = scene7
         self.scene8 = scene8
-
-//        commands = Commands.empty
-//            .overlayed(with: scene0.commands)
-//            .overlayed(with: scene1.commands)
-//            .overlayed(with: scene2.commands)
-//            .overlayed(with: scene3.commands)
-//            .overlayed(with: scene4.commands)
-//            .overlayed(with: scene5.commands)
-//            .overlayed(with: scene6.commands)
-//            .overlayed(with: scene7.commands)
-//            .overlayed(with: scene8.commands)
     }
 }
 
@@ -543,19 +520,24 @@ public final class TupleSceneNode9<
         _ newScene: NodeScene?,
         backend: Backend,
         environment: EnvironmentValues
-    ) {
-        node0.update(newScene?.scene0, backend: backend, environment: environment)
-        node1.update(newScene?.scene1, backend: backend, environment: environment)
-        node2.update(newScene?.scene2, backend: backend, environment: environment)
-        node3.update(newScene?.scene3, backend: backend, environment: environment)
-        node4.update(newScene?.scene4, backend: backend, environment: environment)
-        node5.update(newScene?.scene5, backend: backend, environment: environment)
-        node6.update(newScene?.scene6, backend: backend, environment: environment)
-        node7.update(newScene?.scene7, backend: backend, environment: environment)
-        node8.update(newScene?.scene8, backend: backend, environment: environment)
+    ) -> SceneUpdateResult {
+        return SceneUpdateResult(
+            childResults: [
+                node0.update(newScene?.scene0, backend: backend, environment: environment),
+                node1.update(newScene?.scene1, backend: backend, environment: environment),
+                node2.update(newScene?.scene2, backend: backend, environment: environment),
+                node3.update(newScene?.scene3, backend: backend, environment: environment),
+                node4.update(newScene?.scene4, backend: backend, environment: environment),
+                node5.update(newScene?.scene5, backend: backend, environment: environment),
+                node6.update(newScene?.scene6, backend: backend, environment: environment),
+                node7.update(newScene?.scene7, backend: backend, environment: environment),
+                node8.update(newScene?.scene8, backend: backend, environment: environment),
+            ]
+        )
     }
 }
-public struct TupleScene10<
+
+nonisolated public struct TupleScene10<
     Scene0: Scene, Scene1: Scene, Scene2: Scene, Scene3: Scene, Scene4: Scene, Scene5: Scene,
     Scene6: Scene, Scene7: Scene, Scene8: Scene, Scene9: Scene
 >: Scene {
@@ -574,7 +556,7 @@ public struct TupleScene10<
     var scene8: Scene8
     var scene9: Scene9
 
-//    public var commands: Commands
+    public let body = EmptyScene()
 
     public init(
         _ scene0: Scene0, _ scene1: Scene1, _ scene2: Scene2, _ scene3: Scene3, _ scene4: Scene4,
@@ -590,18 +572,6 @@ public struct TupleScene10<
         self.scene7 = scene7
         self.scene8 = scene8
         self.scene9 = scene9
-
-//        commands = Commands.empty
-//            .overlayed(with: scene0.commands)
-//            .overlayed(with: scene1.commands)
-//            .overlayed(with: scene2.commands)
-//            .overlayed(with: scene3.commands)
-//            .overlayed(with: scene4.commands)
-//            .overlayed(with: scene5.commands)
-//            .overlayed(with: scene6.commands)
-//            .overlayed(with: scene7.commands)
-//            .overlayed(with: scene8.commands)
-//            .overlayed(with: scene9.commands)
     }
 }
 
@@ -645,20 +615,25 @@ public final class TupleSceneNode10<
         _ newScene: NodeScene?,
         backend: Backend,
         environment: EnvironmentValues
-    ) {
-        node0.update(newScene?.scene0, backend: backend, environment: environment)
-        node1.update(newScene?.scene1, backend: backend, environment: environment)
-        node2.update(newScene?.scene2, backend: backend, environment: environment)
-        node3.update(newScene?.scene3, backend: backend, environment: environment)
-        node4.update(newScene?.scene4, backend: backend, environment: environment)
-        node5.update(newScene?.scene5, backend: backend, environment: environment)
-        node6.update(newScene?.scene6, backend: backend, environment: environment)
-        node7.update(newScene?.scene7, backend: backend, environment: environment)
-        node8.update(newScene?.scene8, backend: backend, environment: environment)
-        node9.update(newScene?.scene9, backend: backend, environment: environment)
+    ) -> SceneUpdateResult {
+        return SceneUpdateResult(
+            childResults: [
+                node0.update(newScene?.scene0, backend: backend, environment: environment),
+                node1.update(newScene?.scene1, backend: backend, environment: environment),
+                node2.update(newScene?.scene2, backend: backend, environment: environment),
+                node3.update(newScene?.scene3, backend: backend, environment: environment),
+                node4.update(newScene?.scene4, backend: backend, environment: environment),
+                node5.update(newScene?.scene5, backend: backend, environment: environment),
+                node6.update(newScene?.scene6, backend: backend, environment: environment),
+                node7.update(newScene?.scene7, backend: backend, environment: environment),
+                node8.update(newScene?.scene8, backend: backend, environment: environment),
+                node9.update(newScene?.scene9, backend: backend, environment: environment),
+            ]
+        )
     }
 }
-public struct TupleScene11<
+
+nonisolated public struct TupleScene11<
     Scene0: Scene, Scene1: Scene, Scene2: Scene, Scene3: Scene, Scene4: Scene, Scene5: Scene,
     Scene6: Scene, Scene7: Scene, Scene8: Scene, Scene9: Scene, Scene10: Scene
 >: Scene {
@@ -678,7 +653,7 @@ public struct TupleScene11<
     var scene9: Scene9
     var scene10: Scene10
 
-//    public var commands: Commands
+    public let body = EmptyScene()
 
     public init(
         _ scene0: Scene0, _ scene1: Scene1, _ scene2: Scene2, _ scene3: Scene3, _ scene4: Scene4,
@@ -696,19 +671,6 @@ public struct TupleScene11<
         self.scene8 = scene8
         self.scene9 = scene9
         self.scene10 = scene10
-
-//        commands = Commands.empty
-//            .overlayed(with: scene0.commands)
-//            .overlayed(with: scene1.commands)
-//            .overlayed(with: scene2.commands)
-//            .overlayed(with: scene3.commands)
-//            .overlayed(with: scene4.commands)
-//            .overlayed(with: scene5.commands)
-//            .overlayed(with: scene6.commands)
-//            .overlayed(with: scene7.commands)
-//            .overlayed(with: scene8.commands)
-//            .overlayed(with: scene9.commands)
-//            .overlayed(with: scene10.commands)
     }
 }
 
@@ -754,21 +716,26 @@ public final class TupleSceneNode11<
         _ newScene: NodeScene?,
         backend: Backend,
         environment: EnvironmentValues
-    ) {
-        node0.update(newScene?.scene0, backend: backend, environment: environment)
-        node1.update(newScene?.scene1, backend: backend, environment: environment)
-        node2.update(newScene?.scene2, backend: backend, environment: environment)
-        node3.update(newScene?.scene3, backend: backend, environment: environment)
-        node4.update(newScene?.scene4, backend: backend, environment: environment)
-        node5.update(newScene?.scene5, backend: backend, environment: environment)
-        node6.update(newScene?.scene6, backend: backend, environment: environment)
-        node7.update(newScene?.scene7, backend: backend, environment: environment)
-        node8.update(newScene?.scene8, backend: backend, environment: environment)
-        node9.update(newScene?.scene9, backend: backend, environment: environment)
-        node10.update(newScene?.scene10, backend: backend, environment: environment)
+    ) -> SceneUpdateResult {
+        return SceneUpdateResult(
+            childResults: [
+                node0.update(newScene?.scene0, backend: backend, environment: environment),
+                node1.update(newScene?.scene1, backend: backend, environment: environment),
+                node2.update(newScene?.scene2, backend: backend, environment: environment),
+                node3.update(newScene?.scene3, backend: backend, environment: environment),
+                node4.update(newScene?.scene4, backend: backend, environment: environment),
+                node5.update(newScene?.scene5, backend: backend, environment: environment),
+                node6.update(newScene?.scene6, backend: backend, environment: environment),
+                node7.update(newScene?.scene7, backend: backend, environment: environment),
+                node8.update(newScene?.scene8, backend: backend, environment: environment),
+                node9.update(newScene?.scene9, backend: backend, environment: environment),
+                node10.update(newScene?.scene10, backend: backend, environment: environment),
+            ]
+        )
     }
 }
-public struct TupleScene12<
+
+nonisolated public struct TupleScene12<
     Scene0: Scene, Scene1: Scene, Scene2: Scene, Scene3: Scene, Scene4: Scene, Scene5: Scene,
     Scene6: Scene, Scene7: Scene, Scene8: Scene, Scene9: Scene, Scene10: Scene, Scene11: Scene
 >: Scene {
@@ -790,7 +757,7 @@ public struct TupleScene12<
     var scene10: Scene10
     var scene11: Scene11
 
-//    public var commands: Commands
+    public let body = EmptyScene()
 
     public init(
         _ scene0: Scene0, _ scene1: Scene1, _ scene2: Scene2, _ scene3: Scene3, _ scene4: Scene4,
@@ -809,20 +776,6 @@ public struct TupleScene12<
         self.scene9 = scene9
         self.scene10 = scene10
         self.scene11 = scene11
-
-//        commands = Commands.empty
-//            .overlayed(with: scene0.commands)
-//            .overlayed(with: scene1.commands)
-//            .overlayed(with: scene2.commands)
-//            .overlayed(with: scene3.commands)
-//            .overlayed(with: scene4.commands)
-//            .overlayed(with: scene5.commands)
-//            .overlayed(with: scene6.commands)
-//            .overlayed(with: scene7.commands)
-//            .overlayed(with: scene8.commands)
-//            .overlayed(with: scene9.commands)
-//            .overlayed(with: scene10.commands)
-//            .overlayed(with: scene11.commands)
     }
 }
 
@@ -871,22 +824,27 @@ public final class TupleSceneNode12<
         _ newScene: NodeScene?,
         backend: Backend,
         environment: EnvironmentValues
-    ) {
-        node0.update(newScene?.scene0, backend: backend, environment: environment)
-        node1.update(newScene?.scene1, backend: backend, environment: environment)
-        node2.update(newScene?.scene2, backend: backend, environment: environment)
-        node3.update(newScene?.scene3, backend: backend, environment: environment)
-        node4.update(newScene?.scene4, backend: backend, environment: environment)
-        node5.update(newScene?.scene5, backend: backend, environment: environment)
-        node6.update(newScene?.scene6, backend: backend, environment: environment)
-        node7.update(newScene?.scene7, backend: backend, environment: environment)
-        node8.update(newScene?.scene8, backend: backend, environment: environment)
-        node9.update(newScene?.scene9, backend: backend, environment: environment)
-        node10.update(newScene?.scene10, backend: backend, environment: environment)
-        node11.update(newScene?.scene11, backend: backend, environment: environment)
+    ) -> SceneUpdateResult {
+        return SceneUpdateResult(
+            childResults: [
+                node0.update(newScene?.scene0, backend: backend, environment: environment),
+                node1.update(newScene?.scene1, backend: backend, environment: environment),
+                node2.update(newScene?.scene2, backend: backend, environment: environment),
+                node3.update(newScene?.scene3, backend: backend, environment: environment),
+                node4.update(newScene?.scene4, backend: backend, environment: environment),
+                node5.update(newScene?.scene5, backend: backend, environment: environment),
+                node6.update(newScene?.scene6, backend: backend, environment: environment),
+                node7.update(newScene?.scene7, backend: backend, environment: environment),
+                node8.update(newScene?.scene8, backend: backend, environment: environment),
+                node9.update(newScene?.scene9, backend: backend, environment: environment),
+                node10.update(newScene?.scene10, backend: backend, environment: environment),
+                node11.update(newScene?.scene11, backend: backend, environment: environment),
+            ]
+        )
     }
 }
-public struct TupleScene13<
+
+nonisolated public struct TupleScene13<
     Scene0: Scene, Scene1: Scene, Scene2: Scene, Scene3: Scene, Scene4: Scene, Scene5: Scene,
     Scene6: Scene, Scene7: Scene, Scene8: Scene, Scene9: Scene, Scene10: Scene, Scene11: Scene,
     Scene12: Scene
@@ -910,7 +868,7 @@ public struct TupleScene13<
     var scene11: Scene11
     var scene12: Scene12
 
-//    public var commands: Commands
+    public let body = EmptyScene()
 
     public init(
         _ scene0: Scene0, _ scene1: Scene1, _ scene2: Scene2, _ scene3: Scene3, _ scene4: Scene4,
@@ -930,21 +888,6 @@ public struct TupleScene13<
         self.scene10 = scene10
         self.scene11 = scene11
         self.scene12 = scene12
-
-//        commands = Commands.empty
-//            .overlayed(with: scene0.commands)
-//            .overlayed(with: scene1.commands)
-//            .overlayed(with: scene2.commands)
-//            .overlayed(with: scene3.commands)
-//            .overlayed(with: scene4.commands)
-//            .overlayed(with: scene5.commands)
-//            .overlayed(with: scene6.commands)
-//            .overlayed(with: scene7.commands)
-//            .overlayed(with: scene8.commands)
-//            .overlayed(with: scene9.commands)
-//            .overlayed(with: scene10.commands)
-//            .overlayed(with: scene11.commands)
-//            .overlayed(with: scene12.commands)
     }
 }
 
@@ -996,23 +939,28 @@ public final class TupleSceneNode13<
         _ newScene: NodeScene?,
         backend: Backend,
         environment: EnvironmentValues
-    ) {
-        node0.update(newScene?.scene0, backend: backend, environment: environment)
-        node1.update(newScene?.scene1, backend: backend, environment: environment)
-        node2.update(newScene?.scene2, backend: backend, environment: environment)
-        node3.update(newScene?.scene3, backend: backend, environment: environment)
-        node4.update(newScene?.scene4, backend: backend, environment: environment)
-        node5.update(newScene?.scene5, backend: backend, environment: environment)
-        node6.update(newScene?.scene6, backend: backend, environment: environment)
-        node7.update(newScene?.scene7, backend: backend, environment: environment)
-        node8.update(newScene?.scene8, backend: backend, environment: environment)
-        node9.update(newScene?.scene9, backend: backend, environment: environment)
-        node10.update(newScene?.scene10, backend: backend, environment: environment)
-        node11.update(newScene?.scene11, backend: backend, environment: environment)
-        node12.update(newScene?.scene12, backend: backend, environment: environment)
+    ) -> SceneUpdateResult {
+        return SceneUpdateResult(
+            childResults: [
+                node0.update(newScene?.scene0, backend: backend, environment: environment),
+                node1.update(newScene?.scene1, backend: backend, environment: environment),
+                node2.update(newScene?.scene2, backend: backend, environment: environment),
+                node3.update(newScene?.scene3, backend: backend, environment: environment),
+                node4.update(newScene?.scene4, backend: backend, environment: environment),
+                node5.update(newScene?.scene5, backend: backend, environment: environment),
+                node6.update(newScene?.scene6, backend: backend, environment: environment),
+                node7.update(newScene?.scene7, backend: backend, environment: environment),
+                node8.update(newScene?.scene8, backend: backend, environment: environment),
+                node9.update(newScene?.scene9, backend: backend, environment: environment),
+                node10.update(newScene?.scene10, backend: backend, environment: environment),
+                node11.update(newScene?.scene11, backend: backend, environment: environment),
+                node12.update(newScene?.scene12, backend: backend, environment: environment),
+            ]
+        )
     }
 }
-public struct TupleScene14<
+
+nonisolated public struct TupleScene14<
     Scene0: Scene, Scene1: Scene, Scene2: Scene, Scene3: Scene, Scene4: Scene, Scene5: Scene,
     Scene6: Scene, Scene7: Scene, Scene8: Scene, Scene9: Scene, Scene10: Scene, Scene11: Scene,
     Scene12: Scene, Scene13: Scene
@@ -1037,7 +985,7 @@ public struct TupleScene14<
     var scene12: Scene12
     var scene13: Scene13
 
-//    public var commands: Commands
+    public let body = EmptyScene()
 
     public init(
         _ scene0: Scene0, _ scene1: Scene1, _ scene2: Scene2, _ scene3: Scene3, _ scene4: Scene4,
@@ -1058,22 +1006,6 @@ public struct TupleScene14<
         self.scene11 = scene11
         self.scene12 = scene12
         self.scene13 = scene13
-
-//        commands = Commands.empty
-//            .overlayed(with: scene0.commands)
-//            .overlayed(with: scene1.commands)
-//            .overlayed(with: scene2.commands)
-//            .overlayed(with: scene3.commands)
-//            .overlayed(with: scene4.commands)
-//            .overlayed(with: scene5.commands)
-//            .overlayed(with: scene6.commands)
-//            .overlayed(with: scene7.commands)
-//            .overlayed(with: scene8.commands)
-//            .overlayed(with: scene9.commands)
-//            .overlayed(with: scene10.commands)
-//            .overlayed(with: scene11.commands)
-//            .overlayed(with: scene12.commands)
-//            .overlayed(with: scene13.commands)
     }
 }
 
@@ -1127,24 +1059,29 @@ public final class TupleSceneNode14<
         _ newScene: NodeScene?,
         backend: Backend,
         environment: EnvironmentValues
-    ) {
-        node0.update(newScene?.scene0, backend: backend, environment: environment)
-        node1.update(newScene?.scene1, backend: backend, environment: environment)
-        node2.update(newScene?.scene2, backend: backend, environment: environment)
-        node3.update(newScene?.scene3, backend: backend, environment: environment)
-        node4.update(newScene?.scene4, backend: backend, environment: environment)
-        node5.update(newScene?.scene5, backend: backend, environment: environment)
-        node6.update(newScene?.scene6, backend: backend, environment: environment)
-        node7.update(newScene?.scene7, backend: backend, environment: environment)
-        node8.update(newScene?.scene8, backend: backend, environment: environment)
-        node9.update(newScene?.scene9, backend: backend, environment: environment)
-        node10.update(newScene?.scene10, backend: backend, environment: environment)
-        node11.update(newScene?.scene11, backend: backend, environment: environment)
-        node12.update(newScene?.scene12, backend: backend, environment: environment)
-        node13.update(newScene?.scene13, backend: backend, environment: environment)
+    ) -> SceneUpdateResult {
+        return SceneUpdateResult(
+            childResults: [
+                node0.update(newScene?.scene0, backend: backend, environment: environment),
+                node1.update(newScene?.scene1, backend: backend, environment: environment),
+                node2.update(newScene?.scene2, backend: backend, environment: environment),
+                node3.update(newScene?.scene3, backend: backend, environment: environment),
+                node4.update(newScene?.scene4, backend: backend, environment: environment),
+                node5.update(newScene?.scene5, backend: backend, environment: environment),
+                node6.update(newScene?.scene6, backend: backend, environment: environment),
+                node7.update(newScene?.scene7, backend: backend, environment: environment),
+                node8.update(newScene?.scene8, backend: backend, environment: environment),
+                node9.update(newScene?.scene9, backend: backend, environment: environment),
+                node10.update(newScene?.scene10, backend: backend, environment: environment),
+                node11.update(newScene?.scene11, backend: backend, environment: environment),
+                node12.update(newScene?.scene12, backend: backend, environment: environment),
+                node13.update(newScene?.scene13, backend: backend, environment: environment),
+            ]
+        )
     }
 }
-public struct TupleScene15<
+
+nonisolated public struct TupleScene15<
     Scene0: Scene, Scene1: Scene, Scene2: Scene, Scene3: Scene, Scene4: Scene, Scene5: Scene,
     Scene6: Scene, Scene7: Scene, Scene8: Scene, Scene9: Scene, Scene10: Scene, Scene11: Scene,
     Scene12: Scene, Scene13: Scene, Scene14: Scene
@@ -1170,7 +1107,7 @@ public struct TupleScene15<
     var scene13: Scene13
     var scene14: Scene14
 
-//    public var commands: Commands
+    public let body = EmptyScene()
 
     public init(
         _ scene0: Scene0, _ scene1: Scene1, _ scene2: Scene2, _ scene3: Scene3, _ scene4: Scene4,
@@ -1193,23 +1130,6 @@ public struct TupleScene15<
         self.scene12 = scene12
         self.scene13 = scene13
         self.scene14 = scene14
-
-//        commands = Commands.empty
-//            .overlayed(with: scene0.commands)
-//            .overlayed(with: scene1.commands)
-//            .overlayed(with: scene2.commands)
-//            .overlayed(with: scene3.commands)
-//            .overlayed(with: scene4.commands)
-//            .overlayed(with: scene5.commands)
-//            .overlayed(with: scene6.commands)
-//            .overlayed(with: scene7.commands)
-//            .overlayed(with: scene8.commands)
-//            .overlayed(with: scene9.commands)
-//            .overlayed(with: scene10.commands)
-//            .overlayed(with: scene11.commands)
-//            .overlayed(with: scene12.commands)
-//            .overlayed(with: scene13.commands)
-//            .overlayed(with: scene14.commands)
     }
 }
 
@@ -1265,25 +1185,30 @@ public final class TupleSceneNode15<
         _ newScene: NodeScene?,
         backend: Backend,
         environment: EnvironmentValues
-    ) {
-        node0.update(newScene?.scene0, backend: backend, environment: environment)
-        node1.update(newScene?.scene1, backend: backend, environment: environment)
-        node2.update(newScene?.scene2, backend: backend, environment: environment)
-        node3.update(newScene?.scene3, backend: backend, environment: environment)
-        node4.update(newScene?.scene4, backend: backend, environment: environment)
-        node5.update(newScene?.scene5, backend: backend, environment: environment)
-        node6.update(newScene?.scene6, backend: backend, environment: environment)
-        node7.update(newScene?.scene7, backend: backend, environment: environment)
-        node8.update(newScene?.scene8, backend: backend, environment: environment)
-        node9.update(newScene?.scene9, backend: backend, environment: environment)
-        node10.update(newScene?.scene10, backend: backend, environment: environment)
-        node11.update(newScene?.scene11, backend: backend, environment: environment)
-        node12.update(newScene?.scene12, backend: backend, environment: environment)
-        node13.update(newScene?.scene13, backend: backend, environment: environment)
-        node14.update(newScene?.scene14, backend: backend, environment: environment)
+    ) -> SceneUpdateResult {
+        return SceneUpdateResult(
+            childResults: [
+                node0.update(newScene?.scene0, backend: backend, environment: environment),
+                node1.update(newScene?.scene1, backend: backend, environment: environment),
+                node2.update(newScene?.scene2, backend: backend, environment: environment),
+                node3.update(newScene?.scene3, backend: backend, environment: environment),
+                node4.update(newScene?.scene4, backend: backend, environment: environment),
+                node5.update(newScene?.scene5, backend: backend, environment: environment),
+                node6.update(newScene?.scene6, backend: backend, environment: environment),
+                node7.update(newScene?.scene7, backend: backend, environment: environment),
+                node8.update(newScene?.scene8, backend: backend, environment: environment),
+                node9.update(newScene?.scene9, backend: backend, environment: environment),
+                node10.update(newScene?.scene10, backend: backend, environment: environment),
+                node11.update(newScene?.scene11, backend: backend, environment: environment),
+                node12.update(newScene?.scene12, backend: backend, environment: environment),
+                node13.update(newScene?.scene13, backend: backend, environment: environment),
+                node14.update(newScene?.scene14, backend: backend, environment: environment),
+            ]
+        )
     }
 }
-public struct TupleScene16<
+
+nonisolated public struct TupleScene16<
     Scene0: Scene, Scene1: Scene, Scene2: Scene, Scene3: Scene, Scene4: Scene, Scene5: Scene,
     Scene6: Scene, Scene7: Scene, Scene8: Scene, Scene9: Scene, Scene10: Scene, Scene11: Scene,
     Scene12: Scene, Scene13: Scene, Scene14: Scene, Scene15: Scene
@@ -1310,7 +1235,7 @@ public struct TupleScene16<
     var scene14: Scene14
     var scene15: Scene15
 
-//    public var commands: Commands
+    public let body = EmptyScene()
 
     public init(
         _ scene0: Scene0, _ scene1: Scene1, _ scene2: Scene2, _ scene3: Scene3, _ scene4: Scene4,
@@ -1334,24 +1259,6 @@ public struct TupleScene16<
         self.scene13 = scene13
         self.scene14 = scene14
         self.scene15 = scene15
-
-//        commands = Commands.empty
-//            .overlayed(with: scene0.commands)
-//            .overlayed(with: scene1.commands)
-//            .overlayed(with: scene2.commands)
-//            .overlayed(with: scene3.commands)
-//            .overlayed(with: scene4.commands)
-//            .overlayed(with: scene5.commands)
-//            .overlayed(with: scene6.commands)
-//            .overlayed(with: scene7.commands)
-//            .overlayed(with: scene8.commands)
-//            .overlayed(with: scene9.commands)
-//            .overlayed(with: scene10.commands)
-//            .overlayed(with: scene11.commands)
-//            .overlayed(with: scene12.commands)
-//            .overlayed(with: scene13.commands)
-//            .overlayed(with: scene14.commands)
-//            .overlayed(with: scene15.commands)
     }
 }
 
@@ -1409,26 +1316,31 @@ public final class TupleSceneNode16<
         _ newScene: NodeScene?,
         backend: Backend,
         environment: EnvironmentValues
-    ) {
-        node0.update(newScene?.scene0, backend: backend, environment: environment)
-        node1.update(newScene?.scene1, backend: backend, environment: environment)
-        node2.update(newScene?.scene2, backend: backend, environment: environment)
-        node3.update(newScene?.scene3, backend: backend, environment: environment)
-        node4.update(newScene?.scene4, backend: backend, environment: environment)
-        node5.update(newScene?.scene5, backend: backend, environment: environment)
-        node6.update(newScene?.scene6, backend: backend, environment: environment)
-        node7.update(newScene?.scene7, backend: backend, environment: environment)
-        node8.update(newScene?.scene8, backend: backend, environment: environment)
-        node9.update(newScene?.scene9, backend: backend, environment: environment)
-        node10.update(newScene?.scene10, backend: backend, environment: environment)
-        node11.update(newScene?.scene11, backend: backend, environment: environment)
-        node12.update(newScene?.scene12, backend: backend, environment: environment)
-        node13.update(newScene?.scene13, backend: backend, environment: environment)
-        node14.update(newScene?.scene14, backend: backend, environment: environment)
-        node15.update(newScene?.scene15, backend: backend, environment: environment)
+    ) -> SceneUpdateResult {
+        return SceneUpdateResult(
+            childResults: [
+                node0.update(newScene?.scene0, backend: backend, environment: environment),
+                node1.update(newScene?.scene1, backend: backend, environment: environment),
+                node2.update(newScene?.scene2, backend: backend, environment: environment),
+                node3.update(newScene?.scene3, backend: backend, environment: environment),
+                node4.update(newScene?.scene4, backend: backend, environment: environment),
+                node5.update(newScene?.scene5, backend: backend, environment: environment),
+                node6.update(newScene?.scene6, backend: backend, environment: environment),
+                node7.update(newScene?.scene7, backend: backend, environment: environment),
+                node8.update(newScene?.scene8, backend: backend, environment: environment),
+                node9.update(newScene?.scene9, backend: backend, environment: environment),
+                node10.update(newScene?.scene10, backend: backend, environment: environment),
+                node11.update(newScene?.scene11, backend: backend, environment: environment),
+                node12.update(newScene?.scene12, backend: backend, environment: environment),
+                node13.update(newScene?.scene13, backend: backend, environment: environment),
+                node14.update(newScene?.scene14, backend: backend, environment: environment),
+                node15.update(newScene?.scene15, backend: backend, environment: environment),
+            ]
+        )
     }
 }
-public struct TupleScene17<
+
+nonisolated public struct TupleScene17<
     Scene0: Scene, Scene1: Scene, Scene2: Scene, Scene3: Scene, Scene4: Scene, Scene5: Scene,
     Scene6: Scene, Scene7: Scene, Scene8: Scene, Scene9: Scene, Scene10: Scene, Scene11: Scene,
     Scene12: Scene, Scene13: Scene, Scene14: Scene, Scene15: Scene, Scene16: Scene
@@ -1456,7 +1368,7 @@ public struct TupleScene17<
     var scene15: Scene15
     var scene16: Scene16
 
-//    public var commands: Commands
+    public let body = EmptyScene()
 
     public init(
         _ scene0: Scene0, _ scene1: Scene1, _ scene2: Scene2, _ scene3: Scene3, _ scene4: Scene4,
@@ -1481,25 +1393,6 @@ public struct TupleScene17<
         self.scene14 = scene14
         self.scene15 = scene15
         self.scene16 = scene16
-
-//        commands = Commands.empty
-//            .overlayed(with: scene0.commands)
-//            .overlayed(with: scene1.commands)
-//            .overlayed(with: scene2.commands)
-//            .overlayed(with: scene3.commands)
-//            .overlayed(with: scene4.commands)
-//            .overlayed(with: scene5.commands)
-//            .overlayed(with: scene6.commands)
-//            .overlayed(with: scene7.commands)
-//            .overlayed(with: scene8.commands)
-//            .overlayed(with: scene9.commands)
-//            .overlayed(with: scene10.commands)
-//            .overlayed(with: scene11.commands)
-//            .overlayed(with: scene12.commands)
-//            .overlayed(with: scene13.commands)
-//            .overlayed(with: scene14.commands)
-//            .overlayed(with: scene15.commands)
-//            .overlayed(with: scene16.commands)
     }
 }
 
@@ -1559,27 +1452,32 @@ public final class TupleSceneNode17<
         _ newScene: NodeScene?,
         backend: Backend,
         environment: EnvironmentValues
-    ) {
-        node0.update(newScene?.scene0, backend: backend, environment: environment)
-        node1.update(newScene?.scene1, backend: backend, environment: environment)
-        node2.update(newScene?.scene2, backend: backend, environment: environment)
-        node3.update(newScene?.scene3, backend: backend, environment: environment)
-        node4.update(newScene?.scene4, backend: backend, environment: environment)
-        node5.update(newScene?.scene5, backend: backend, environment: environment)
-        node6.update(newScene?.scene6, backend: backend, environment: environment)
-        node7.update(newScene?.scene7, backend: backend, environment: environment)
-        node8.update(newScene?.scene8, backend: backend, environment: environment)
-        node9.update(newScene?.scene9, backend: backend, environment: environment)
-        node10.update(newScene?.scene10, backend: backend, environment: environment)
-        node11.update(newScene?.scene11, backend: backend, environment: environment)
-        node12.update(newScene?.scene12, backend: backend, environment: environment)
-        node13.update(newScene?.scene13, backend: backend, environment: environment)
-        node14.update(newScene?.scene14, backend: backend, environment: environment)
-        node15.update(newScene?.scene15, backend: backend, environment: environment)
-        node16.update(newScene?.scene16, backend: backend, environment: environment)
+    ) -> SceneUpdateResult {
+        return SceneUpdateResult(
+            childResults: [
+                node0.update(newScene?.scene0, backend: backend, environment: environment),
+                node1.update(newScene?.scene1, backend: backend, environment: environment),
+                node2.update(newScene?.scene2, backend: backend, environment: environment),
+                node3.update(newScene?.scene3, backend: backend, environment: environment),
+                node4.update(newScene?.scene4, backend: backend, environment: environment),
+                node5.update(newScene?.scene5, backend: backend, environment: environment),
+                node6.update(newScene?.scene6, backend: backend, environment: environment),
+                node7.update(newScene?.scene7, backend: backend, environment: environment),
+                node8.update(newScene?.scene8, backend: backend, environment: environment),
+                node9.update(newScene?.scene9, backend: backend, environment: environment),
+                node10.update(newScene?.scene10, backend: backend, environment: environment),
+                node11.update(newScene?.scene11, backend: backend, environment: environment),
+                node12.update(newScene?.scene12, backend: backend, environment: environment),
+                node13.update(newScene?.scene13, backend: backend, environment: environment),
+                node14.update(newScene?.scene14, backend: backend, environment: environment),
+                node15.update(newScene?.scene15, backend: backend, environment: environment),
+                node16.update(newScene?.scene16, backend: backend, environment: environment),
+            ]
+        )
     }
 }
-public struct TupleScene18<
+
+nonisolated public struct TupleScene18<
     Scene0: Scene, Scene1: Scene, Scene2: Scene, Scene3: Scene, Scene4: Scene, Scene5: Scene,
     Scene6: Scene, Scene7: Scene, Scene8: Scene, Scene9: Scene, Scene10: Scene, Scene11: Scene,
     Scene12: Scene, Scene13: Scene, Scene14: Scene, Scene15: Scene, Scene16: Scene, Scene17: Scene
@@ -1608,7 +1506,7 @@ public struct TupleScene18<
     var scene16: Scene16
     var scene17: Scene17
 
-//    public var commands: Commands
+    public let body = EmptyScene()
 
     public init(
         _ scene0: Scene0, _ scene1: Scene1, _ scene2: Scene2, _ scene3: Scene3, _ scene4: Scene4,
@@ -1634,26 +1532,6 @@ public struct TupleScene18<
         self.scene15 = scene15
         self.scene16 = scene16
         self.scene17 = scene17
-
-//        commands = Commands.empty
-//            .overlayed(with: scene0.commands)
-//            .overlayed(with: scene1.commands)
-//            .overlayed(with: scene2.commands)
-//            .overlayed(with: scene3.commands)
-//            .overlayed(with: scene4.commands)
-//            .overlayed(with: scene5.commands)
-//            .overlayed(with: scene6.commands)
-//            .overlayed(with: scene7.commands)
-//            .overlayed(with: scene8.commands)
-//            .overlayed(with: scene9.commands)
-//            .overlayed(with: scene10.commands)
-//            .overlayed(with: scene11.commands)
-//            .overlayed(with: scene12.commands)
-//            .overlayed(with: scene13.commands)
-//            .overlayed(with: scene14.commands)
-//            .overlayed(with: scene15.commands)
-//            .overlayed(with: scene16.commands)
-//            .overlayed(with: scene17.commands)
     }
 }
 
@@ -1715,28 +1593,33 @@ public final class TupleSceneNode18<
         _ newScene: NodeScene?,
         backend: Backend,
         environment: EnvironmentValues
-    ) {
-        node0.update(newScene?.scene0, backend: backend, environment: environment)
-        node1.update(newScene?.scene1, backend: backend, environment: environment)
-        node2.update(newScene?.scene2, backend: backend, environment: environment)
-        node3.update(newScene?.scene3, backend: backend, environment: environment)
-        node4.update(newScene?.scene4, backend: backend, environment: environment)
-        node5.update(newScene?.scene5, backend: backend, environment: environment)
-        node6.update(newScene?.scene6, backend: backend, environment: environment)
-        node7.update(newScene?.scene7, backend: backend, environment: environment)
-        node8.update(newScene?.scene8, backend: backend, environment: environment)
-        node9.update(newScene?.scene9, backend: backend, environment: environment)
-        node10.update(newScene?.scene10, backend: backend, environment: environment)
-        node11.update(newScene?.scene11, backend: backend, environment: environment)
-        node12.update(newScene?.scene12, backend: backend, environment: environment)
-        node13.update(newScene?.scene13, backend: backend, environment: environment)
-        node14.update(newScene?.scene14, backend: backend, environment: environment)
-        node15.update(newScene?.scene15, backend: backend, environment: environment)
-        node16.update(newScene?.scene16, backend: backend, environment: environment)
-        node17.update(newScene?.scene17, backend: backend, environment: environment)
+    ) -> SceneUpdateResult {
+        return SceneUpdateResult(
+            childResults: [
+                node0.update(newScene?.scene0, backend: backend, environment: environment),
+                node1.update(newScene?.scene1, backend: backend, environment: environment),
+                node2.update(newScene?.scene2, backend: backend, environment: environment),
+                node3.update(newScene?.scene3, backend: backend, environment: environment),
+                node4.update(newScene?.scene4, backend: backend, environment: environment),
+                node5.update(newScene?.scene5, backend: backend, environment: environment),
+                node6.update(newScene?.scene6, backend: backend, environment: environment),
+                node7.update(newScene?.scene7, backend: backend, environment: environment),
+                node8.update(newScene?.scene8, backend: backend, environment: environment),
+                node9.update(newScene?.scene9, backend: backend, environment: environment),
+                node10.update(newScene?.scene10, backend: backend, environment: environment),
+                node11.update(newScene?.scene11, backend: backend, environment: environment),
+                node12.update(newScene?.scene12, backend: backend, environment: environment),
+                node13.update(newScene?.scene13, backend: backend, environment: environment),
+                node14.update(newScene?.scene14, backend: backend, environment: environment),
+                node15.update(newScene?.scene15, backend: backend, environment: environment),
+                node16.update(newScene?.scene16, backend: backend, environment: environment),
+                node17.update(newScene?.scene17, backend: backend, environment: environment),
+            ]
+        )
     }
 }
-public struct TupleScene19<
+
+nonisolated public struct TupleScene19<
     Scene0: Scene, Scene1: Scene, Scene2: Scene, Scene3: Scene, Scene4: Scene, Scene5: Scene,
     Scene6: Scene, Scene7: Scene, Scene8: Scene, Scene9: Scene, Scene10: Scene, Scene11: Scene,
     Scene12: Scene, Scene13: Scene, Scene14: Scene, Scene15: Scene, Scene16: Scene, Scene17: Scene,
@@ -1767,7 +1650,7 @@ public struct TupleScene19<
     var scene17: Scene17
     var scene18: Scene18
 
-//    public var commands: Commands
+    public let body = EmptyScene()
 
     public init(
         _ scene0: Scene0, _ scene1: Scene1, _ scene2: Scene2, _ scene3: Scene3, _ scene4: Scene4,
@@ -1795,27 +1678,6 @@ public struct TupleScene19<
         self.scene16 = scene16
         self.scene17 = scene17
         self.scene18 = scene18
-
-//        commands = Commands.empty
-//            .overlayed(with: scene0.commands)
-//            .overlayed(with: scene1.commands)
-//            .overlayed(with: scene2.commands)
-//            .overlayed(with: scene3.commands)
-//            .overlayed(with: scene4.commands)
-//            .overlayed(with: scene5.commands)
-//            .overlayed(with: scene6.commands)
-//            .overlayed(with: scene7.commands)
-//            .overlayed(with: scene8.commands)
-//            .overlayed(with: scene9.commands)
-//            .overlayed(with: scene10.commands)
-//            .overlayed(with: scene11.commands)
-//            .overlayed(with: scene12.commands)
-//            .overlayed(with: scene13.commands)
-//            .overlayed(with: scene14.commands)
-//            .overlayed(with: scene15.commands)
-//            .overlayed(with: scene16.commands)
-//            .overlayed(with: scene17.commands)
-//            .overlayed(with: scene18.commands)
     }
 }
 
@@ -1880,29 +1742,34 @@ public final class TupleSceneNode19<
         _ newScene: NodeScene?,
         backend: Backend,
         environment: EnvironmentValues
-    ) {
-        node0.update(newScene?.scene0, backend: backend, environment: environment)
-        node1.update(newScene?.scene1, backend: backend, environment: environment)
-        node2.update(newScene?.scene2, backend: backend, environment: environment)
-        node3.update(newScene?.scene3, backend: backend, environment: environment)
-        node4.update(newScene?.scene4, backend: backend, environment: environment)
-        node5.update(newScene?.scene5, backend: backend, environment: environment)
-        node6.update(newScene?.scene6, backend: backend, environment: environment)
-        node7.update(newScene?.scene7, backend: backend, environment: environment)
-        node8.update(newScene?.scene8, backend: backend, environment: environment)
-        node9.update(newScene?.scene9, backend: backend, environment: environment)
-        node10.update(newScene?.scene10, backend: backend, environment: environment)
-        node11.update(newScene?.scene11, backend: backend, environment: environment)
-        node12.update(newScene?.scene12, backend: backend, environment: environment)
-        node13.update(newScene?.scene13, backend: backend, environment: environment)
-        node14.update(newScene?.scene14, backend: backend, environment: environment)
-        node15.update(newScene?.scene15, backend: backend, environment: environment)
-        node16.update(newScene?.scene16, backend: backend, environment: environment)
-        node17.update(newScene?.scene17, backend: backend, environment: environment)
-        node18.update(newScene?.scene18, backend: backend, environment: environment)
+    ) -> SceneUpdateResult {
+        return SceneUpdateResult(
+            childResults: [
+                node0.update(newScene?.scene0, backend: backend, environment: environment),
+                node1.update(newScene?.scene1, backend: backend, environment: environment),
+                node2.update(newScene?.scene2, backend: backend, environment: environment),
+                node3.update(newScene?.scene3, backend: backend, environment: environment),
+                node4.update(newScene?.scene4, backend: backend, environment: environment),
+                node5.update(newScene?.scene5, backend: backend, environment: environment),
+                node6.update(newScene?.scene6, backend: backend, environment: environment),
+                node7.update(newScene?.scene7, backend: backend, environment: environment),
+                node8.update(newScene?.scene8, backend: backend, environment: environment),
+                node9.update(newScene?.scene9, backend: backend, environment: environment),
+                node10.update(newScene?.scene10, backend: backend, environment: environment),
+                node11.update(newScene?.scene11, backend: backend, environment: environment),
+                node12.update(newScene?.scene12, backend: backend, environment: environment),
+                node13.update(newScene?.scene13, backend: backend, environment: environment),
+                node14.update(newScene?.scene14, backend: backend, environment: environment),
+                node15.update(newScene?.scene15, backend: backend, environment: environment),
+                node16.update(newScene?.scene16, backend: backend, environment: environment),
+                node17.update(newScene?.scene17, backend: backend, environment: environment),
+                node18.update(newScene?.scene18, backend: backend, environment: environment),
+            ]
+        )
     }
 }
-public struct TupleScene20<
+
+nonisolated public struct TupleScene20<
     Scene0: Scene, Scene1: Scene, Scene2: Scene, Scene3: Scene, Scene4: Scene, Scene5: Scene,
     Scene6: Scene, Scene7: Scene, Scene8: Scene, Scene9: Scene, Scene10: Scene, Scene11: Scene,
     Scene12: Scene, Scene13: Scene, Scene14: Scene, Scene15: Scene, Scene16: Scene, Scene17: Scene,
@@ -1934,7 +1801,7 @@ public struct TupleScene20<
     var scene18: Scene18
     var scene19: Scene19
 
-//    public var commands: Commands
+    public let body = EmptyScene()
 
     public init(
         _ scene0: Scene0, _ scene1: Scene1, _ scene2: Scene2, _ scene3: Scene3, _ scene4: Scene4,
@@ -1963,28 +1830,6 @@ public struct TupleScene20<
         self.scene17 = scene17
         self.scene18 = scene18
         self.scene19 = scene19
-
-//        commands = Commands.empty
-//            .overlayed(with: scene0.commands)
-//            .overlayed(with: scene1.commands)
-//            .overlayed(with: scene2.commands)
-//            .overlayed(with: scene3.commands)
-//            .overlayed(with: scene4.commands)
-//            .overlayed(with: scene5.commands)
-//            .overlayed(with: scene6.commands)
-//            .overlayed(with: scene7.commands)
-//            .overlayed(with: scene8.commands)
-//            .overlayed(with: scene9.commands)
-//            .overlayed(with: scene10.commands)
-//            .overlayed(with: scene11.commands)
-//            .overlayed(with: scene12.commands)
-//            .overlayed(with: scene13.commands)
-//            .overlayed(with: scene14.commands)
-//            .overlayed(with: scene15.commands)
-//            .overlayed(with: scene16.commands)
-//            .overlayed(with: scene17.commands)
-//            .overlayed(with: scene18.commands)
-//            .overlayed(with: scene19.commands)
     }
 }
 
@@ -2051,26 +1896,30 @@ public final class TupleSceneNode20<
         _ newScene: NodeScene?,
         backend: Backend,
         environment: EnvironmentValues
-    ) {
-        node0.update(newScene?.scene0, backend: backend, environment: environment)
-        node1.update(newScene?.scene1, backend: backend, environment: environment)
-        node2.update(newScene?.scene2, backend: backend, environment: environment)
-        node3.update(newScene?.scene3, backend: backend, environment: environment)
-        node4.update(newScene?.scene4, backend: backend, environment: environment)
-        node5.update(newScene?.scene5, backend: backend, environment: environment)
-        node6.update(newScene?.scene6, backend: backend, environment: environment)
-        node7.update(newScene?.scene7, backend: backend, environment: environment)
-        node8.update(newScene?.scene8, backend: backend, environment: environment)
-        node9.update(newScene?.scene9, backend: backend, environment: environment)
-        node10.update(newScene?.scene10, backend: backend, environment: environment)
-        node11.update(newScene?.scene11, backend: backend, environment: environment)
-        node12.update(newScene?.scene12, backend: backend, environment: environment)
-        node13.update(newScene?.scene13, backend: backend, environment: environment)
-        node14.update(newScene?.scene14, backend: backend, environment: environment)
-        node15.update(newScene?.scene15, backend: backend, environment: environment)
-        node16.update(newScene?.scene16, backend: backend, environment: environment)
-        node17.update(newScene?.scene17, backend: backend, environment: environment)
-        node18.update(newScene?.scene18, backend: backend, environment: environment)
-        node19.update(newScene?.scene19, backend: backend, environment: environment)
+    ) -> SceneUpdateResult {
+        return SceneUpdateResult(
+            childResults: [
+                node0.update(newScene?.scene0, backend: backend, environment: environment),
+                node1.update(newScene?.scene1, backend: backend, environment: environment),
+                node2.update(newScene?.scene2, backend: backend, environment: environment),
+                node3.update(newScene?.scene3, backend: backend, environment: environment),
+                node4.update(newScene?.scene4, backend: backend, environment: environment),
+                node5.update(newScene?.scene5, backend: backend, environment: environment),
+                node6.update(newScene?.scene6, backend: backend, environment: environment),
+                node7.update(newScene?.scene7, backend: backend, environment: environment),
+                node8.update(newScene?.scene8, backend: backend, environment: environment),
+                node9.update(newScene?.scene9, backend: backend, environment: environment),
+                node10.update(newScene?.scene10, backend: backend, environment: environment),
+                node11.update(newScene?.scene11, backend: backend, environment: environment),
+                node12.update(newScene?.scene12, backend: backend, environment: environment),
+                node13.update(newScene?.scene13, backend: backend, environment: environment),
+                node14.update(newScene?.scene14, backend: backend, environment: environment),
+                node15.update(newScene?.scene15, backend: backend, environment: environment),
+                node16.update(newScene?.scene16, backend: backend, environment: environment),
+                node17.update(newScene?.scene17, backend: backend, environment: environment),
+                node18.update(newScene?.scene18, backend: backend, environment: environment),
+                node19.update(newScene?.scene19, backend: backend, environment: environment),
+            ]
+        )
     }
 }

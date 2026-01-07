@@ -27,7 +27,7 @@ public final class WindowGroupNode<Content: View>: SceneGraphNode {
         let window = backend.createWindow(withDefaultSize: scene.defaultSize)
 
         viewGraph = ViewGraph(
-            for: scene.body,
+            for: scene.content(),
             backend: backend,
             environment: environment.with(\.window, window)
         )
@@ -81,7 +81,7 @@ public final class WindowGroupNode<Content: View>: SceneGraphNode {
         _ newScene: WindowGroup<Content>?,
         backend: Backend,
         environment: EnvironmentValues
-    ) {
+    ) -> SceneUpdateResult {
         guard let window = window as? Backend.Window else {
             fatalError("Scene updated with a backend incompatible with the window it was given")
         }
@@ -107,6 +107,8 @@ public final class WindowGroupNode<Content: View>: SceneGraphNode {
             environment: environment,
             windowSizeIsFinal: !isProgramaticallyResizable
         )
+
+        return SceneUpdateResult.leafScene()
     }
 
     /// Updates the WindowGroupNode.
@@ -170,7 +172,7 @@ public final class WindowGroupNode<Content: View>: SceneGraphNode {
         let finalContentResult: ViewLayoutResult
         if scene.resizability.isResizable {
             let minimumWindowSize = viewGraph.computeLayout(
-                with: newScene?.body,
+                with: newScene?.content(),
                 proposedSize: .zero,
                 environment: environment.with(\.allowLayoutCaching, true)
             ).size
@@ -203,7 +205,7 @@ public final class WindowGroupNode<Content: View>: SceneGraphNode {
             )
         } else {
             let initialContentResult = viewGraph.computeLayout(
-                with: newScene?.body,
+                with: newScene?.content(),
                 proposedSize: ProposedViewSize(proposedWindowSize),
                 environment: environment
             )

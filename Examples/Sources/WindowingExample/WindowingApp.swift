@@ -201,18 +201,18 @@ struct WindowingApp: App {
         }
         .defaultSize(width: 500, height: 500)
         .windowResizability(resizable ? .contentMinSize : .contentSize)
-//        .commands {
-//            CommandMenu("Demo menu") {
-//                Button("Menu item") {}
-//
-//                Toggle("Toggle", active: $toggle)
-//
-//                Menu("Submenu") {
-//                    Button("Item 1") {}
-//                    Button("Item 2") {}
-//                }
-//            }
-//        }
+        .commands {
+            CommandMenu("Demo menu") {
+                Button("Menu item") {}
+
+                Toggle("Toggle", active: $toggle)
+
+                Menu("Submenu") {
+                    Button("Item 1") {}
+                    Button("Item 2") {}
+                }
+            }
+        }
         #if !(os(iOS) || os(tvOS) || os(Windows))
             WindowGroup("Secondary window") {
                 #hotReloadable {

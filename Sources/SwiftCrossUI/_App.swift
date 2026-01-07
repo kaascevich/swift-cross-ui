@@ -31,11 +31,14 @@ class _App<AppRoot: App> {
     func forceRefresh() {
         dynamicPropertyUpdater.update(app, with: environment, previousValue: nil)
 
-        sceneGraphRoot?.update(
+        let result = sceneGraphRoot?.update(
             self.app.body,
             backend: self.backend,
             environment: environment
         )
+        if let result {
+            self.backend.setApplicationMenu(result.preferences.commands.resolve())
+        }
     }
 
     /// Runs the app using the app's selected backend.
@@ -80,21 +83,20 @@ class _App<AppRoot: App> {
                         previousValue: nil
                     )
 
-                    let body = self.app.body
-                    self.sceneGraphRoot?.update(
-                        body,
+                    let result = self.sceneGraphRoot?.update(
+                        self.app.body,
                         backend: self.backend,
                         environment: self.environment
                     )
-
-//                    self.backend.setApplicationMenu(body.commands.resolve())
+                    if let result {
+                        self.backend.setApplicationMenu(result.preferences.commands.resolve())
+                    }
                 }
                 self.cancellables.append(cancellable)
             }
 
-            let body = self.app.body
             let rootNode = AppRoot.Body.Node(
-                from: body,
+                from: self.app.body,
                 backend: self.backend,
                 environment: self.environment
             )
@@ -106,10 +108,8 @@ class _App<AppRoot: App> {
                 self.forceRefresh()
             }
 
-            // Update application-wide menu
-//            self.backend.setApplicationMenu(body.commands.resolve())
 
-            rootNode.update(
+            let result = rootNode.update(
                 nil,
                 backend: self.backend,
                 environment: self.backend.computeRootEnvironment(
@@ -117,6 +117,9 @@ class _App<AppRoot: App> {
                 )
             )
             self.sceneGraphRoot = rootNode
+
+            // Update application-wide menu
+            self.backend.setApplicationMenu(result.preferences.commands.resolve())
         }
     }
 }

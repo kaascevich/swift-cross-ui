@@ -69,8 +69,4 @@ extension Never: View {
     public var body: Never {
         return fatalError("Rendered Never")
     }
-
-    public init() {
-        fatalError("Cannot create never")
-    }
 }

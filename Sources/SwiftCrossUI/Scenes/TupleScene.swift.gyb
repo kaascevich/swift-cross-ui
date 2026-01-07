@@ -5,28 +5,23 @@ maximum_scene_count = 20
 }%
 
 %for i in range(2, maximum_scene_count + 1):
-public struct TupleScene${i}<${", ".join("Scene%d: Scene" % j for j in range(i))}>: Scene {
+nonisolated public struct TupleScene${i}<${", ".join("Scene%d: Scene" % j for j in range(i))}>: Scene {
     public typealias Node = TupleSceneNode${i}<${", ".join("Scene%d" % j for j in range(i))}>
 
     %for j in range(i):
     var scene${j}: Scene${j}
     %end
 
-    public var commands: Commands
+    let body = EmptyScene()
 
     public init(${", ".join("_ scene%d: Scene%d" % (j, j) for j in range(i))}) {
         %for j in range(i):
         self.scene${j} = scene${j}
         %end
-
-        commands = Commands.empty
-        %for j in range(i):
-            .overlayed(with: scene${j}.commands)
-        %end
     }
 }
 
-public final class TupleSceneNode${i}<${", ".join("Scene%d: Scene" % j for j in range(i))}>: SceneGraphNode {
+public final class TupleSceneNode${i}<${", ".join("Scene%d: Scene" % j for j in range(i))}>: SceneNode {
     public typealias NodeScene = TupleScene${i}<${", ".join("Scene%d" % j for j in range(i))}>
 
     %for j in range(i):
@@ -47,10 +42,15 @@ public final class TupleSceneNode${i}<${", ".join("Scene%d: Scene" % j for j in 
         _ newScene: NodeScene?,
         backend: Backend,
         environment: EnvironmentValues
-    ) {
-        %for j in range(i):
-        node${j}.update(newScene?.scene${j}, backend: backend, environment: environment)
-        %end
+    ) -> SceneUpdateResult {
+        return SceneUpdateResult(
+            childResults: [
+                %for j in range(i):
+                node${j}.update(newScene?.scene${j}, backend: backend, environment: environment),
+                %end
+            ]
+        )
     }
 }
+
 %end
