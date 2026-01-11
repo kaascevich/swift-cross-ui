@@ -172,6 +172,15 @@ public protocol AppBackend: Sendable {
     /// May be used in other circumstances eventually.
     func activate(window: Window)
 
+    /// Returns whether the given window is currently active.
+    func isWindowActive(_ window: Window) -> Bool
+    /// Returns whether the application is currently active.
+    ///
+    /// Usually this returns `true` if and only if any of the app's windows are
+    /// active, but on platforms such as macOS it can also return `true` if the
+    /// app doesn't have any open windows but still appears in the menu bar.
+    func isApplicationActive() -> Bool
+
     /// Sets the application's global menu. Some backends may make use of the host
     /// platform's global menu bar (such as macOS's menu bar), and others may render their
     /// own menu bar within the application.

@@ -239,6 +239,14 @@ public final class GtkBackend: AppBackend {
         window.present()
     }
 
+    public func isWindowActive(_ window: Window) -> Bool {
+        window.isActive
+    }
+
+    public func isApplicationActive() -> Bool {
+        windows.contains(where: \.isActive)
+    }
+
     public func openExternalURL(_ url: URL) throws {
         // Used instead of gtk_uri_launcher_launch to maintain <4.10 compatibility
         gtk_show_uri(nil, url.absoluteString, guint(GDK_CURRENT_TIME))

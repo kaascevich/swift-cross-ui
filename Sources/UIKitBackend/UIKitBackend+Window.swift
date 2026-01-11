@@ -131,6 +131,14 @@ extension UIKitBackend {
         window.makeKeyAndVisible()
     }
 
+    public func isWindowActive(_ window: Window) -> Bool {
+        window.isKeyWindow
+    }
+
+    public func isApplicationActive() -> Bool {
+        UIApplication.shared.applicationState == .active
+    }
+
     public func isWindowProgrammaticallyResizable(_ window: Window) -> Bool {
         #if os(visionOS)
             true

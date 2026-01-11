@@ -124,6 +124,14 @@ public final class AppKitBackend: AppBackend {
         window.makeKeyAndOrderFront(nil)
     }
 
+    public func isWindowActive(_ window: Window) -> Bool {
+        return window.isKeyWindow
+    }
+
+    public func isApplicationActive() -> Bool {
+        return NSApplication.shared.isActive
+    }
+
     public func openExternalURL(_ url: URL) throws {
         NSWorkspace.shared.open(url)
     }

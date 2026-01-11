@@ -244,6 +244,14 @@ public final class WinUIBackend: AppBackend {
         try! window.activate()
     }
 
+    public func isWindowActive(_ window: Window) -> Bool {
+        window.isActive
+    }
+
+    public func isApplicationActive() -> Bool {
+        windows.contains(where: \.isActive)
+    }
+
     public func openExternalURL(_ url: URL) throws {
         _ = UWP.Launcher.launchUriAsync(WindowsFoundation.Uri(url.absoluteString))
     }
@@ -2005,6 +2013,7 @@ public class CustomWindow: WinUI.Window {
     var child: WinUIBackend.Widget?
     var grid: WinUI.Grid
     var cachedAppWindow: WinAppSDK.AppWindow!
+    var isActive = false
 
     var scaleFactor: Double {
         // I'm leaving this code here for future travellers. Be warned that this always
@@ -2049,6 +2058,10 @@ public class CustomWindow: WinUI.Window {
         grid.children.append(menuBar)
         WinUI.Grid.setRow(menuBar, 0)
         self.content = grid
+
+        self.activated.addHandler { [weak self] _, args in
+            self?.isActive = args.windowActivationState != .deactivated
+        }
 
         // Caching appWindow is apparently a good idea in terms of performance:
         // https://github.com/thebrowsercompany/swift-winrt/issues/199#issuecomment-2611006020

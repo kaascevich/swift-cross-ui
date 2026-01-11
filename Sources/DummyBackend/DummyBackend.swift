@@ -11,6 +11,7 @@ public final class DummyBackend: AppBackend {
         public var resizable = true
         public var content: Widget?
         public var resizeHandler: ((SIMD2<Int>) -> Void)?
+        public var isActive = false
 
         public init(defaultSize: SIMD2<Int>?) {
             size = defaultSize ?? Self.defaultSize
@@ -250,6 +251,7 @@ public final class DummyBackend: AppBackend {
     public var supportedDatePickerStyles: [DatePickerStyle] = []
 
     public var incomingURLHandler: ((URL) -> Void)?
+    public var isAppActive = true
 
     public init() {}
 
@@ -294,9 +296,21 @@ public final class DummyBackend: AppBackend {
         window.resizeHandler = action
     }
 
-    public func show(window: Window) {}
+    public func show(window: Window) {
+        window.isActive = true
+    }
 
-    public func activate(window: Window) {}
+    public func activate(window: Window) {
+        window.isActive = true
+    }
+
+    public func isWindowActive(_ window: Window) -> Bool {
+        window.isActive
+    }
+
+    public func isApplicationActive() -> Bool {
+        isAppActive
+    }
 
     public func runInMainThread(action: @escaping @MainActor () -> Void) {
         DispatchQueue.main.async {

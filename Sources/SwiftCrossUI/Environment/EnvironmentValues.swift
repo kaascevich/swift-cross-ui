@@ -207,6 +207,28 @@ public struct EnvironmentValues {
         )
     }
 
+    /// The active state of the current scene (or, if accessed outside of a scene,
+    /// the app as a whole).
+    @MainActor
+    public var scenePhase: ScenePhase {
+        func scenePhase<Backend: AppBackend>(backend: Backend) -> ScenePhase {
+            if let window {
+                if backend.isWindowActive(window as! Backend.Window) {
+                    .active
+                } else {
+                    .inactive
+                }
+            } else {
+                if backend.isApplicationActive() {
+                    .active
+                } else {
+                    .inactive
+                }
+            }
+        }
+        return scenePhase(backend: backend)
+    }
+
     /// The current calendar that views should use when handling dates.
     public var calendar: Calendar
 
