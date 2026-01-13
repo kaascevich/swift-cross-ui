@@ -59,7 +59,7 @@ struct AlertDemo: View {
 
         Button("Present error") {
             Task {
-                await presentAlert("Failed to succeed")
+                await presentAlert("Failed to succeed") {}
             }
         }
     }
@@ -161,8 +161,12 @@ struct SheetDemo: View {
 @HotReloadable
 struct WindowingApp: App {
     @State var title = "My window"
-    @State var resizable = false
+    @State var resizable = true
+    @State var isAlertSceneShown = false
     @State var toggle = false
+    @State var enforceMaxSize = true
+    @State var closable = true
+    @State var minimizable = true
 
     var body: some Scene {
         WindowGroup(title) {
@@ -173,9 +177,12 @@ struct WindowingApp: App {
                         TextField("My window", text: $title)
                     }
 
-                    Button(resizable ? "Disable resizing" : "Enable resizing") {
-                        resizable = !resizable
-                    }
+                    Toggle("Enable resizing", isOn: $resizable)
+                        .windowResizeBehavior(resizable ? .enabled : .disabled)
+                    Toggle("Enable closing", isOn: $closable)
+                        .windowDismissBehavior(closable ? .enabled : .disabled)
+                    Toggle("Enable minimizing", isOn: $minimizable)
+                        .preferredWindowMinimizeBehavior(minimizable ? .enabled : .disabled)
 
                     Image(Bundle.module.bundleURL.appendingPathComponent("Banner.png"))
                         .resizable()
@@ -190,6 +197,9 @@ struct WindowingApp: App {
                     #endif
 
                     AlertDemo()
+                    Button("Show alert scene") {
+                        isAlertSceneShown = true
+                    }
 
                     Divider()
 
@@ -200,12 +210,12 @@ struct WindowingApp: App {
             }
         }
         .defaultSize(width: 500, height: 500)
-        .windowResizability(resizable ? .contentMinSize : .contentSize)
         .commands {
             CommandMenu("Demo menu") {
                 Button("Menu item") {}
-
                 Toggle("Toggle", active: $toggle)
+
+                Divider()
 
                 Menu("Submenu") {
                     Button("Item 1") {}
@@ -213,15 +223,23 @@ struct WindowingApp: App {
                 }
             }
         }
+
+        AlertScene("Alert scene", isPresented: $isAlertSceneShown) {}
+
         #if !(os(iOS) || os(tvOS) || os(Windows))
             WindowGroup("Secondary window") {
                 #hotReloadable {
-                    Text("This a secondary window!")
-                        .padding(10)
+                    VStack {
+                        Text("This a secondary window!")
+
+                        Toggle("Enforce max size", isOn: $enforceMaxSize)
+                            .toggleStyle(.checkbox)
+                    }
+                    .padding(10)
                 }
             }
             .defaultSize(width: 200, height: 200)
-            .windowResizability(.contentMinSize)
+            .windowResizability(enforceMaxSize ? .contentSize : .contentMinSize)
 
             WindowGroup("Tertiary window") {
                 #hotReloadable {
@@ -230,7 +248,6 @@ struct WindowingApp: App {
                 }
             }
             .defaultSize(width: 200, height: 200)
-            .windowResizability(.contentMinSize)
         #endif
     }
 }

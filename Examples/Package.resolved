@@ -1,5 +1,5 @@
 {
-  "originHash" : "f29a33ba90b5b5615d0de581d82e49b8fa747057114f7c3fd44c8916099b361c",
+  "originHash" : "c22e1aa4960044b7579ded8bbe6ebdfa6aa139507a426b27d502a49ec11219f4",
   "pins" : [
     {
       "identity" : "aexml",
@@ -26,6 +26,15 @@
       "state" : {
         "revision" : "3a506bb36e4aa54eb3f1b13f15e636c68ee3eb19",
         "version" : "0.0.5"
+      }
+    },
+    {
+      "identity" : "errorkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/stackotter/ErrorKit",
+      "state" : {
+        "revision" : "1c30f90abe4118773e89b819d6b5db91432a81a5",
+        "version" : "1.2.2"
       }
     },
     {
@@ -141,7 +150,7 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/stackotter/swift-bundler",
       "state" : {
-        "revision" : "d42d7ffda684cfed9edcfd3581b8127f1dc55c2e"
+        "revision" : "2dbcb92047148efbc20e9ed47f66bc2dfd93b3f7"
       }
     },
     {
@@ -149,8 +158,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-case-paths",
       "state" : {
-        "revision" : "71344dd930fde41e8f3adafe260adcbb2fc2a3dc",
-        "version" : "1.5.4"
+        "revision" : "6989976265be3f8d2b5802c722f9ba168e227c71",
+        "version" : "1.7.2"
       }
     },
     {
@@ -229,8 +238,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/stackotter/swift-macro-toolkit",
       "state" : {
-        "revision" : "569627091e1fbb8745d691aeeb008e7247dedb7c",
-        "version" : "0.6.1"
+        "revision" : "d319bcc2586f7dbc6a09c05792105078263f1ed3",
+        "version" : "0.7.2"
       }
     },
     {
@@ -256,8 +265,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-parsing",
       "state" : {
-        "revision" : "a0e7d73f462c1c38c59dc40a3969ac40cea42950",
-        "version" : "0.13.0"
+        "revision" : "3432cb81164dd3d69a75d0d63205be5fbae2c34b",
+        "version" : "0.14.1"
       }
     },
     {
@@ -265,8 +274,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/swiftlang/swift-syntax",
       "state" : {
-        "revision" : "0687f71944021d616d34d922343dcef086855920",
-        "version" : "600.0.1"
+        "revision" : "f99ae8aa18f0cf0d53481901f88a0991dc3bd4a2",
+        "version" : "601.0.1"
       }
     },
     {
@@ -283,7 +292,7 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/stackotter/swift-uwp",
       "state" : {
-        "revision" : "e3ff9c195775e16b404b82cf6886c5e81d73b6c1"
+        "revision" : "8128f6615b7c5b46ada289ab6d49d871ca1e13a5"
       }
     },
     {
@@ -291,7 +300,7 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/stackotter/swift-webview2core",
       "state" : {
-        "revision" : "c9911ca23455b9fcdb2429e98baa6f4d003b381c"
+        "revision" : "4396f5d94d6dfd1f95ab25e79de98141b7f4f183"
       }
     },
     {
@@ -299,7 +308,7 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/stackotter/swift-windowsappsdk",
       "state" : {
-        "revision" : "ba6f0ec377b70d8be835d253102ff665a0e47d99"
+        "revision" : "f1c50892f10c0f7f635d3c7a3d728fd634ad001a"
       }
     },
     {
@@ -315,7 +324,7 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/stackotter/swift-winui",
       "state" : {
-        "revision" : "1695ee3ea2b7a249f6504c7f1759e7ec7a38eb86"
+        "revision" : "42c47f4e4129c8b5a5d9912f05e1168c924ac180"
       }
     },
     {
