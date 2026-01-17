@@ -16,8 +16,21 @@ extension View {
     /// Prevents text field submissions from propagating to this view's
     /// ancestors.
     public func submitScope() -> some View {
-        EnvironmentModifier(self) { environment in
-            environment.with(\.onSubmit, nil)
-        }
+        environment(\.onSubmit, nil)
+    }
+}
+
+private enum OnSubmitKey: EnvironmentKey {
+    static var defaultValue: (@MainActor () -> Void)? {
+        nil
+    }
+}
+
+extension EnvironmentValues {
+    /// Called when a text field gets submitted (usually due to the user
+    /// pressing Enter/Return).
+    public var onSubmit: (@MainActor () -> Void)? {
+        get { self[OnSubmitKey.self] }
+        set { self[OnSubmitKey.self] = newValue }
     }
 }

@@ -34,8 +34,20 @@ extension View {
     ///
     /// - Returns: A view that uses the specified keyboard dismissal mode.
     public func scrollDismissesKeyboard(_ mode: ScrollDismissesKeyboardMode) -> some View {
-        EnvironmentModifier(self) { environment in
-            environment.with(\.scrollDismissesKeyboardMode, mode)
-        }
+        environment(\.scrollDismissesKeyboardMode, mode)
+    }
+}
+
+private enum ScrollDismissesKeyboardKey: EnvironmentKey {
+    static var defaultValue: ScrollDismissesKeyboardMode {
+        .automatic
+    }
+}
+
+extension EnvironmentValues {
+    /// The way that scrollable content interacts with the software keyboard.
+    public var scrollDismissesKeyboardMode: ScrollDismissesKeyboardMode {
+        get { self[ScrollDismissesKeyboardKey.self] }
+        set { self[ScrollDismissesKeyboardKey.self] = newValue }
     }
 }

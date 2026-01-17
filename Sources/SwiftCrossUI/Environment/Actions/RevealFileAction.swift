@@ -29,3 +29,17 @@ public struct RevealFileAction {
         action(file)
     }
 }
+
+extension EnvironmentValues {
+    /// Reveals a file in the system's file manager. This opens
+    /// the file's enclosing directory and highlighting the file.
+    ///
+    /// `nil` on platforms that don't support revealing files, e.g.
+    /// iOS.
+    @MainActor
+    public var revealFile: RevealFileAction? {
+        return RevealFileAction(
+            backend: backend
+        )
+    }
+}

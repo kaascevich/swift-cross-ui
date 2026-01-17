@@ -10,3 +10,18 @@ extension Scene {
         environment(\.windowResizability, resizability)
     }
 }
+
+private enum WindowResizabilityKey: EnvironmentKey {
+    static var defaultValue: WindowResizability {
+        .automatic
+    }
+}
+
+extension EnvironmentValues {
+    /// The resizing behaviour of the current window.
+    var windowResizability: WindowResizability {
+        get { self[WindowResizabilityKey.self] }
+        set { self[WindowResizabilityKey.self] = newValue }
+    }
+}
+

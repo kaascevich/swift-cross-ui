@@ -4,25 +4,19 @@ extension View {
     /// modifiers such as ``View/fontWeight(_:)`` and ``View/emphasized()``
     /// which override the font properties of all contained text.
     public func font(_ font: Font) -> some View {
-        EnvironmentModifier(self) { environment in
-            environment.with(\.font, font)
-        }
+        environment(\.font, font)
     }
 
     /// Overrides the font weight of any contained text. Optional for
     /// convenience. If given `nil`, does nothing.
     public func fontWeight(_ weight: Font.Weight?) -> some View {
-        EnvironmentModifier(self) { environment in
-            environment.with(\.fontOverlay.weight, weight)
-        }
+        environment(\.fontOverlay.weight, weight)
     }
 
     /// Overrides the font design of any contained text. Optional for
     /// convenience. If given `nil`, does nothing.
     public func fontDesign(_ design: Font.Design?) -> some View {
-        EnvironmentModifier(self) { environment in
-            environment.with(\.fontOverlay.design, design)
-        }
+        environment(\.fontOverlay.design, design)
     }
 
     /// Forces any contained text to be bold, or if the a contained font is
@@ -45,21 +39,42 @@ extension View {
     /// emphasized weight. For all other text, this means using
     /// ``Font/Weight/bold``.
     public func emphasized() -> some View {
-        EnvironmentModifier(self) { environment in
-            return environment.with(
-                \.fontOverlay.emphasize,
-                true
-            )
-        }
+        environment(\.fontOverlay.emphasize, true)
     }
 
     /// Forces any contained text to become italic.
     public func italic() -> some View {
-        EnvironmentModifier(self) { environment in
-            return environment.with(
-                \.fontOverlay.italicize,
-                true
-            )
-        }
+        environment(\.fontOverlay.italicize, true)
+    }
+}
+
+private enum FontKey: EnvironmentKey {
+    static var defaultValue: Font {
+        .body
+    }
+}
+
+private enum FontOverlayKey: EnvironmentKey {
+    static var defaultValue: Font.Overlay {
+        Font.Overlay()
+    }
+}
+
+extension EnvironmentValues {
+    /// The current font.
+    public var font: Font {
+        get { self[FontKey.self] }
+        set { self[FontKey.self] = newValue }
+    }
+
+    /// A font overlay storing font modifications. If these conflict with the
+    /// font's internal overlay, these win.
+    ///
+    /// We keep this separate overlay for modifiers because we want modifiers to
+    /// be persisted even if the developer sets a custom font further down the
+    /// view hierarchy.
+    var fontOverlay: Font.Overlay {
+        get { self[FontOverlayKey.self] }
+        set { self[FontOverlayKey.self] = newValue }
     }
 }

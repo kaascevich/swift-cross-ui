@@ -325,11 +325,9 @@ extension View {
         animateChanges: Bool = true,
         @ToolbarBuilder body: @escaping () -> ToolbarBuilder.FinalResult
     ) -> some View {
-        EnvironmentModifier(self) { environment in
-            environment.with(\.updateToolbar) { toolbar, environment in
-                toolbar.setItems(body(), animated: animateChanges, in: environment)
-                toolbar.sizeToFit()
-            }
+        environment(\.updateToolbar) { toolbar, environment in
+            toolbar.setItems(body(), animated: animateChanges, in: environment)
+            toolbar.sizeToFit()
         }
     }
 }

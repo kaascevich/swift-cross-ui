@@ -1,13 +1,13 @@
-package struct EnvironmentModifier<Child: View>: View {
-    package var body: TupleView1<Child>
+struct EnvironmentModifier<Child: View>: View {
+    var body: TupleView1<Child>
     var modification: (EnvironmentValues) -> EnvironmentValues
 
-    package init(_ child: Child, modification: @escaping (EnvironmentValues) -> EnvironmentValues) {
+    init(_ child: Child, modification: @escaping (EnvironmentValues) -> EnvironmentValues) {
         self.body = TupleView1(child)
         self.modification = modification
     }
 
-    package func children<Backend: AppBackend>(
+    func children<Backend: AppBackend>(
         backend: Backend,
         snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
         environment: EnvironmentValues
@@ -19,7 +19,7 @@ package struct EnvironmentModifier<Child: View>: View {
         )
     }
 
-    package func computeLayout<Backend: AppBackend>(
+    func computeLayout<Backend: AppBackend>(
         _ widget: Backend.Widget,
         children: any ViewGraphNodeChildren,
         proposedSize: ProposedViewSize,
@@ -35,7 +35,7 @@ package struct EnvironmentModifier<Child: View>: View {
         )
     }
 
-    package func commit<Backend: AppBackend>(
+    func commit<Backend: AppBackend>(
         _ widget: Backend.Widget,
         children: any ViewGraphNodeChildren,
         layout: ViewLayoutResult,
@@ -54,9 +54,10 @@ package struct EnvironmentModifier<Child: View>: View {
 
 extension View {
     /// Modifies the environment of the View its applied to
-    public func environment<T>(_ keyPath: WritableKeyPath<EnvironmentValues, T>, _ newValue: T)
-        -> some View
-    {
+    public func environment<T>(
+        _ keyPath: WritableKeyPath<EnvironmentValues, T>,
+        _ newValue: T
+    ) -> some View {
         EnvironmentModifier(self) { environment in
             environment.with(keyPath, newValue)
         }

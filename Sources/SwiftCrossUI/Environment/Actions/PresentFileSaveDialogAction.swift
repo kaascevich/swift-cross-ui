@@ -54,3 +54,19 @@ public struct PresentFileSaveDialogAction: Sendable {
         return await chooseFile(backend: backend)
     }
 }
+
+extension EnvironmentValues {
+    /// Presents a 'Save file' dialog fit for selecting a save destination.
+    /// Returns `nil` if the user cancels the operation. Displays as a modal
+    /// for the current window, or the entire app if accessed outside of a
+    /// scene's view graph (in which case the backend can decide whether to
+    /// make it an app modal, a standalone window, or a modal for a window of
+    /// its chooosing).
+    @MainActor
+    public var chooseFileSaveDestination: PresentFileSaveDialogAction {
+        return PresentFileSaveDialogAction(
+            backend: backend,
+            window: .init(value: window)
+        )
+    }
+}

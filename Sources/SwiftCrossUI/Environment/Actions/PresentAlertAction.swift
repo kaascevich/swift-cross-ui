@@ -41,3 +41,16 @@ public struct PresentAlertAction {
         return await presentAlert(backend: environment.backend)
     }
 }
+
+extension EnvironmentValues {
+    /// Presents an alert for the current window, or the entire app if accessed
+    /// outside of a scene's view graph (in which case the backend can decide
+    /// whether to make it an app modal, a standalone window, or a modal for a
+    /// window of its choosing).
+    @MainActor
+    public var presentAlert: PresentAlertAction {
+        return PresentAlertAction(
+            environment: self
+        )
+    }
+}
