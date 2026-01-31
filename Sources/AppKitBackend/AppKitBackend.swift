@@ -88,9 +88,18 @@ public final class AppKitBackend: AppBackend {
         window.setContentSize(NSSize(width: newSize.x, height: newSize.y))
     }
 
-    public func setMinimumSize(ofWindow window: Window, to minimumSize: SIMD2<Int>) {
-        window.contentMinSize.width = CGFloat(minimumSize.x)
-        window.contentMinSize.height = CGFloat(minimumSize.y)
+    public func setSizeLimits(
+        ofWindow window: Window,
+        minimum minimumSize: SIMD2<Int>,
+        maximum maximumSize: SIMD2<Int>?
+    ) {
+        window.contentMinSize = CGSize(width: minimumSize.x, height: minimumSize.y)
+        window.contentMaxSize =
+            if let maximumSize {
+                CGSize(width: maximumSize.x, height: maximumSize.y)
+            } else {
+                CGSize(width: Double.infinity, height: .infinity)
+            }
     }
 
     public func setResizeHandler(
@@ -104,7 +113,24 @@ public final class AppKitBackend: AppBackend {
         window.title = title
     }
 
-    public func setResizability(ofWindow window: Window, to resizable: Bool) {
+    public func setBehaviors(
+        ofWindow window: Window,
+        closable: Bool,
+        minimizable: Bool,
+        resizable: Bool
+    ) {
+        if closable {
+            window.styleMask.insert(.closable)
+        } else {
+            window.styleMask.remove(.closable)
+        }
+
+        if minimizable {
+            window.styleMask.insert(.miniaturizable)
+        } else {
+            window.styleMask.remove(.miniaturizable)
+        }
+
         if resizable {
             window.styleMask.insert(.resizable)
         } else {
@@ -393,15 +419,27 @@ public final class AppKitBackend: AppBackend {
         window: Window,
         rootEnvironment: EnvironmentValues
     ) -> EnvironmentValues {
-        // TODO: Record window scale factor in here
-        rootEnvironment
+        window.lastBackingScaleFactor = window.backingScaleFactor
+
+        return rootEnvironment.with(\.windowScaleFactor, window.backingScaleFactor)
     }
 
     public func setWindowEnvironmentChangeHandler(
         of window: Window,
         to action: @escaping () -> Void
     ) {
-        // TODO: Notify when window scale factor changes
+        // For updating window scale factor
+        NotificationCenter.default.addObserver(
+            forName: NSWindow.didChangeBackingPropertiesNotification,
+            object: window,
+            queue: .main
+        ) { notification in
+            let backingScaleFactorChanged = window.lastBackingScaleFactor != window.backingScaleFactor
+			
+            if backingScaleFactorChanged {
+                action()
+            }
+        }
     }
 
     public func setIncomingURLHandler(to action: @escaping (URL) -> Void) {
@@ -2370,6 +2408,7 @@ public class NSCustomWindow: NSWindow {
     /// nested sheet gets stored as the sheet's nestedSheet, and so on.
     var nestedSheet: NSCustomSheet?
 
+    var lastBackingScaleFactor: CGFloat?
     /// Allows the backing scale factor to be overridden. Useful for keeping
     /// UI tests consistent across devices.
     ///
@@ -2385,6 +2424,13 @@ public class NSCustomWindow: NSWindow {
 
         func setHandler(_ resizeHandler: @escaping (SIMD2<Int>) -> Void) {
             self.resizeHandler = resizeHandler
+        }
+
+        func windowWillClose(_ notification: Notification) {
+            guard let window = notification.object as? NSCustomWindow else { return }
+
+            // Not sure if this is actually needed
+            NotificationCenter.default.removeObserver(window)
         }
 
         func windowWillResize(_ sender: NSWindow, to frameSize: NSSize) -> NSSize {
