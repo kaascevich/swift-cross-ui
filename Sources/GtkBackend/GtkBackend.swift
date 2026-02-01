@@ -11,12 +11,6 @@ extension App {
     }
 }
 
-extension SwiftCrossUI.Color {
-    public var gtkColor: Gtk.Color {
-        return Gtk.Color(red, green, blue, alpha)
-    }
-}
-
 public final class GtkBackend: AppBackend {
     public typealias Window = Gtk.ApplicationWindow
     public typealias Widget = Gtk.Widget
@@ -547,7 +541,10 @@ public final class GtkBackend: AppBackend {
         return Box()
     }
 
-    public func setColor(ofColorableRectangle widget: Widget, to color: SwiftCrossUI.Color) {
+    public func setColor(
+        ofColorableRectangle widget: Widget,
+        to color: SwiftCrossUI.Color.Resolved
+    ) {
         widget.css.set(property: .backgroundColor(color.gtkColor))
     }
 
@@ -1149,7 +1146,7 @@ public final class GtkBackend: AppBackend {
         // Compute styles
         let menuBackground: Gtk.Color
         let menuItemHoverBackground: Gtk.Color
-        let foreground = environment.suggestedForegroundColor.gtkColor
+        let foreground = environment.suggestedForegroundColor.resolve(in: environment).gtkColor
         switch environment.colorScheme {
             case .light:
                 menuBackground = Gtk.Color(1, 1, 1)
@@ -1443,8 +1440,8 @@ public final class GtkBackend: AppBackend {
     public func renderPath(
         _ path: Path,
         container: Widget,
-        strokeColor: SwiftCrossUI.Color,
-        fillColor: SwiftCrossUI.Color,
+        strokeColor: SwiftCrossUI.Color.Resolved,
+        fillColor: SwiftCrossUI.Color.Resolved,
         overrideStrokeStyle: StrokeStyle?
     ) {
         let drawingArea = container as! Gtk.DrawingArea
@@ -1497,7 +1494,7 @@ public final class GtkBackend: AppBackend {
                 Double(fillColor.red),
                 Double(fillColor.green),
                 Double(fillColor.blue),
-                Double(fillColor.alpha)
+                Double(fillColor.opacity)
             )
             cairo_set_source(cairo, fillPattern)
             cairo_fill_preserve(cairo)
@@ -1507,7 +1504,7 @@ public final class GtkBackend: AppBackend {
                 Double(strokeColor.red),
                 Double(strokeColor.green),
                 Double(strokeColor.blue),
-                Double(strokeColor.alpha)
+                Double(strokeColor.opacity)
             )
             cairo_set_source(cairo, strokePattern)
             cairo_stroke(cairo)
@@ -1653,7 +1650,11 @@ public final class GtkBackend: AppBackend {
         isControl: Bool = false
     ) -> [CSSProperty] {
         var properties: [CSSProperty] = []
-        properties.append(.foregroundColor(environment.suggestedForegroundColor.gtkColor))
+        properties.append(
+            .foregroundColor(
+                environment.suggestedForegroundColor.resolve(in: environment).gtkColor
+            )
+        )
         let font = environment.resolvedFont
         switch font.identifier.kind {
             case .system:
@@ -1753,7 +1754,7 @@ public final class GtkBackend: AppBackend {
         cornerRadius: Double?,
         detents: [PresentationDetent],
         dragIndicatorVisibility: Visibility,
-        backgroundColor: SwiftCrossUI.Color?,
+        backgroundColor: SwiftCrossUI.Color.Resolved?,
         interactiveDismissDisabled: Bool
     ) {
         sheet.size = Size(width: size.x, height: size.y)
@@ -1761,7 +1762,12 @@ public final class GtkBackend: AppBackend {
 
         // Add a slight border to not be just a flat corner
         sheet.css.clear()
-        sheet.css.set(property: .border(color: SwiftCrossUI.Color.gray.gtkColor, width: 1))
+        sheet.css.set(
+            property: .border(
+                color: SwiftCrossUI.Color.gray.resolve(in: environment).gtkColor,
+                width: 1
+            )
+        )
 
         // Respect corner radius and background Color
         let radius = cornerRadius.map(Int.init) ?? defaultSheetCornerRadius
