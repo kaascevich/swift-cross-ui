@@ -280,7 +280,7 @@ struct WindowingApp: App {
 
         AlertScene("Alert scene", isPresented: $isAlertSceneShown) {}
 
-        #if !(os(iOS) || os(tvOS) || os(Windows))
+        #if !(os(iOS) || os(tvOS))
             WindowGroup("Secondary window", id: "secondary-window") {
                 #hotReloadable {
                     VStack {
