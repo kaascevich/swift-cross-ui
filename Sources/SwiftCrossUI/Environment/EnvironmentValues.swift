@@ -290,7 +290,7 @@ public struct EnvironmentValues {
         calendar = .current
         timeZone = .current
         datePickerStyle = .automatic
-        openWindowFunctionsByID = Box(value: [:])
+        openWindowFunctionsByID = Box([:])
 
         let supportedDatePickerStyles = backend.supportedDatePickerStyles
         if supportedDatePickerStyles.isEmpty {
