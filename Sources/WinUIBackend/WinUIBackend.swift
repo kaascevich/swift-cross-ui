@@ -258,7 +258,15 @@ public final class WinUIBackend: AppBackend {
         minimizable: Bool,
         resizable: Bool
     ) {
-        // TODO: Set window closability (need to reach down to Win32 for this)
+        // Source: https://devblogs.microsoft.com/oldnewthing/20100604-00/?p=13803
+        let hwnd = window.getHWND()!
+        let flags = if closable { MF_ENABLED } else { MF_DISABLED | MF_GRAYED }
+        EnableMenuItem(
+            GetSystemMenu(hwnd, false),
+            numericCast(SC_CLOSE),
+            numericCast(MF_BYCOMMAND | flags)
+        )
+
         (window.appWindow.presenter as? OverlappedPresenter)?.isMinimizable = minimizable
         (window.appWindow.presenter as? OverlappedPresenter)?.isResizable = resizable
     }
@@ -939,7 +947,8 @@ public final class WinUIBackend: AppBackend {
 
         picker.onChangeSelection = onChange
         environment.apply(to: picker)
-        picker.actualForegroundColor = environment.suggestedForegroundColor.resolve(in: environment).uwpColor
+        picker.actualForegroundColor =
+            environment.suggestedForegroundColor.resolve(in: environment).uwpColor
 
         // Only update options past this point, otherwise the early return
         // will cause issues.
