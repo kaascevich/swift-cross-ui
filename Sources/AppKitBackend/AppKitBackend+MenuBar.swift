@@ -41,6 +41,7 @@ extension AppKitBackend {
                     title: "Show All",
                     action: #selector(NSApplication.unhideAllApplications(_:))
                 ),
+                NSMenuItem.separator(),
                 NSMenuItem(
                     title: "Quit \(appName)",
                     action: #selector(NSApplication.terminate(_:)),
