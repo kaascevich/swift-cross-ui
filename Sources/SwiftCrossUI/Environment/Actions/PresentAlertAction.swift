@@ -49,8 +49,6 @@ extension EnvironmentValues {
     /// window of its choosing).
     @MainActor
     public var presentAlert: PresentAlertAction {
-        return PresentAlertAction(
-            environment: self
-        )
+        PresentAlertAction(environment: self)
     }
 }

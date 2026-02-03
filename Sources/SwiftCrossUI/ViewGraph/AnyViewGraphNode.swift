@@ -3,7 +3,7 @@
 /// an annoying complexity for users of the library and it worth the slight sacrifice
 /// in performance and strong-typing). The user never sees such type-erased wrappers.
 @MainActor
-public class AnyViewGraphNode<NodeView: View> {
+public final class AnyViewGraphNode<NodeView: View> {
     /// The node getting wrapped.
     public var node: Any
 

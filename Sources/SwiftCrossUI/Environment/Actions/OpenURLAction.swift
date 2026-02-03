@@ -15,7 +15,7 @@ public struct OpenURLAction {
                     "failed to open external url",
                     metadata: [
                         "url": "\(url)",
-                        "error": "\(error)",
+                        "error": "\(error.localizedDescription)",
                     ])
             }
         }
@@ -32,8 +32,6 @@ extension EnvironmentValues {
     /// protocol.
     @MainActor
     public var openURL: OpenURLAction {
-        return OpenURLAction(
-            backend: backend
-        )
+        OpenURLAction(backend: backend)
     }
 }

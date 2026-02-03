@@ -74,12 +74,13 @@ public struct ErasedViewGraphNode {
     }
 
     private init<V: View, Backend: AppBackend>(
-        wrapping node: AnyViewGraphNode<V>, backend: Backend
+        wrapping node: AnyViewGraphNode<V>,
+        backend: Backend
     ) {
         self.init(wrapping: node.node as! ViewGraphNode<V, Backend>)
     }
 
-    public func transform<R>(with transformer: any ErasedViewGraphNodeTransformer<R>) -> R {
+    public func transform<R>(with transformer: some ErasedViewGraphNodeTransformer<R>) -> R {
         func helper<V: View, Backend: AppBackend>(
             viewType: V.Type,
             backendType: Backend.Type

@@ -61,23 +61,14 @@ extension State {
     }
 }
 
-extension State: SnapshottableProperty {
+extension State: SnapshottableProperty where Value: Codable {
     public func tryRestoreFromSnapshot(_ snapshot: Data) {
-        guard
-            let decodable = Value.self as? Codable.Type,
-            let state = try? JSONDecoder().decode(decodable, from: snapshot)
-        else {
-            return
+        if let state = try? JSONDecoder().decode(Value.self, from: snapshot) {
+            storage.value = state
         }
-
-        storage.value = state as! Value
     }
 
     public func snapshot() throws -> Data? {
-        if let value = storage.value as? Codable {
-            try JSONEncoder().encode(value)
-        } else {
-            nil
-        }
+        try JSONEncoder().encode(storage.value)
     }
 }

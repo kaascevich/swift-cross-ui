@@ -7,7 +7,7 @@
 /// widget type at time of use anyway so it can simply be cast back to
 /// a concrete type before use (removing the need to type-erase specific
 /// methods or anything like that).
-public class AnyWidget {
+public final class AnyWidget {
     /// The wrapped widget
     var widget: Any
 

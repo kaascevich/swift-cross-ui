@@ -19,7 +19,7 @@ public struct RevealFileAction {
                     "failed to reveal file",
                     metadata: [
                         "url": "\(file)",
-                        "error": "\(error)",
+                        "error": "\(error.localizedDescription)",
                     ])
             }
         }
@@ -38,8 +38,6 @@ extension EnvironmentValues {
     /// iOS.
     @MainActor
     public var revealFile: RevealFileAction? {
-        return RevealFileAction(
-            backend: backend
-        )
+        RevealFileAction(backend: backend)
     }
 }

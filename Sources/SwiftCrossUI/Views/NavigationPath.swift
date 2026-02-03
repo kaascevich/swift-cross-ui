@@ -46,7 +46,7 @@ public struct NavigationPath {
     public init() {}
 
     /// Appends a new value to the end of the path.
-    public mutating func append<C: Codable>(_ component: C) {
+    public mutating func append(_ component: some Codable) {
         storage.path.append(component)
     }
 

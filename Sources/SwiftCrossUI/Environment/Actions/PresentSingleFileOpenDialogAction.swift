@@ -69,9 +69,9 @@ extension EnvironmentValues {
     @MainActor
     @available(tvOS, unavailable, message: "tvOS does not provide file system access")
     public var chooseFile: PresentSingleFileOpenDialogAction {
-        return PresentSingleFileOpenDialogAction(
+        PresentSingleFileOpenDialogAction(
             backend: backend,
-            window: .init(value: window)
+            window: MainActorBox(value: window)
         )
     }
 }

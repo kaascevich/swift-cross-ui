@@ -97,17 +97,23 @@ public final class Published<Value>: ObservableObject, PublishedMarkerProtocol {
     }
 
     /// Handles changing a value. If `publish` is `false` the change won't be
-    /// published, but if the wrapped value is ``ObservableObject`` the new
-    /// upstream publisher will still get relinked.
+    /// published.
     public func valueDidChange(publish: Bool = true) {
         if publish {
             didChange.send()
         }
+    }
 
-        if let upstream = wrappedValue as? ObservableObject {
-            upstreamLinkCancellable?.cancel()
-            upstreamLinkCancellable = didChange.link(toUpstream: upstream.didChange)
+    /// Handles changing a value. If `publish` is `false` the change won't be
+    /// published, but the wrapped value's upstream publisher will still get
+    /// relinked.
+    public func valueDidChange(publish: Bool = true) where Value: ObservableObject {
+        if publish {
+            didChange.send()
         }
+
+        upstreamLinkCancellable?.cancel()
+        upstreamLinkCancellable = didChange.link(toUpstream: wrappedValue.didChange)
     }
 }
 

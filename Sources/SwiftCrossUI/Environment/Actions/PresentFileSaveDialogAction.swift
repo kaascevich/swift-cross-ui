@@ -64,9 +64,9 @@ extension EnvironmentValues {
     /// its chooosing).
     @MainActor
     public var chooseFileSaveDestination: PresentFileSaveDialogAction {
-        return PresentFileSaveDialogAction(
+        PresentFileSaveDialogAction(
             backend: backend,
-            window: .init(value: window)
+            window: MainActorBox(value: window)
         )
     }
 }

@@ -49,7 +49,7 @@ public struct ProgressView<Label: View>: View {
     public init<Value: BinaryFloatingPoint>(_ label: Label, value: Value?) {
         self.label = label
         self.kind = .bar
-        self.progress = value.map(Double.init)
+        self.progress = value.map { Double($0) }
     }
 
     /// Makes the ProgressView resize to fit the available space.
@@ -81,7 +81,7 @@ extension ProgressView where Label == EmptyView {
     public init<Value: BinaryFloatingPoint>(value: Value?) {
         self.label = EmptyView()
         self.kind = .bar
-        self.progress = value.map(Double.init)
+        self.progress = value.map { Double($0) }
     }
 }
 
@@ -105,7 +105,7 @@ extension ProgressView where Label == Text {
     public init<Value: BinaryFloatingPoint>(_ label: String, value: Value?) {
         self.label = Text(label)
         self.kind = .bar
-        self.progress = value.map(Double.init)
+        self.progress = value.map { Double($0) }
     }
 }
 

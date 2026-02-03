@@ -85,6 +85,7 @@ private enum SwiftBundlerMetadataError: LocalizedError {
     case noExecutableURL
     case failedToReadExecutable
     case emptyMetadata
+    case invalidJSON
     case jsonNotDictionary(String)
     case missingAppIdentifier
     case missingAppVersion
@@ -98,6 +99,8 @@ private enum SwiftBundlerMetadataError: LocalizedError {
                 "executable failed to read itself (to extract metadata)"
             case .emptyMetadata:
                 "metadata found but was empty"
+            case .invalidJSON:
+                "metadata is not valid JSON"
             case .jsonNotDictionary:
                 "root metadata JSON value wasn't an object"
             case .missingAppIdentifier:
@@ -187,7 +190,9 @@ extension App {
 #endif
 
 extension App {
-    private static func extractSwiftBundlerMetadata() throws -> AppMetadata? {
+    private static func extractSwiftBundlerMetadata()
+        throws(SwiftBundlerMetadataError) -> AppMetadata?
+    {
         // If we know for a fact we've been compiled using swift-bundler's new metadata
         // insertion method, try that; otherwise, fall back to the old method, which
         // is safe to try even if we weren't compiled with swift-bundler at all.
@@ -209,13 +214,13 @@ extension App {
                 // to be so it's safer not to imo.
                 let diff = UnsafeRawPointer(stackPointer) - pointer
                 if abs(diff) < 0x1000 {
-                    throw SwiftBundlerMetadataError.badMetadataPointer
+                    throw .badMetadataPointer
                 }
             }
 
             let datas = pointer.assumingMemoryBound(to: [[UInt8]].self).pointee
             guard let jsonBytes = datas.first else {
-                throw SwiftBundlerMetadataError.emptyMetadata
+                throw .emptyMetadata
             }
             let jsonData = Data(jsonBytes)
         #else
@@ -231,11 +236,11 @@ extension App {
             }
 
             guard let executable = Bundle.main.executableURL else {
-                throw SwiftBundlerMetadataError.noExecutableURL
+                throw .noExecutableURL
             }
 
             guard let data = try? Data(contentsOf: executable) else {
-                throw SwiftBundlerMetadataError.failedToReadExecutable
+                throw .failedToReadExecutable
             }
 
             // Check if executable has Swift Bundler metadata magic bytes.
@@ -249,15 +254,17 @@ extension App {
 
         // Manually parsed due to the `additionalMetadata` field (which would
         // require a lot of boilerplate code to parse with Codable).
-        let jsonValue = try JSONSerialization.jsonObject(with: jsonData)
+        guard let jsonValue = try? JSONSerialization.jsonObject(with: jsonData) else {
+            throw .invalidJSON
+        }
         guard let json = jsonValue as? [String: Any] else {
-            throw SwiftBundlerMetadataError.jsonNotDictionary(String(describing: jsonValue))
+            throw .jsonNotDictionary(String(describing: jsonValue))
         }
         guard let identifier = json["appIdentifier"] as? String else {
-            throw SwiftBundlerMetadataError.missingAppIdentifier
+            throw .missingAppIdentifier
         }
         guard let version = json["appVersion"] as? String else {
-            throw SwiftBundlerMetadataError.missingAppVersion
+            throw .missingAppVersion
         }
         let additionalMetadata = json["additionalMetadata"] as? [String: Any] ?? [:]
 

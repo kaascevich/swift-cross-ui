@@ -2,7 +2,7 @@ import Dispatch
 import Foundation
 
 /// A type that produces valueless observations.
-public class Publisher {
+public final class Publisher {
     /// The id for the next observation (ids are used to cancel observations).
     private var nextObservationId = 0
     /// All current observations keyed by their id (ids are used to cancel observations).

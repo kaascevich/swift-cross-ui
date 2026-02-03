@@ -19,16 +19,21 @@ struct StyledShapeImpl<Base: Shape>: Sendable {
         strokeStyle: StrokeStyle? = nil
     ) {
         self.base = base
+        self.strokeColor = strokeColor
+        self.fillColor = fillColor
+        self.strokeStyle = strokeStyle
+    }
 
-        if let styledBase = base as? any StyledShape {
-            self.strokeColor = strokeColor ?? styledBase.strokeColor
-            self.fillColor = fillColor ?? styledBase.fillColor
-            self.strokeStyle = strokeStyle ?? styledBase.strokeStyle
-        } else {
-            self.strokeColor = strokeColor
-            self.fillColor = fillColor
-            self.strokeStyle = strokeStyle
-        }
+    init(
+        base: Base,
+        strokeColor: Color? = nil,
+        fillColor: Color? = nil,
+        strokeStyle: StrokeStyle? = nil
+    ) where Base: StyledShape {
+        self.base = base
+        self.strokeColor = strokeColor ?? base.strokeColor
+        self.fillColor = fillColor ?? base.fillColor
+        self.strokeStyle = strokeStyle ?? base.strokeStyle
     }
 }
 

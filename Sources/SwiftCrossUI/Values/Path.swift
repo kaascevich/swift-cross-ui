@@ -362,11 +362,11 @@ public struct Path: Sendable {
 
 extension Path {
     @inlinable
-    public consuming func `if`(
+    public consuming func `if`<E: Error>(
         _ condition: Bool,
-        then ifTrue: (consuming Path) throws -> Path,
-        else ifFalse: (consuming Path) throws -> Path = { $0 }
-    ) rethrows -> Path {
+        then ifTrue: (consuming Path) throws(E) -> Path,
+        else ifFalse: (consuming Path) throws(E) -> Path = { $0 }
+    ) throws(E) -> Path {
         if condition {
             try ifTrue(self)
         } else {

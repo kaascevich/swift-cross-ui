@@ -13,17 +13,18 @@ struct StateImpl<Storage: StateStorageProtocol> {
 
     init(initialStorage: Storage) {
         self.box = Box(initialStorage)
+    }
 
-        // Before casting the value we check the type, because casting an optional
-        // to protocol Optional doesn't conform to can still succeed when the value
-        // is `.some` and the wrapped type conforms to the protocol.
-        if Storage.Value.self is ObservableObject.Type,
-            let value = initialStorage.value as? ObservableObject
-        {
-            storage.downstreamObservation = storage.didChange.link(toUpstream: value.didChange)
-        } else if let value = initialStorage.value as? OptionalObservableObject,
-            let innerDidChange = value.didChange
-        {
+    init(initialStorage: Storage) where Storage.Value: ObservableObject {
+        self.box = Box(initialStorage)
+        storage.downstreamObservation = storage.didChange.link(
+            toUpstream: initialStorage.value.didChange
+        )
+    }
+
+    init(initialStorage: Storage) where Storage.Value: OptionalObservableObject {
+        self.box = Box(initialStorage)
+        if let innerDidChange = initialStorage.value.didChange {
             // If we have an `Optional<some ObservableObject>.some`, then observe its
             // inner value's publisher.
             storage.downstreamObservation = storage.didChange.link(toUpstream: innerDidChange)
@@ -70,21 +71,27 @@ extension StateStorageProtocol {
     /// setting a new value. This isn't in a `didSet` property accessor
     /// because we want more granular control over when it does and
     /// doesn't trigger.
-    ///
-    /// Additionally updates the downstream observation if the
-    /// wrapped value is an `Optional<some ObservableObject>` and the
-    /// current case has toggled.
     func postSet() {
+        didChange.send()
+    }
+
+    /// Call this to publish an observation to all observers after
+    /// setting a new value. This isn't in a `didSet` property accessor
+    /// because we want more granular control over when it does and
+    /// doesn't trigger.
+    ///
+    /// This overload operates on `Optional<some ObservableObject>`; it
+    /// updates the downstream observation if the wrapped value's current
+    /// case has toggled.
+    func postSet() where Value: OptionalObservableObject {
         // If the wrapped value is an `Optional<some ObservableObject>`
         // then we need to observe/unobserve whenever the optional
         // toggles between `.some` and `.none`.
-        if let value = value as? OptionalObservableObject {
-            if let innerDidChange = value.didChange, downstreamObservation == nil {
-                downstreamObservation = didChange.link(toUpstream: innerDidChange)
-            } else if value.didChange == nil, let observation = downstreamObservation {
-                observation.cancel()
-                downstreamObservation = nil
-            }
+        if let innerDidChange = value.didChange, downstreamObservation == nil {
+            downstreamObservation = didChange.link(toUpstream: innerDidChange)
+        } else if value.didChange == nil, let observation = downstreamObservation {
+            observation.cancel()
+            downstreamObservation = nil
         }
         didChange.send()
     }

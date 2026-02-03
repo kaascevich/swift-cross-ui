@@ -110,7 +110,7 @@ public struct NavigationStack<Detail: View>: View {
     /// Attempts to compute the detail view for the given element (the type of
     /// the element decides which detail is shown). Crashes if no suitable detail
     /// view is found.
-    func childOrCrash(for element: any Codable) -> Detail {
+    func childOrCrash(for element: some Codable) -> Detail {
         guard let child = child(element) else {
             fatalError(
                 "Failed to find detail view for \"\(element)\", make sure you have called .navigationDestination for this type."
