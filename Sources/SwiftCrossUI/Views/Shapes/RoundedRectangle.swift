@@ -37,7 +37,7 @@ public struct RoundedRectangle {
 }
 
 extension RoundedRectangle: Shape {
-    public func path(in bounds: Path.Rect) -> Path {
+    public nonisolated func path(in bounds: Path.Rect) -> Path {
         // just to avoid `RoundedRectangle.` qualifiers
         let rMin = RoundedRectangle.rMin
         let points = RoundedRectangle.points

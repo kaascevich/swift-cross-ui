@@ -5,6 +5,7 @@ public protocol StyledShape: Shape {
     var strokeStyle: StrokeStyle? { get }
 }
 
+@MainActor
 struct StyledShapeImpl<Base: Shape>: Sendable {
     var base: Base
     var strokeColor: Color?
