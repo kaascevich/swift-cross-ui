@@ -254,13 +254,37 @@ enum MenuBar {
         NSApplication.shared.servicesMenu = servicesMenuItem.submenu
         menuBar.addItem(appMenuItem)
 
-        for menu in [MenuBar.fileMenu, MenuBar.editMenu, MenuBar.viewMenu] {
-            let menuItem = NSMenuItem()
-            menuItem.submenu = menu
-            menuBar.addItem(menuItem)
-        }
+        let fileMenuItem = NSMenuItem()
+        fileMenuItem.submenu = MenuBar.fileMenu
+        menuBar.addItem(fileMenuItem)
 
-        menuBar.items.append(contentsOf: userMenus)
+        let editMenuItem = NSMenuItem()
+        editMenuItem.submenu = MenuBar.editMenu
+        menuBar.addItem(editMenuItem)
+
+        let viewMenuItem = NSMenuItem()
+        viewMenuItem.submenu = MenuBar.viewMenu
+        menuBar.addItem(viewMenuItem)
+
+        do {
+            let existingMenus = [fileMenuItem, editMenuItem, viewMenuItem]
+            for userMenu in userMenus {
+                // To merge user-defined File, Edit, and View menus with our own, we check if the
+                // menu titles match. If they do, we move every item from the user's menu to our
+                // own.
+                let matchingMenu = existingMenus.first { $0.submenu?.title == userMenu.title }
+                if let existingMenu = matchingMenu?.submenu, let userSubmenu = userMenu.submenu {
+                    for item in userSubmenu.items {
+                        // NB: The `for` loop makes a copy of `items`, so this is safe
+                        // to do inside the loop.
+                        userSubmenu.removeItem(item)
+                        existingMenu.addItem(item)
+                    }
+                } else {
+                    menuBar.addItem(userMenu)
+                }
+            }
+        }
 
         let windowMenuItem = NSMenuItem()
         windowMenuItem.submenu = MenuBar.windowMenu
