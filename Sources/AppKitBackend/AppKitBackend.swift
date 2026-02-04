@@ -53,7 +53,10 @@ public final class AppKitBackend: AppBackend {
     }
 
     public func createWindow(withDefaultSize defaultSize: SIMD2<Int>?) -> Window {
-        //        NSApplication.shared.setActivationPolicy(.regular)
+        // For bundled apps, the default activation policy is `regular`, but for unbundled
+        // apps without an Info.plist the default is `prohibited` -- i.e. the app can't
+        // create windows. We override that here.
+        NSApplication.shared.setActivationPolicy(.regular)
 
         let window = NSCustomWindow(
             contentRect: NSRect(
@@ -152,6 +155,10 @@ public final class AppKitBackend: AppBackend {
 
     public func activate(window: Window) {
         window.makeKeyAndOrderFront(nil)
+    }
+    
+    public func setApplicationMenu(_ submenus: [ResolvedMenu.Submenu]) {
+        MenuBar.setMenuBar(userMenus: submenus.map(Self.renderSubmenu(_:)))
     }
 
     public func openExternalURL(_ url: URL) throws {

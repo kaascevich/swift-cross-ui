@@ -1,7 +1,8 @@
 import AppKit
 import SwiftCrossUI
 
-extension AppKitBackend {
+@MainActor
+enum MenuBar {
     // You may notice that multiple different base types are used in the
     // action selectors of the various menu items. This is because the
     // selectors get sent to the app's first responder at the time of
@@ -9,7 +10,7 @@ extension AppKitBackend {
     // method matching the selector, then AppKit automatically disables
     // the corresponding menu item.
 
-    private var appMenu: NSMenu {
+    private static var appMenu: NSMenu {
         // The first menu item is special and always takes on the name of the app.
         let appName = ProcessInfo.processInfo.processName
 
@@ -51,7 +52,7 @@ extension AppKitBackend {
         )
     }
 
-    private var fileMenu: NSMenu {
+    private static var fileMenu: NSMenu {
         NSMenu(
             title: "File",
             items: [
@@ -64,7 +65,7 @@ extension AppKitBackend {
         )
     }
 
-    private var editMenu: NSMenu {
+    private static var editMenu: NSMenu {
         NSMenu(
             title: "Edit",
             items: [
@@ -100,10 +101,7 @@ extension AppKitBackend {
                     action: #selector(NSText.paste(_:)),
                     keyEquivalent: ("v", .command)
                 ),
-                NSMenuItem(
-                    title: "Delete",
-                    action: #selector(NSText.delete(_:))
-                ),
+                NSMenuItem(title: "Delete", action: #selector(NSText.delete(_:))),
                 NSMenuItem(
                     title: "Select All",
                     action: #selector(NSText.selectAll(_:)),
@@ -113,12 +111,12 @@ extension AppKitBackend {
         )
     }
 
-    private var viewMenu: NSMenu {
+    private static var viewMenu: NSMenu {
         // AppKit adds the default menu items for us.
         NSMenu(title: "View")
     }
 
-    private var windowMenu: NSMenu {
+    private static var windowMenu: NSMenu {
         let minimizeAllItem = NSMenuItem(
             title: "Minimize All",
             action: #selector(NSApplication.miniaturizeAll(_:))
@@ -127,7 +125,7 @@ extension AppKitBackend {
 
         // FIXME: These items should come first, but currently they're
         //   placed after Remove Window from Set
-        let windowMenu = NSMenu(
+        return NSMenu(
             title: "Window",
             items: [
                 NSMenuItem(
@@ -136,41 +134,41 @@ extension AppKitBackend {
                     keyEquivalent: ("m", .command)
                 ),
                 minimizeAllItem,
-                NSMenuItem(
-                    title: "Zoom",
-                    action: #selector(NSWindow.zoom(_:))
-                )
+                NSMenuItem(title: "Zoom", action: #selector(NSWindow.zoom(_:))),
             ]
         )
-        NSApplication.shared.windowsMenu = windowMenu
-        return windowMenu
     }
 
-    private var helpMenu: NSMenu {
-        let helpMenu = NSMenu(title: "Help")
-        NSApplication.shared.helpMenu = helpMenu
-        return helpMenu
+    private static var helpMenu: NSMenu {
+        NSMenu(title: "Help")
     }
 
-    public func setApplicationMenu(_ submenus: [ResolvedMenu.Submenu]) {
+    static func setMenuBar(userMenus: [NSMenuItem]) {
         let menuBar = NSMenu()
 
-        for menu in [appMenu, fileMenu, editMenu, viewMenu] {
+        let appMenuItem = NSMenuItem()
+        appMenuItem.submenu = MenuBar.appMenu
+        NSApplication.shared.servicesMenu =
+            appMenuItem.submenu?.items.first { $0.title == "Services" }?.submenu
+        menuBar.addItem(appMenuItem)
+
+        for menu in [MenuBar.fileMenu, MenuBar.editMenu, MenuBar.viewMenu] {
             let menuItem = NSMenuItem()
             menuItem.submenu = menu
             menuBar.addItem(menuItem)
         }
 
-        for submenu in submenus {
-            let renderedSubmenu = Self.renderSubmenu(submenu)
-            menuBar.addItem(renderedSubmenu)
-        }
+        menuBar.items.append(contentsOf: userMenus)
 
-        for menu in [windowMenu, helpMenu] {
-            let menuItem = NSMenuItem()
-            menuItem.submenu = menu
-            menuBar.addItem(menuItem)
-        }
+        let windowMenuItem = NSMenuItem()
+        windowMenuItem.submenu = MenuBar.windowMenu
+        NSApplication.shared.windowsMenu = windowMenuItem.submenu
+        menuBar.addItem(windowMenuItem)
+
+        let helpMenuItem = NSMenuItem()
+        helpMenuItem.submenu = MenuBar.helpMenu
+        NSApplication.shared.helpMenu = helpMenuItem.submenu
+        menuBar.addItem(helpMenuItem)
 
         NSApplication.shared.mainMenu = menuBar
     }
@@ -180,10 +178,10 @@ extension NSMenuItem {
     convenience init(
         title: String,
         action selector: Selector?,
-        keyEquivalent: (String, NSEvent.ModifierFlags)? = nil
+        keyEquivalent: (key: String, modifiers: NSEvent.ModifierFlags)? = nil
     ) {
-        self.init(title: title, action: selector, keyEquivalent: keyEquivalent?.0 ?? "")
-        if let modifiers = keyEquivalent?.1 {
+        self.init(title: title, action: selector, keyEquivalent: keyEquivalent?.key ?? "")
+        if let modifiers = keyEquivalent?.modifiers {
             self.keyEquivalentModifierMask = modifiers
         }
     }
