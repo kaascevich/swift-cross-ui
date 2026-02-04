@@ -14,8 +14,7 @@ enum MenuBar {
         // The first menu item is special and always takes on the name of the app.
         let appName = ProcessInfo.processInfo.processName
 
-        let servicesMenuItem = NSMenuItem(title: "Services", action: nil)
-        servicesMenuItem.submenu = NSMenu(title: "Services")
+        let servicesMenuItem = NSMenuItem(title: "Services", subitems: [])
         NSApplication.shared.servicesMenu = servicesMenuItem.submenu
 
         let appMenu = NSMenu(
@@ -87,7 +86,9 @@ enum MenuBar {
                     action: Selector(("redo:")),
                     keyEquivalent: ("z", [.command, .shift])
                 ),
+
                 NSMenuItem.separator(),
+
                 NSMenuItem(
                     title: "Cut",
                     action: #selector(NSText.cut(_:)),
@@ -103,11 +104,109 @@ enum MenuBar {
                     action: #selector(NSText.paste(_:)),
                     keyEquivalent: ("v", .command)
                 ),
-                NSMenuItem(title: "Delete", action: #selector(NSText.delete(_:))),
+                NSMenuItem(
+                    title: "Delete",
+                    action: #selector(NSText.delete(_:))
+                ),
                 NSMenuItem(
                     title: "Select All",
                     action: #selector(NSText.selectAll(_:)),
                     keyEquivalent: ("a", .command)
+                ),
+
+                NSMenuItem.separator(),
+
+                NSMenuItem(
+                    title: "Spelling and Grammar",
+                    subitems: [
+                        NSMenuItem(
+                            title: "Show Spelling and Grammar",
+                            action: #selector(NSText.showGuessPanel(_:)),
+                            keyEquivalent: (":", .command)
+                        ),
+                        NSMenuItem(
+                            title: "Check Document Now",
+                            action: #selector(NSText.checkSpelling(_:)),
+                            keyEquivalent: (";", .command)
+                        ),
+                        NSMenuItem.separator(),
+                        NSMenuItem(
+                            title: "Check Spelling While Typing",
+                            action: #selector(NSTextView.toggleContinuousSpellChecking(_:))
+                        ),
+                        NSMenuItem(
+                            title: "Check Grammar With Spelling",
+                            action: #selector(NSTextView.toggleGrammarChecking(_:))
+                        ),
+                        NSMenuItem(
+                            title: "Correct Spelling Automatically",
+                            action: #selector(NSTextView.toggleAutomaticSpellingCorrection(_:))
+                        ),
+                    ]
+                ),
+                NSMenuItem(
+                    title: "Substitutions",
+                    subitems: [
+                        NSMenuItem(
+                            title: "Show Substitutions",
+                            action: #selector(NSTextView.orderFrontSubstitutionsPanel(_:))
+                        ),
+                        NSMenuItem.separator(),
+                        NSMenuItem(
+                            title: "Smart Copy/Paste",
+                            action: #selector(NSTextView.toggleSmartInsertDelete(_:))
+                        ),
+                        NSMenuItem(
+                            title: "Smart Quotes",
+                            action: #selector(NSTextView.toggleAutomaticQuoteSubstitution(_:))
+                        ),
+                        NSMenuItem(
+                            title: "Smart Dashes",
+                            action: #selector(NSTextView.toggleAutomaticDashSubstitution(_:))
+                        ),
+                        NSMenuItem(
+                            title: "Smart Links",
+                            action: #selector(NSTextView.toggleAutomaticLinkDetection(_:))
+                        ),
+                        NSMenuItem(
+                            title: "Data Detectors",
+                            action: #selector(NSTextView.toggleAutomaticDataDetection(_:))
+                        ),
+                        NSMenuItem(
+                            title: "Text Replacement",
+                            action: #selector(NSTextView.toggleAutomaticTextReplacement(_:))
+                        ),
+                    ]
+                ),
+                NSMenuItem(
+                    title: "Transformations",
+                    subitems: [
+                        NSMenuItem(
+                            title: "Make Upper Case",
+                            action: #selector(NSText.uppercaseWord(_:))
+                        ),
+                        NSMenuItem(
+                            title: "Make Lower Case",
+                            action: #selector(NSText.lowercaseWord(_:))
+                        ),
+                        NSMenuItem(
+                            title: "Capitalize",
+                            action: #selector(NSText.capitalizeWord(_:))
+                        ),
+                    ]
+                ),
+                NSMenuItem(
+                    title: "Speech",
+                    subitems: [
+                        NSMenuItem(
+                            title: "Start Speaking",
+                            action: #selector(NSTextView.startSpeaking(_:))
+                        ),
+                        NSMenuItem(
+                            title: "Stop Speaking",
+                            action: #selector(NSTextView.stopSpeaking(_:))
+                        ),
+                    ]
                 ),
             ]
         )
@@ -119,24 +218,25 @@ enum MenuBar {
     }
 
     private static var windowMenu: NSMenu {
-        let minimizeAllItem = NSMenuItem(
-            title: "Minimize All",
-            action: #selector(NSApplication.miniaturizeAll(_:))
-        )
-        minimizeAllItem.isAlternate = true
-
-        // FIXME: These items should come first, but currently they're
-        //   placed after Remove Window from Set
-        return NSMenu(
+        NSMenu(
             title: "Window",
             items: [
+                // AppKit automatically adds the Command+M shortcut to Minimize. (This is the
+                // only menu item I know of where this happens.)
                 NSMenuItem(
                     title: "Minimize",
-                    action: #selector(NSWindow.miniaturize(_:)),
-                    keyEquivalent: ("m", .command)
+                    action: #selector(NSWindow.performMiniaturize(_:))
                 ),
-                minimizeAllItem,
-                NSMenuItem(title: "Zoom", action: #selector(NSWindow.zoom(_:))),
+                NSMenuItem(
+                    title: "Zoom",
+                    action: #selector(NSWindow.performZoom(_:))
+                ),
+
+                NSMenuItem.separator(),
+                NSMenuItem(
+                    title: "Bring All to Front",
+                    action: #selector(NSApplication.arrangeInFront(_:))
+                ),
             ]
         )
     }
@@ -145,7 +245,7 @@ enum MenuBar {
         NSMenu(title: "Help")
     }
 
-    static func setMenuBar(userMenus: [NSMenuItem]) {
+    static func setUpMenuBar(userMenus: [NSMenuItem]) {
         let menuBar = NSMenu()
 
         let (appMenu, servicesMenuItem) = MenuBar.appMenu
@@ -186,6 +286,11 @@ extension NSMenuItem {
         if let modifiers = keyEquivalent?.modifiers {
             self.keyEquivalentModifierMask = modifiers
         }
+    }
+
+    convenience init(title: String, subitems: [NSMenuItem]) {
+        self.init(title: title, action: nil)
+        self.submenu = NSMenu(title: title, items: subitems)
     }
 }
 
