@@ -10,15 +10,15 @@ enum MenuBar {
     // method matching the selector, then AppKit automatically disables
     // the corresponding menu item.
 
-    private static var appMenu: NSMenu {
+    private static var appMenu: (appMenu: NSMenu, servicesMenuItem: NSMenuItem) {
         // The first menu item is special and always takes on the name of the app.
         let appName = ProcessInfo.processInfo.processName
 
-        let servicesMenu = NSMenuItem(title: "Services", action: nil)
-        servicesMenu.submenu = NSMenu(title: "Services")
-        NSApplication.shared.servicesMenu = servicesMenu.submenu
+        let servicesMenuItem = NSMenuItem(title: "Services", action: nil)
+        servicesMenuItem.submenu = NSMenu(title: "Services")
+        NSApplication.shared.servicesMenu = servicesMenuItem.submenu
 
-        return NSMenu(
+        let appMenu = NSMenu(
             title: appName,
             items: [
                 NSMenuItem(
@@ -26,7 +26,7 @@ enum MenuBar {
                     action: #selector(NSApplication.orderFrontStandardAboutPanel(_:))
                 ),
                 NSMenuItem.separator(),
-                servicesMenu,
+                servicesMenuItem,
                 NSMenuItem.separator(),
                 NSMenuItem(
                     title: "Hide \(appName)",
@@ -50,6 +50,8 @@ enum MenuBar {
                 ),
             ]
         )
+
+        return (appMenu, servicesMenuItem)
     }
 
     private static var fileMenu: NSMenu {
@@ -146,10 +148,10 @@ enum MenuBar {
     static func setMenuBar(userMenus: [NSMenuItem]) {
         let menuBar = NSMenu()
 
+        let (appMenu, servicesMenuItem) = MenuBar.appMenu
         let appMenuItem = NSMenuItem()
-        appMenuItem.submenu = MenuBar.appMenu
-        NSApplication.shared.servicesMenu =
-            appMenuItem.submenu?.items.first { $0.title == "Services" }?.submenu
+        appMenuItem.submenu = appMenu
+        NSApplication.shared.servicesMenu = servicesMenuItem.submenu
         menuBar.addItem(appMenuItem)
 
         for menu in [MenuBar.fileMenu, MenuBar.editMenu, MenuBar.viewMenu] {

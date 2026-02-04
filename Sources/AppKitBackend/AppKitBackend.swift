@@ -47,6 +47,10 @@ public final class AppKitBackend: AppBackend {
     }
 
     public func runMainLoop(_ callback: @escaping @MainActor () -> Void) {
+        // Immediately set up the default menus so that the Window menu can populate
+        // correctly.
+        MenuBar.setMenuBar(userMenus: [])
+
         callback()
         NSApplication.shared.activate(ignoringOtherApps: true)
         NSApplication.shared.run()
@@ -113,11 +117,6 @@ public final class AppKitBackend: AppBackend {
 
     public func setTitle(ofWindow window: Window, to title: String) {
         window.title = title
-        // NB: Without this, AppKit won't add this window to the Window menu until
-        // its title changes. I don't know why and this feels like a bug.
-        // FIXME: Even with this, no windows will be shown in the menu
-        //   until one of their titles change (then they'll all show)
-        NSApplication.shared.changeWindowsItem(window, title: title, filename: false)
     }
 
     public func setBehaviors(
