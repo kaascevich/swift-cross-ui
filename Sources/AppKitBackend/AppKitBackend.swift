@@ -49,7 +49,7 @@ public final class AppKitBackend: AppBackend {
     public func runMainLoop(_ callback: @escaping @MainActor () -> Void) {
         // Immediately set up the default menus so that the Window menu can populate
         // correctly.
-        MenuBar.setUpMenuBar(userMenus: [])
+        MenuBar.setUpMenuBar(extraMenus: [])
 
         callback()
         NSApplication.shared.activate(ignoringOtherApps: true)
@@ -157,7 +157,7 @@ public final class AppKitBackend: AppBackend {
     }
     
     public func setApplicationMenu(_ submenus: [ResolvedMenu.Submenu]) {
-        MenuBar.setUpMenuBar(userMenus: submenus.map(Self.renderSubmenu(_:)))
+        MenuBar.setUpMenuBar(extraMenus: submenus.map(Self.renderSubmenu(_:)))
     }
 
     public func openExternalURL(_ url: URL) throws {

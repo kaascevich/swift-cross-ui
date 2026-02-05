@@ -10,12 +10,13 @@ enum MenuBar {
     // method matching the selector, then AppKit automatically disables
     // the corresponding menu item.
 
-    private static var appMenu: (appMenu: NSMenu, servicesMenuItem: NSMenuItem) {
+    private static var appMenu: (appMenu: NSMenu, servicesMenu: NSMenu) {
         // The first menu item is special and always takes on the name of the app.
         let appName = ProcessInfo.processInfo.processName
 
-        let servicesMenuItem = NSMenuItem(title: "Services", subitems: [])
-        NSApplication.shared.servicesMenu = servicesMenuItem.submenu
+        let servicesMenu = NSMenu(title: "Services")
+        let servicesMenuItem = NSMenuItem(title: "Services", action: nil)
+        servicesMenuItem.submenu = servicesMenu
 
         let appMenu = NSMenu(
             title: appName,
@@ -50,7 +51,7 @@ enum MenuBar {
             ]
         )
 
-        return (appMenu, servicesMenuItem)
+        return (appMenu, servicesMenu)
     }
 
     private static var fileMenu: NSMenu {
@@ -245,57 +246,49 @@ enum MenuBar {
         NSMenu(title: "Help")
     }
 
-    static func setUpMenuBar(userMenus: [NSMenuItem]) {
-        let menuBar = NSMenu()
+    static func setUpMenuBar(extraMenus: [NSMenuItem]) {
+        let (appMenu, servicesMenu) = MenuBar.appMenu
+        let fileMenu = MenuBar.fileMenu
+        let editMenu = MenuBar.editMenu
+        let viewMenu = MenuBar.viewMenu
+        let windowMenu = MenuBar.windowMenu
+        let helpMenu = MenuBar.helpMenu
 
-        let (appMenu, servicesMenuItem) = MenuBar.appMenu
-        let appMenuItem = NSMenuItem()
-        appMenuItem.submenu = appMenu
-        NSApplication.shared.servicesMenu = servicesMenuItem.submenu
-        menuBar.addItem(appMenuItem)
-
-        let fileMenuItem = NSMenuItem()
-        fileMenuItem.submenu = MenuBar.fileMenu
-        menuBar.addItem(fileMenuItem)
-
-        let editMenuItem = NSMenuItem()
-        editMenuItem.submenu = MenuBar.editMenu
-        menuBar.addItem(editMenuItem)
-
-        let viewMenuItem = NSMenuItem()
-        viewMenuItem.submenu = MenuBar.viewMenu
-        menuBar.addItem(viewMenuItem)
-
+        var uniqueMenus: [NSMenuItem] = []
         do {
-            let existingMenus = [fileMenuItem, editMenuItem, viewMenuItem]
-            for userMenu in userMenus {
-                // To merge user-defined File, Edit, and View menus with our own, we check if the
-                // menu titles match. If they do, we move every item from the user's menu to our
-                // own.
-                let matchingMenu = existingMenus.first { $0.submenu?.title == userMenu.title }
-                if let existingMenu = matchingMenu?.submenu, let userSubmenu = userMenu.submenu {
-                    for item in userSubmenu.items {
-                        // NB: The `for` loop makes a copy of `items`, so this is safe
-                        // to do inside the loop.
-                        userSubmenu.removeItem(item)
-                        existingMenu.addItem(item)
-                    }
+            let defaultMenus = [fileMenu, editMenu, viewMenu, windowMenu, helpMenu]
+            for menu in extraMenus {
+                // To merge app-defined File, Edit, View, Window, and Help menus with our own, we
+                // check if the menu titles match. If they do, we move every item from the user's
+                // menu to our own.
+                if let submenu = menu.submenu,
+                   let matchingMenu = defaultMenus.first(where: { $0.title == menu.title })
+                {
+                    let items = submenu.items
+                    submenu.removeAllItems()
+                    matchingMenu.items += items
                 } else {
-                    menuBar.addItem(userMenu)
+                    uniqueMenus.append(menu)
                 }
             }
         }
 
-        let windowMenuItem = NSMenuItem()
-        windowMenuItem.submenu = MenuBar.windowMenu
-        NSApplication.shared.windowsMenu = windowMenuItem.submenu
-        menuBar.addItem(windowMenuItem)
+        let menuBar = NSMenu()
+        for menu in [appMenu, fileMenu, editMenu, viewMenu] {
+            let menuItem = NSMenuItem()
+            menuItem.submenu = menu
+            menuBar.addItem(menuItem)
+        }
+        menuBar.items += uniqueMenus
+        for menu in [windowMenu, helpMenu] {
+            let menuItem = NSMenuItem()
+            menuItem.submenu = menu
+            menuBar.addItem(menuItem)
+        }
 
-        let helpMenuItem = NSMenuItem()
-        helpMenuItem.submenu = MenuBar.helpMenu
-        NSApplication.shared.helpMenu = helpMenuItem.submenu
-        menuBar.addItem(helpMenuItem)
-
+        NSApplication.shared.servicesMenu = servicesMenu
+        NSApplication.shared.windowsMenu = windowMenu
+        NSApplication.shared.helpMenu = helpMenu
         NSApplication.shared.mainMenu = menuBar
     }
 }
