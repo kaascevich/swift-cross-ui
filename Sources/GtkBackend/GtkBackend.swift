@@ -11,12 +11,6 @@ extension App {
     }
 }
 
-extension SwiftCrossUI.Color {
-    public var gtkColor: Gtk.Color {
-        return Gtk.Color(red, green, blue, alpha)
-    }
-}
-
 public final class GtkBackend: AppBackend {
     public typealias Window = Gtk.ApplicationWindow
     public typealias Widget = Gtk.Widget
@@ -41,6 +35,7 @@ public final class GtkBackend: AppBackend {
     public let requiresImageUpdateOnScaleFactorChange = false
     public let menuImplementationStyle = MenuImplementationStyle.dynamicPopover
     public let canRevealFiles = true
+    public let supportsMultipleWindows = true
     public let deviceClass = DeviceClass.desktop
     public let defaultSheetCornerRadius = 10
     public let supportedDatePickerStyles: [DatePickerStyle] = [.automatic, .graphical]
@@ -172,7 +167,18 @@ public final class GtkBackend: AppBackend {
         window.title = title
     }
 
-    public func setResizability(ofWindow window: Window, to resizable: Bool) {
+    public func setBehaviors(
+        ofWindow window: Window,
+        closable: Bool,
+        minimizable: Bool,
+        resizable: Bool
+    ) {
+        // FIXME: This doesn't seem to work on macOS at least
+        window.deletable = closable
+
+        // TODO: Figure out if there's some magic way to disable minimization
+        //   in a framework where the minimize button usually doesn't even exist
+
         window.resizable = resizable
     }
 
@@ -215,8 +221,18 @@ public final class GtkBackend: AppBackend {
         child.preemptAllocatedSize(allocatedWidth: newSize.x, allocatedHeight: newSize.y)
     }
 
-    public func setMinimumSize(ofWindow window: Window, to minimumSize: SIMD2<Int>) {
+    public func setSizeLimits(
+        ofWindow window: Window,
+        minimum minimumSize: SIMD2<Int>,
+        maximum maximumSize: SIMD2<Int>?
+    ) {
         window.setMinimumSize(to: Size(width: minimumSize.x, height: minimumSize.y))
+
+        // NB: GTK does not support setting maximum sizes for widgets. It just doesn't.
+        // https://discourse.gnome.org/t/how-to-build-fixed-size-windows-in-gtk-4/22807/10
+        if maximumSize != nil {
+            debugLogOnce("GTK does not support setting maximum window sizes")
+        }
     }
 
     public func setResizeHandler(
@@ -237,6 +253,20 @@ public final class GtkBackend: AppBackend {
 
     public func activate(window: Window) {
         window.present()
+    }
+
+    public func close(window: Window) {
+        window.close()
+    }
+
+    public func setCloseHandler(
+        ofWindow window: Window,
+        to action: @escaping () -> Void
+    ) {
+        window.onCloseRequest = { _ in
+            action()
+            window.destroy()
+        }
     }
 
     public func openExternalURL(_ url: URL) throws {
@@ -511,7 +541,10 @@ public final class GtkBackend: AppBackend {
         return Box()
     }
 
-    public func setColor(ofColorableRectangle widget: Widget, to color: SwiftCrossUI.Color) {
+    public func setColor(
+        ofColorableRectangle widget: Widget,
+        to color: SwiftCrossUI.Color.Resolved
+    ) {
         widget.css.set(property: .backgroundColor(color.gtkColor))
     }
 
@@ -1113,7 +1146,7 @@ public final class GtkBackend: AppBackend {
         // Compute styles
         let menuBackground: Gtk.Color
         let menuItemHoverBackground: Gtk.Color
-        let foreground = environment.suggestedForegroundColor.gtkColor
+        let foreground = environment.suggestedForegroundColor.resolve(in: environment).gtkColor
         switch environment.colorScheme {
             case .light:
                 menuBackground = Gtk.Color(1, 1, 1)
@@ -1407,8 +1440,8 @@ public final class GtkBackend: AppBackend {
     public func renderPath(
         _ path: Path,
         container: Widget,
-        strokeColor: SwiftCrossUI.Color,
-        fillColor: SwiftCrossUI.Color,
+        strokeColor: SwiftCrossUI.Color.Resolved,
+        fillColor: SwiftCrossUI.Color.Resolved,
         overrideStrokeStyle: StrokeStyle?
     ) {
         let drawingArea = container as! Gtk.DrawingArea
@@ -1461,7 +1494,7 @@ public final class GtkBackend: AppBackend {
                 Double(fillColor.red),
                 Double(fillColor.green),
                 Double(fillColor.blue),
-                Double(fillColor.alpha)
+                Double(fillColor.opacity)
             )
             cairo_set_source(cairo, fillPattern)
             cairo_fill_preserve(cairo)
@@ -1471,7 +1504,7 @@ public final class GtkBackend: AppBackend {
                 Double(strokeColor.red),
                 Double(strokeColor.green),
                 Double(strokeColor.blue),
-                Double(strokeColor.alpha)
+                Double(strokeColor.opacity)
             )
             cairo_set_source(cairo, strokePattern)
             cairo_stroke(cairo)
@@ -1617,7 +1650,11 @@ public final class GtkBackend: AppBackend {
         isControl: Bool = false
     ) -> [CSSProperty] {
         var properties: [CSSProperty] = []
-        properties.append(.foregroundColor(environment.suggestedForegroundColor.gtkColor))
+        properties.append(
+            .foregroundColor(
+                environment.suggestedForegroundColor.resolve(in: environment).gtkColor
+            )
+        )
         let font = environment.resolvedFont
         switch font.identifier.kind {
             case .system:
@@ -1717,7 +1754,7 @@ public final class GtkBackend: AppBackend {
         cornerRadius: Double?,
         detents: [PresentationDetent],
         dragIndicatorVisibility: Visibility,
-        backgroundColor: SwiftCrossUI.Color?,
+        backgroundColor: SwiftCrossUI.Color.Resolved?,
         interactiveDismissDisabled: Bool
     ) {
         sheet.size = Size(width: size.x, height: size.y)
@@ -1725,7 +1762,12 @@ public final class GtkBackend: AppBackend {
 
         // Add a slight border to not be just a flat corner
         sheet.css.clear()
-        sheet.css.set(property: .border(color: SwiftCrossUI.Color.gray.gtkColor, width: 1))
+        sheet.css.set(
+            property: .border(
+                color: SwiftCrossUI.Color.gray.resolve(in: environment).gtkColor,
+                width: 1
+            )
+        )
 
         // Respect corner radius and background Color
         let radius = cornerRadius.map(Int.init) ?? defaultSheetCornerRadius

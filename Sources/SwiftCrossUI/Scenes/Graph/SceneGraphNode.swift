@@ -36,9 +36,10 @@ public protocol SceneGraphNode: AnyObject {
     ///     recomputed.
     ///   - backend: The app's backend.
     ///   - environment: The current root-level environment.
+    /// - Returns: The result of updating the scene.
     func update<Backend: AppBackend>(
         _ newScene: NodeScene?,
         backend: Backend,
         environment: EnvironmentValues
-    )
+    ) -> SceneUpdateResult
 }

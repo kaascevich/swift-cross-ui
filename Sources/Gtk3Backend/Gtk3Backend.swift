@@ -11,12 +11,6 @@ extension App {
     }
 }
 
-extension SwiftCrossUI.Color {
-    public var gtkColor: Gtk3.Color {
-        return Gtk3.Color(Double(red), Double(green), Double(blue), Double(alpha))
-    }
-}
-
 public final class Gtk3Backend: AppBackend {
     public typealias Window = Gtk3.ApplicationWindow
     public typealias Widget = Gtk3.Widget
@@ -37,6 +31,7 @@ public final class Gtk3Backend: AppBackend {
     public let requiresImageUpdateOnScaleFactorChange = true
     public let menuImplementationStyle = MenuImplementationStyle.dynamicPopover
     public let canRevealFiles = true
+    public let supportsMultipleWindows = true
     public let deviceClass = DeviceClass.desktop
     public let supportedDatePickerStyles: [DatePickerStyle] = []
 
@@ -50,6 +45,28 @@ public final class Gtk3Backend: AppBackend {
     /// All current windows associated with the application. Doesn't include the
     /// precreated window until it gets 'created' via `createWindow`.
     var windows: [Window] = []
+
+    private struct LogLocation: Hashable, Equatable {
+        let file: String
+        let line: Int
+        let column: Int
+    }
+
+    private var logsPerformed: Set<LogLocation> = []
+
+    func debugLogOnce(
+        _ message: String,
+        file: String = #file,
+        line: Int = #line,
+        column: Int = #column
+    ) {
+        #if DEBUG
+            let location = LogLocation(file: file, line: line, column: column)
+            if logsPerformed.insert(location).inserted {
+                logger.notice("\(message)")
+            }
+        #endif
+    }
 
     // A separate initializer to satisfy ``AppBackend``'s requirements.
     public convenience init() {
@@ -161,7 +178,18 @@ public final class Gtk3Backend: AppBackend {
         window.title = title
     }
 
-    public func setResizability(ofWindow window: Window, to resizable: Bool) {
+    public func setBehaviors(
+        ofWindow window: Window,
+        closable: Bool,
+        minimizable: Bool,
+        resizable: Bool
+    ) {
+        // FIXME: This doesn't seem to work on macOS at least
+        window.deletable = closable
+
+        // TODO: Figure out if there's some magic way to disable minimization
+        //   in a framework where the minimize button usually doesn't even exist
+
         window.resizable = resizable
     }
 
@@ -208,9 +236,19 @@ public final class Gtk3Backend: AppBackend {
         )
     }
 
-    public func setMinimumSize(ofWindow window: Window, to minimumSize: SIMD2<Int>) {
+    public func setSizeLimits(
+        ofWindow window: Window,
+        minimum minimumSize: SIMD2<Int>,
+        maximum maximumSize: SIMD2<Int>?
+    ) {
         let child = window.child! as! CustomRootWidget
         child.setMinimumSize(minimumWidth: minimumSize.x, minimumHeight: minimumSize.y)
+
+        // NB: GTK does not support setting maximum sizes for widgets. It just doesn't.
+        // https://discourse.gnome.org/t/how-to-build-fixed-size-windows-in-gtk-4/22807/10
+        if maximumSize != nil {
+            debugLogOnce("GTK does not support setting maximum window sizes")
+        }
     }
 
     public func setResizeHandler(
@@ -323,6 +361,31 @@ public final class Gtk3Backend: AppBackend {
 
     public func activate(window: Window) {
         window.present()
+    }
+
+    public func close(window: Window) {
+        window.close()
+
+        // NB: It seems GTK3 won't automatically signal `::delete-event` if
+        // the window is closed programmatically. Since the close handler
+        // calls `window.destroy()`, we avoid calling that ourselves to avoid
+        // a double-free; however, if the handler isn't set, we _do_ call
+        // `destroy()` to avoid leaking the window.
+        if let onCloseRequest = window.onCloseRequest {
+            onCloseRequest(window)
+        } else {
+            window.destroy()
+        }
+    }
+
+    public func setCloseHandler(
+        ofWindow window: Window,
+        to action: @escaping () -> Void
+    ) {
+        window.onCloseRequest = { _ in
+            action()
+            window.destroy()
+        }
     }
 
     public func openExternalURL(_ url: URL) throws {
@@ -516,7 +579,7 @@ public final class Gtk3Backend: AppBackend {
 
     public func setColor(
         ofColorableRectangle widget: Widget,
-        to color: SwiftCrossUI.Color
+        to color: SwiftCrossUI.Color.Resolved
     ) {
         widget.css.set(property: .backgroundColor(color.gtkColor))
         widget.css.set(property: CSSProperty(key: "background-clip", value: "border-box"))
@@ -1319,8 +1382,8 @@ public final class Gtk3Backend: AppBackend {
     public func renderPath(
         _ path: Path,
         container: Widget,
-        strokeColor: SwiftCrossUI.Color,
-        fillColor: SwiftCrossUI.Color,
+        strokeColor: SwiftCrossUI.Color.Resolved,
+        fillColor: SwiftCrossUI.Color.Resolved,
         overrideStrokeStyle: StrokeStyle?
     ) {
         let drawingArea = container as! Gtk3.DrawingArea
@@ -1374,7 +1437,7 @@ public final class Gtk3Backend: AppBackend {
                 Double(fillColor.red),
                 Double(fillColor.green),
                 Double(fillColor.blue),
-                Double(fillColor.alpha)
+                Double(fillColor.opacity)
             )
             cairo_set_source(cairo, fillPattern)
             cairo_fill_preserve(cairo)
@@ -1384,7 +1447,7 @@ public final class Gtk3Backend: AppBackend {
                 Double(strokeColor.red),
                 Double(strokeColor.green),
                 Double(strokeColor.blue),
-                Double(strokeColor.alpha)
+                Double(strokeColor.opacity)
             )
             cairo_set_source(cairo, strokePattern)
             cairo_stroke(cairo)
@@ -1495,7 +1558,11 @@ public final class Gtk3Backend: AppBackend {
         isControl: Bool = false
     ) -> [CSSProperty] {
         var properties: [CSSProperty] = []
-        properties.append(.foregroundColor(environment.suggestedForegroundColor.gtkColor))
+        properties.append(
+            .foregroundColor(
+                environment.suggestedForegroundColor.resolve(in: environment).gtkColor
+            )
+        )
         let font = environment.resolvedFont
         switch font.identifier.kind {
             case .system:

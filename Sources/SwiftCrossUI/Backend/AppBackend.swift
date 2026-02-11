@@ -109,6 +109,9 @@ public protocol AppBackend: Sendable {
     /// Whether the backend can reveal files in the system file manager or not.
     /// Mobile backends generally can't.
     var canRevealFiles: Bool { get }
+    /// Whether the backend can have multiple windows open at once. Mobile
+    /// backends generally can't.
+    var supportsMultipleWindows: Bool { get }
 
     /// The supported date picker styles.
     /// 
@@ -165,15 +168,21 @@ public protocol AppBackend: Sendable {
     ///   - window: The window to set the title of.
     ///   - title: The new title.
     func setTitle(ofWindow window: Window, to title: String)
-    /// Sets the resizability of a window.
-    ///
-    /// Even if resizable, the window shouldn't be allowed to become smaller
-    /// than its content.
+    /// Sets the behaviors of a window.
     ///
     /// - Parameters:
-    ///   - window: The window to set the resizability of.
-    ///   - resizable: Whether the window should be resizable.
-    func setResizability(ofWindow window: Window, to resizable: Bool)
+    ///   - window: The window to set the behaviors on.
+    ///   - closable: Whether the window can be closed by the user.
+    ///   - minimizable: Whether the window can be minimized by the user.
+    ///   - resizable: Whether the window can be resized by the user. Even if
+    ///     resizable, the window shouldn't be allowed to become smaller than its
+    ///     minimum size, or larger than its maximum size.
+    func setBehaviors(
+        ofWindow window: Window,
+        closable: Bool,
+        minimizable: Bool,
+        resizable: Bool
+    )
     /// Sets the root child of a window.
     ///
     /// This replaces the previous child if one exists.
@@ -201,6 +210,7 @@ public protocol AppBackend: Sendable {
     ///   - window: The window to set the size of.
     ///   - newSize: The new size.
     func setSize(ofWindow window: Window, to newSize: SIMD2<Int>)
+<<<<<<< HEAD
     /// Sets the minimum width and height of the window.
     ///
     /// Prevents the user from making the window any smaller than the given
@@ -220,6 +230,26 @@ public protocol AppBackend: Sendable {
     ///     returns its final size (which allows SwiftCrossUI to implement
     ///     features such as dynamic minimum window sizes based off the
     ///     content's minimum size).
+=======
+    /// Sets the minimum and maximum width and height of a window.
+    ///
+    /// Prevents the user from making the window any smaller or larger than the given minimum and
+    /// maximum sizes, respectively.
+    /// - Parameters:
+    ///   - window: The window to set the size limits of.
+    ///   - minimumSize: The minimum window size.
+    ///   - maximumSize: The maximum window size. If `nil`, any existing maximum size
+    ///     constraints should be removed.
+    func setSizeLimits(
+        ofWindow window: Window,
+        minimum minimumSize: SIMD2<Int>,
+        maximum maximumSize: SIMD2<Int>?
+    )
+    /// Sets the handler for the window's resizing events. `action` takes the proposed size
+    /// of the window and returns the final size for the window (which allows SwiftCrossUI
+    /// to implement features such as dynamic minimum window sizes based off the content's
+    /// minimum size). Setting the resize handler overrides any previous handler.
+>>>>>>> main
     func setResizeHandler(
         ofWindow window: Window,
         to action: @escaping (_ newSize: SIMD2<Int>) -> Void
@@ -239,6 +269,31 @@ public protocol AppBackend: Sendable {
     ///
     /// - Parameter window: The window to activate.
     func activate(window: Window)
+    /// Closes a window.
+    ///
+    /// At some point during or after execution of this function, the handler
+    /// set by ``setCloseHandler(ofWindow:to:)-8ogpa`` should be called.
+    /// Oftentimes this will be done automatically by the backend's underlying
+    /// UI framework.
+    ///
+    /// This is primarily used by ``DismissWindowAction``.
+    func close(window: Window)
+    /// Sets the handler for the window's close events (for example, when the
+    /// user clicks the close button in the title bar).
+    ///
+    /// The close handler should also be called whenever ``close(window:)-9xucx``
+    /// is called (some UI frameworks do this automatically).
+    ///
+    /// This is used by SwiftCrossUI to release scene nodes' references to
+    /// `window` when the window is closed.
+    ///
+    /// This is only called once per window; as such, it doesn't matter if
+    /// setting the close handler again overrides the previous handler or adds a
+    /// new one.
+    func setCloseHandler(
+        ofWindow window: Window,
+        to action: @escaping () -> Void
+    )
 
     /// Sets the application's global menu.
     ///
@@ -292,6 +347,7 @@ public protocol AppBackend: Sendable {
     /// - Returns: The resolved text style.
     func resolveTextStyle(_ textStyle: Font.TextStyle) -> Font.TextStyle.Resolved
 
+<<<<<<< HEAD
     /// Computes a window's environment based off the root environment.
     ///
     /// This may involve updating ``EnvironmentValues/windowScaleFactor``, etc.
@@ -300,6 +356,18 @@ public protocol AppBackend: Sendable {
     ///   - window: The window to compute the environment for.
     ///   - rootEnvironment: The root environment.
     /// - Returns: The computed window environment.
+=======
+    /// Resolves the given adaptive color to a concrete color given the current environment.
+    ///
+    /// The default implementation uses Apple's adaptive colors.
+    func resolveAdaptiveColor(
+        _ adaptiveColor: Color.SystemAdaptive,
+        in environment: EnvironmentValues
+    ) -> Color.Resolved
+
+    /// Computes a window's environment based off the root environment. This may involve
+    /// updating ``EnvironmentValues/windowScaleFactor`` etc.
+>>>>>>> main
     func computeWindowEnvironment(
         window: Window,
         rootEnvironment: EnvironmentValues
@@ -402,11 +470,15 @@ public protocol AppBackend: Sendable {
     /// - Returns: A colorable rectangle.
     func createColorableRectangle() -> Widget
     /// Sets the color of a colorable rectangle.
+<<<<<<< HEAD
     ///
     /// - Parameters:
     ///   - widget: The rectangle to set the color of.
     ///   - color: The new color.
     func setColor(ofColorableRectangle widget: Widget, to color: Color)
+=======
+    func setColor(ofColorableRectangle widget: Widget, to color: Color.Resolved)
+>>>>>>> main
 
     /// Sets the corner radius of a widget (any widget). Should affect the view's border radius
     /// as well.
@@ -1125,7 +1197,7 @@ public protocol AppBackend: Sendable {
         cornerRadius: Double?,
         detents: [PresentationDetent],
         dragIndicatorVisibility: Visibility,
-        backgroundColor: Color?,
+        backgroundColor: Color.Resolved?,
         interactiveDismissDisabled: Bool
     )
 
@@ -1300,8 +1372,8 @@ public protocol AppBackend: Sendable {
     func renderPath(
         _ path: Path,
         container: Widget,
-        strokeColor: Color,
-        fillColor: Color,
+        strokeColor: Color.Resolved,
+        fillColor: Color.Resolved,
         overrideStrokeStyle: StrokeStyle?
     )
 
@@ -1338,6 +1410,25 @@ extension AppBackend {
         textStyle.resolve(for: deviceClass)
     }
 
+    public func resolveAdaptiveColor(
+        _ adaptiveColor: Color.SystemAdaptive,
+        in environment: EnvironmentValues
+    ) -> Color.Resolved {
+        let color: Color =
+            switch adaptiveColor.kind {
+                case .blue: .blue
+                case .brown: .brown
+                case .gray: .gray
+                case .green: .green
+                case .orange: .orange
+                case .purple: .purple
+                case .red: .red
+                case .yellow: .yellow
+            }
+
+        return color.resolve(in: environment)
+    }
+
     public func tag(widget: Widget, as tag: String) {
         // This is only really to assist contributors when debugging backends,
         // so it's safe enough to have a no-op default implementation.
@@ -1369,6 +1460,19 @@ extension AppBackend {
         todo()
     }
 
+    // MARK: Windows
+
+    public func setCloseHandler(
+        ofWindow window: Window,
+        to action: @escaping () -> Void
+    ) {
+        todo()
+    }
+
+    public func close(window: Window) {
+        todo()
+    }
+
     // MARK: Application
 
     public func setApplicationMenu(_ submenus: [ResolvedMenu.Submenu]) {
@@ -1385,7 +1489,7 @@ extension AppBackend {
         todo()
     }
 
-    public func setColor(ofColorableRectangle widget: Widget, to color: Color) {
+    public func setColor(ofColorableRectangle widget: Widget, to color: Color.Resolved) {
         todo()
     }
 
@@ -1768,8 +1872,8 @@ extension AppBackend {
     public func renderPath(
         _ path: Path,
         container: Widget,
-        strokeColor: Color,
-        fillColor: Color,
+        strokeColor: Color.Resolved,
+        fillColor: Color.Resolved,
         overrideStrokeStyle: StrokeStyle?
     ) {
         todo()
@@ -1816,7 +1920,7 @@ extension AppBackend {
         cornerRadius: Double?,
         detents: [PresentationDetent],
         dragIndicatorVisibility: Visibility,
-        backgroundColor: Color?,
+        backgroundColor: Color.Resolved?,
         interactiveDismissDisabled: Bool
     ) {
         todo()

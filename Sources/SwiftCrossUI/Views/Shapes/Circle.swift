@@ -3,8 +3,8 @@
 /// Circles have equal widths and heights; the `Circle` shape will take on the
 /// minimum of its proposed width and height.
 public struct Circle: Shape {
-    /// The ideal diameter of a `Circle`.
-    static let idealDiameter = 10.0
+    /// The ideal diameter of a ``Circle``.
+    nonisolated static let idealDiameter = 10.0
 
     /// Creates a ``Circle`` instance.
     public nonisolated init() {}
@@ -19,7 +19,7 @@ public struct Circle: Shape {
         if let proposal = proposal.concrete {
             diameter = min(proposal.width, proposal.height)
         } else {
-            diameter = proposal.width ?? proposal.height ?? 10
+            diameter = proposal.width ?? proposal.height ?? Circle.idealDiameter
         }
 
         return ViewSize(diameter, diameter)

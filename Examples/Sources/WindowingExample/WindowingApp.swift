@@ -157,13 +157,66 @@ struct SheetDemo: View {
     }
 }
 
+struct OpenWindowDemo: View {
+    @Environment(\.openWindow) private var openWindow
+    @Environment(\.supportsMultipleWindows) private var supportsMultipleWindows
+
+    var body: some View {
+        Text("Backend supports multi-window: \(supportsMultipleWindows)")
+
+        Button("Open singleton window") {
+            openWindow(id: "singleton-window")
+        }
+        Button("Open new tertiary window instance") {
+            openWindow(id: "tertiary-window")
+        }
+    }
+}
+
+struct TertiaryWindowView: View {
+    @Environment(\.dismissWindow) private var dismissWindow
+    @Environment(\.openWindow) private var openWindow
+
+    var body: some View {
+        VStack {
+            Text("This a tertiary window!")
+
+            Button("Close window") {
+                dismissWindow()
+            }
+            Button("Open new instance") {
+                openWindow(id: "tertiary-window")
+            }
+        }
+        .padding()
+    }
+}
+
+struct SingletonWindowView: View {
+    @Environment(\.dismissWindow) private var dismissWindow
+
+    var body: some View {
+        VStack {
+            Text("This a singleton window!")
+
+            Button("Close window") {
+                dismissWindow()
+            }
+        }
+        .padding()
+    }
+}
+
 @main
 @HotReloadable
 struct WindowingApp: App {
     @State var title = "My window"
-    @State var resizable = false
+    @State var resizable = true
     @State var isAlertSceneShown = false
     @State var toggle = false
+    @State var enforceMaxSize = true
+    @State var closable = true
+    @State var minimizable = true
 
     var body: some Scene {
         WindowGroup(title) {
@@ -174,9 +227,12 @@ struct WindowingApp: App {
                         TextField("My window", text: $title)
                     }
 
-                    Button(resizable ? "Disable resizing" : "Enable resizing") {
-                        resizable = !resizable
-                    }
+                    Toggle("Enable resizing", isOn: $resizable)
+                        .windowResizeBehavior(resizable ? .enabled : .disabled)
+                    Toggle("Enable closing", isOn: $closable)
+                        .windowDismissBehavior(closable ? .enabled : .disabled)
+                    Toggle("Enable minimizing", isOn: $minimizable)
+                        .preferredWindowMinimizeBehavior(minimizable ? .enabled : .disabled)
 
                     Image(Bundle.module.bundleURL.appendingPathComponent("Banner.png"))
                         .resizable()
@@ -198,13 +254,16 @@ struct WindowingApp: App {
                     Divider()
 
                     SheetDemo()
+
+                    Divider()
+
+                    OpenWindowDemo()
                         .padding(.bottom, 20)
                 }
                 .padding(20)
             }
         }
         .defaultSize(width: 500, height: 500)
-        .windowResizability(resizable ? .contentMinSize : .contentSize)
         .commands {
             CommandMenu("Demo menu") {
                 Button("Menu item") {}
@@ -221,24 +280,42 @@ struct WindowingApp: App {
 
         AlertScene("Alert scene", isPresented: $isAlertSceneShown) {}
 
-        #if !(os(iOS) || os(tvOS) || os(Windows))
-            WindowGroup("Secondary window") {
+        #if !(os(iOS) || os(tvOS))
+            WindowGroup("Secondary window", id: "secondary-window") {
                 #hotReloadable {
-                    Text("This a secondary window!")
-                        .padding(10)
+                    VStack {
+                        Text("This a secondary window!")
+
+                        Toggle("Enforce max size", isOn: $enforceMaxSize)
+                            .toggleStyle(.checkbox)
+                    }
+                    .padding(10)
                 }
             }
             .defaultSize(width: 200, height: 200)
+            .windowResizability(enforceMaxSize ? .contentSize : .contentMinSize)
+            #if os(Windows)
+                .defaultLaunchBehavior(.suppressed)
+            #endif
+
+            WindowGroup("Tertiary window (hidden)", id: "tertiary-window") {
+                #hotReloadable {
+                    TertiaryWindowView()
+                }
+            }
+            .defaultSize(width: 200, height: 200)
+            .defaultLaunchBehavior(.suppressed)
             .windowResizability(.contentMinSize)
 
-            WindowGroup("Tertiary window") {
+            Window("Singleton window", id: "singleton-window") {
                 #hotReloadable {
-                    Text("This a tertiary window!")
-                        .padding(10)
+                    SingletonWindowView()
                 }
             }
             .defaultSize(width: 200, height: 200)
-            .windowResizability(.contentMinSize)
+            #if os(Windows)
+                .defaultLaunchBehavior(.suppressed)
+            #endif
         #endif
     }
 }

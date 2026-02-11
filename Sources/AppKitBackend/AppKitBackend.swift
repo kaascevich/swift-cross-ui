@@ -25,6 +25,7 @@ public final class AppKitBackend: AppBackend {
     public let requiresImageUpdateOnScaleFactorChange = false
     public let menuImplementationStyle = MenuImplementationStyle.dynamicPopover
     public let canRevealFiles = true
+    public let supportsMultipleWindows = true
     public let deviceClass = DeviceClass.desktop
     public let supportedDatePickerStyles: [DatePickerStyle] = [.automatic, .graphical, .compact]
 
@@ -69,6 +70,11 @@ public final class AppKitBackend: AppBackend {
         )
         window.delegate = window.customDelegate
 
+        // NB: If this isn't set, AppKit will crash within -[NSApplication run]
+        // the *second* time `openWindow` is called. I have absolutely no idea
+        // why.
+        window.isReleasedWhenClosed = false
+
         return window
     }
 
@@ -88,23 +94,49 @@ public final class AppKitBackend: AppBackend {
         window.setContentSize(NSSize(width: newSize.x, height: newSize.y))
     }
 
-    public func setMinimumSize(ofWindow window: Window, to minimumSize: SIMD2<Int>) {
-        window.contentMinSize.width = CGFloat(minimumSize.x)
-        window.contentMinSize.height = CGFloat(minimumSize.y)
+    public func setSizeLimits(
+        ofWindow window: Window,
+        minimum minimumSize: SIMD2<Int>,
+        maximum maximumSize: SIMD2<Int>?
+    ) {
+        window.contentMinSize = CGSize(width: minimumSize.x, height: minimumSize.y)
+        window.contentMaxSize =
+            if let maximumSize {
+                CGSize(width: maximumSize.x, height: maximumSize.y)
+            } else {
+                CGSize(width: Double.infinity, height: .infinity)
+            }
     }
 
     public func setResizeHandler(
         ofWindow window: Window,
         to action: @escaping (SIMD2<Int>) -> Void
     ) {
-        window.customDelegate.setHandler(action)
+        window.customDelegate.setResizeHandler(action)
     }
 
     public func setTitle(ofWindow window: Window, to title: String) {
         window.title = title
     }
 
-    public func setResizability(ofWindow window: Window, to resizable: Bool) {
+    public func setBehaviors(
+        ofWindow window: Window,
+        closable: Bool,
+        minimizable: Bool,
+        resizable: Bool
+    ) {
+        if closable {
+            window.styleMask.insert(.closable)
+        } else {
+            window.styleMask.remove(.closable)
+        }
+
+        if minimizable {
+            window.styleMask.insert(.miniaturizable)
+        } else {
+            window.styleMask.remove(.miniaturizable)
+        }
+
         if resizable {
             window.styleMask.insert(.resizable)
         } else {
@@ -122,6 +154,17 @@ public final class AppKitBackend: AppBackend {
 
     public func activate(window: Window) {
         window.makeKeyAndOrderFront(nil)
+    }
+
+    public func close(window: Window) {
+        window.close()
+    }
+
+    public func setCloseHandler(
+        ofWindow window: Window,
+        to action: @escaping () -> Void
+    ) {
+        window.customDelegate.setCloseHandler(action)
     }
 
     public func openExternalURL(_ url: URL) throws {
@@ -385,15 +428,28 @@ public final class AppKitBackend: AppBackend {
         window: Window,
         rootEnvironment: EnvironmentValues
     ) -> EnvironmentValues {
-        // TODO: Record window scale factor in here
-        rootEnvironment
+        window.lastBackingScaleFactor = window.backingScaleFactor
+
+        return rootEnvironment.with(\.windowScaleFactor, window.backingScaleFactor)
     }
 
     public func setWindowEnvironmentChangeHandler(
         of window: Window,
         to action: @escaping () -> Void
     ) {
-        // TODO: Notify when window scale factor changes
+        // For updating window scale factor
+        NotificationCenter.default.addObserver(
+            forName: NSWindow.didChangeBackingPropertiesNotification,
+            object: window,
+            queue: .main
+        ) { notification in
+            let backingScaleFactorChanged =
+                window.lastBackingScaleFactor != window.backingScaleFactor
+
+            if backingScaleFactorChanged {
+                action()
+            }
+        }
     }
 
     public func setIncomingURLHandler(to action: @escaping (URL) -> Void) {
@@ -424,7 +480,7 @@ public final class AppKitBackend: AppBackend {
     public func swap(childAt firstIndex: Int, withChildAt secondIndex: Int, in container: NSView) {
         assert(
             container.subviews.indices.contains(firstIndex)
-            && container.subviews.indices.contains(secondIndex),
+                && container.subviews.indices.contains(secondIndex),
             """
             attempted to swap container child out of bounds; container count \
             = \(container.subviews.count); firstIndex = \(firstIndex); \
@@ -494,7 +550,7 @@ public final class AppKitBackend: AppBackend {
         return widget
     }
 
-    public func setColor(ofColorableRectangle widget: Widget, to color: Color) {
+    public func setColor(ofColorableRectangle widget: Widget, to color: Color.Resolved) {
         widget.layer?.backgroundColor = color.nsColor.cgColor
     }
 
@@ -1159,7 +1215,7 @@ public final class AppKitBackend: AppBackend {
         paragraphStyle.lineSpacing = 0
 
         return [
-            .foregroundColor: environment.suggestedForegroundColor.nsColor,
+            .foregroundColor: environment.suggestedForegroundColor.resolve(in: environment).nsColor,
             .font: font(for: resolvedFont),
             .paragraphStyle: paragraphStyle,
         ]
@@ -1704,8 +1760,8 @@ public final class AppKitBackend: AppBackend {
     public func renderPath(
         _ path: Path,
         container: Widget,
-        strokeColor: Color,
-        fillColor: Color,
+        strokeColor: Color.Resolved,
+        fillColor: Color.Resolved,
         overrideStrokeStyle: StrokeStyle?
     ) {
         if let overrideStrokeStyle {
@@ -1789,7 +1845,7 @@ public final class AppKitBackend: AppBackend {
         cornerRadius: Double?,
         detents: [PresentationDetent],
         dragIndicatorVisibility: Visibility,
-        backgroundColor: Color?,
+        backgroundColor: Color.Resolved?,
         interactiveDismissDisabled: Bool
     ) {
         sheet.setContentSize(NSSize(width: size.x, height: size.y))
@@ -1865,7 +1921,7 @@ public final class AppKitBackend: AppBackend {
         let datePicker = datePicker as! CustomDatePicker
 
         datePicker.isEnabled = environment.isEnabled
-        datePicker.textColor = environment.suggestedForegroundColor.nsColor
+        datePicker.textColor = environment.suggestedForegroundColor.resolve(in: environment).nsColor
 
         // If the time zone is set to autoupdatingCurrent, then the cursor position is reset after
         // every keystroke. Thanks Apple
@@ -2140,34 +2196,6 @@ extension ColorScheme {
     }
 }
 
-extension Color {
-    init(_ nsColor: NSColor) {
-        guard let resolvedNSColor = nsColor.usingColorSpace(.deviceRGB) else {
-            logger.error(
-                "failed to convert NSColor to RGB",
-                metadata: ["NSColor": "\(nsColor)"]
-            )
-            self = .black
-            return
-        }
-        self.init(
-            Float(resolvedNSColor.redComponent),
-            Float(resolvedNSColor.greenComponent),
-            Float(resolvedNSColor.blueComponent),
-            Float(resolvedNSColor.alphaComponent)
-        )
-    }
-
-    var nsColor: NSColor {
-        NSColor(
-            calibratedRed: CGFloat(red),
-            green: CGFloat(green),
-            blue: CGFloat(blue),
-            alpha: CGFloat(alpha)
-        )
-    }
-}
-
 // Source: https://gist.github.com/sindresorhus/3580ce9426fff8fafb1677341fca4815
 enum AssociationPolicy {
     case assign
@@ -2362,6 +2390,7 @@ public class NSCustomWindow: NSWindow {
     /// nested sheet gets stored as the sheet's nestedSheet, and so on.
     var nestedSheet: NSCustomSheet?
 
+    var lastBackingScaleFactor: CGFloat?
     /// Allows the backing scale factor to be overridden. Useful for keeping
     /// UI tests consistent across devices.
     ///
@@ -2374,9 +2403,23 @@ public class NSCustomWindow: NSWindow {
 
     class Delegate: NSObject, NSWindowDelegate {
         var resizeHandler: ((SIMD2<Int>) -> Void)?
+        var closeHandler: (() -> Void)?
 
-        func setHandler(_ resizeHandler: @escaping (SIMD2<Int>) -> Void) {
+        func setResizeHandler(_ resizeHandler: @escaping (SIMD2<Int>) -> Void) {
             self.resizeHandler = resizeHandler
+        }
+
+        func setCloseHandler(_ closeHandler: @escaping () -> Void) {
+            self.closeHandler = closeHandler
+        }
+
+        func windowWillClose(_ notification: Notification) {
+            closeHandler?()
+
+            guard let window = notification.object as? NSCustomWindow else { return }
+
+            // Not sure if this is actually needed
+            NotificationCenter.default.removeObserver(window)
         }
 
         func windowWillResize(_ sender: NSWindow, to frameSize: NSSize) -> NSSize {

@@ -133,7 +133,7 @@ struct SheetModifier<Content: View, SheetContent: View>: TypeSafeView {
                 detents: preferences.presentationDetents ?? [],
                 dragIndicatorVisibility:
                     preferences.presentationDragIndicatorVisibility ?? .automatic,
-                backgroundColor: preferences.presentationBackground,
+                backgroundColor: preferences.presentationBackground?.resolve(in: environment),
                 interactiveDismissDisabled: preferences.interactiveDismissDisabled ?? false
             )
 

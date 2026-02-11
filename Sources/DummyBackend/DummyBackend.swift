@@ -7,10 +7,14 @@ public final class DummyBackend: AppBackend {
 
         public var size: SIMD2<Int>
         public var minimumSize: SIMD2<Int> = .zero
+        public var maximumSize: SIMD2<Int>?
         public var title = "Window"
         public var resizable = true
+        public var closable = true
+        public var minimizable = true
         public var content: Widget?
         public var resizeHandler: ((SIMD2<Int>) -> Void)?
+        public var closeHandler: (() -> Void)?
 
         public init(defaultSize: SIMD2<Int>?) {
             size = defaultSize ?? Self.defaultSize
@@ -114,7 +118,7 @@ public final class DummyBackend: AppBackend {
     public class TextView: Widget {
         public var content: String = ""
         public var font: Font.Resolved?
-        public var color = Color.black
+        public var color = Color.Resolved(red: 0.0, green: 0.0, blue: 0.0)
     }
 
     public class ImageView: Widget {
@@ -168,7 +172,7 @@ public final class DummyBackend: AppBackend {
     }
 
     public class Rectangle: Widget {
-        public var color = Color.clear
+        public var color = Color.Resolved(red: 0.0, green: 0.0, blue: 0.0, opacity: 0.0)
     }
 
     public class SplitView: Widget {
@@ -247,6 +251,7 @@ public final class DummyBackend: AppBackend {
     public var menuImplementationStyle = MenuImplementationStyle.dynamicPopover
     public var deviceClass = DeviceClass.desktop
     public var canRevealFiles = false
+    public var supportsMultipleWindows = true
     public var supportedDatePickerStyles: [DatePickerStyle] = []
 
     public var incomingURLHandler: ((URL) -> Void)?
@@ -265,7 +270,14 @@ public final class DummyBackend: AppBackend {
         window.title = title
     }
 
-    public func setResizability(ofWindow window: Window, to resizable: Bool) {
+    public func setBehaviors(
+        ofWindow window: Window,
+        closable: Bool,
+        minimizable: Bool,
+        resizable: Bool
+    ) {
+        window.closable = closable
+        window.minimizable = minimizable
         window.resizable = resizable
     }
 
@@ -285,8 +297,13 @@ public final class DummyBackend: AppBackend {
         window.size = newSize
     }
 
-    public func setMinimumSize(ofWindow window: Window, to minimumSize: SIMD2<Int>) {
+    public func setSizeLimits(
+        ofWindow window: Window,
+        minimum minimumSize: SIMD2<Int>,
+        maximum maximumSize: SIMD2<Int>?
+    ) {
         window.minimumSize = minimumSize
+        window.maximumSize = maximumSize
     }
 
     public func setResizeHandler(ofWindow window: Window, to action: @escaping (SIMD2<Int>) -> Void)
@@ -297,6 +314,14 @@ public final class DummyBackend: AppBackend {
     public func show(window: Window) {}
 
     public func activate(window: Window) {}
+
+    public func close(window: Window) {
+        window.closeHandler?()
+    }
+
+    public func setCloseHandler(ofWindow window: Window, to action: @escaping () -> Void) {
+        window.closeHandler = action
+    }
 
     public func runInMainThread(action: @escaping @MainActor () -> Void) {
         DispatchQueue.main.async {
@@ -359,7 +384,7 @@ public final class DummyBackend: AppBackend {
         Rectangle()
     }
 
-    public func setColor(ofColorableRectangle widget: Widget, to color: Color) {
+    public func setColor(ofColorableRectangle widget: Widget, to color: Color.Resolved) {
         (widget as! Rectangle).color = color
     }
 
@@ -482,7 +507,7 @@ public final class DummyBackend: AppBackend {
     {
         let textView = textView as! TextView
         textView.content = content
-        textView.color = environment.suggestedForegroundColor
+        textView.color = environment.suggestedForegroundColor.resolve(in: environment)
         textView.font = environment.resolvedFont
     }
 
@@ -706,7 +731,7 @@ public final class DummyBackend: AppBackend {
 
     // }
 
-    // public func updateSheet(_ sheet: Sheet, window: Window, environment: SwiftCrossUI.EnvironmentValues, size: SIMD2<Int>, onDismiss: @escaping () -> Void, cornerRadius: Double?, detents: [SwiftCrossUI.PresentationDetent], dragIndicatorVisibility: SwiftCrossUI.Visibility, backgroundColor: SwiftCrossUI.Color?, interactiveDismissDisabled: Bool) {
+    // public func updateSheet(_ sheet: Sheet, window: Window, environment: SwiftCrossUI.EnvironmentValues, size: SIMD2<Int>, onDismiss: @escaping () -> Void, cornerRadius: Double?, detents: [SwiftCrossUI.PresentationDetent], dragIndicatorVisibility: SwiftCrossUI.Visibility, backgroundColor: SwiftCrossUI.Color.Resolved?, interactiveDismissDisabled: Bool) {
 
     // }
 
@@ -758,7 +783,7 @@ public final class DummyBackend: AppBackend {
 
     // }
 
-    // public func renderPath(_ path: Path, container: Widget, strokeColor: SwiftCrossUI.Color, fillColor: SwiftCrossUI.Color, overrideStrokeStyle: SwiftCrossUI.StrokeStyle?) {
+    // public func renderPath(_ path: Path, container: Widget, strokeColor: SwiftCrossUI.Color.Resolved, fillColor: SwiftCrossUI.Color.Resolved, overrideStrokeStyle: SwiftCrossUI.StrokeStyle?) {
 
     // }
 

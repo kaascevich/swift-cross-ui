@@ -29,6 +29,29 @@ class WinUIApplication: SwiftApplication {
 }
 
 public final class WinUIBackend: AppBackend {
+    // Logging
+    private struct LogLocation: Hashable, Equatable {
+        let file: String
+        let line: Int
+        let column: Int
+    }
+
+    private var logsPerformed: Set<LogLocation> = []
+
+    func debugLogOnce(
+        _ message: String,
+        file: String = #file,
+        line: Int = #line,
+        column: Int = #column
+    ) {
+        #if DEBUG
+            let location = LogLocation(file: file, line: line, column: column)
+            if logsPerformed.insert(location).inserted {
+                logger.notice("\(message)")
+            }
+        #endif
+    }
+
     public typealias Window = CustomWindow
     public typealias Widget = WinUI.FrameworkElement
     public typealias Menu = Void
@@ -43,6 +66,7 @@ public final class WinUIBackend: AppBackend {
     public let requiresImageUpdateOnScaleFactorChange = false
     public let menuImplementationStyle = MenuImplementationStyle.dynamicPopover
     public let canRevealFiles = false
+    public let supportsMultipleWindows = true
     public let deviceClass = DeviceClass.desktop
     public let supportedDatePickerStyles: [DatePickerStyle] = [
         .automatic, .graphical, .compact, .wheel,
@@ -123,7 +147,7 @@ public final class WinUIBackend: AppBackend {
             //   let pv: __ABI_Windows_Foundation.IPropertyValue = try! iinspectable.QueryInterface()
             //   let value = try! pv.GetDoubleImpl()
 
-            self.measurementTextBlock = self.createTextView() as! TextBlock
+            self.measurementTextBlock = (self.createTextView() as! TextBlock)
 
             callback()
         }
@@ -203,8 +227,12 @@ public final class WinUIBackend: AppBackend {
         try! window.appWindow.resizeClient(size)
     }
 
-    public func setMinimumSize(ofWindow window: Window, to minimumSize: SIMD2<Int>) {
-        missing("window minimum size")
+    public func setSizeLimits(
+        ofWindow window: Window,
+        minimum minimumSize: SIMD2<Int>,
+        maximum maximumSize: SIMD2<Int>?
+    ) {
+        debugLogOnce("\(#function) unimplemented")
     }
 
     public func setResizeHandler(
@@ -224,8 +252,23 @@ public final class WinUIBackend: AppBackend {
         window.title = title
     }
 
-    public func setResizability(ofWindow window: Window, to value: Bool) {
-        (window.appWindow.presenter as! OverlappedPresenter).isResizable = value
+    public func setBehaviors(
+        ofWindow window: Window,
+        closable: Bool,
+        minimizable: Bool,
+        resizable: Bool
+    ) {
+        // Source: https://devblogs.microsoft.com/oldnewthing/20100604-00/?p=13803
+        let hwnd = window.getHWND()!
+        let flags = if closable { MF_ENABLED } else { MF_DISABLED | MF_GRAYED }
+        EnableMenuItem(
+            GetSystemMenu(hwnd, false),
+            numericCast(SC_CLOSE),
+            numericCast(MF_BYCOMMAND | flags)
+        )
+
+        (window.appWindow.presenter as? OverlappedPresenter)?.isMinimizable = minimizable
+        (window.appWindow.presenter as? OverlappedPresenter)?.isResizable = resizable
     }
 
     public func setChild(ofWindow window: Window, to widget: Widget) {
@@ -244,6 +287,19 @@ public final class WinUIBackend: AppBackend {
         try! window.activate()
     }
 
+    public func close(window: Window) {
+        try! window.close()
+    }
+
+    public func setCloseHandler(
+        ofWindow window: Window,
+        to action: @escaping () -> Void
+    ) {
+        window.closed.addHandler { _, _ in
+            action()
+        }
+    }
+
     public func openExternalURL(_ url: URL) throws {
         _ = UWP.Launcher.launchUriAsync(WindowsFoundation.Uri(url.absoluteString))
     }
@@ -255,10 +311,6 @@ public final class WinUIBackend: AppBackend {
     }
 
     public func show(widget _: Widget) {}
-
-    private func missing(_ message: String) {
-        // print("missing: \(message)")
-    }
 
     private func renderItems(_ items: [ResolvedMenu.Item]) -> [MenuFlyoutItemBase] {
         items.map { item in
@@ -401,7 +453,7 @@ public final class WinUIBackend: AppBackend {
 
     public func setColor(
         ofColorableRectangle widget: Widget,
-        to color: SwiftCrossUI.Color
+        to color: SwiftCrossUI.Color.Resolved
     ) {
         let canvas = widget as! Canvas
         let brush = WinUI.SolidColorBrush()
@@ -668,7 +720,7 @@ public final class WinUIBackend: AppBackend {
         let block = textView as! TextBlock
         block.text = content
         block.isTextSelectionEnabled = environment.isTextSelectionEnabled
-        missing("font design handling (monospace vs normal)")
+        // TODO: Font design handling (monospace vs normal)
         environment.apply(to: block)
     }
 
@@ -836,7 +888,8 @@ public final class WinUIBackend: AppBackend {
         slider.valueChanged.addHandler { [weak internalState] _, event in
             guard let internalState else { return }
             internalState.sliderChangeActions[ObjectIdentifier(slider)]?(
-                Double(event?.newValue ?? 0))
+                Double(event?.newValue ?? 0)
+            )
         }
         slider.stepFrequency = 0.01
         return slider
@@ -894,7 +947,8 @@ public final class WinUIBackend: AppBackend {
 
         picker.onChangeSelection = onChange
         environment.apply(to: picker)
-        picker.actualForegroundColor = environment.suggestedForegroundColor.uwpColor
+        picker.actualForegroundColor =
+            environment.suggestedForegroundColor.resolve(in: environment).uwpColor
 
         // Only update options past this point, otherwise the early return
         // will cause issues.
@@ -932,8 +986,8 @@ public final class WinUIBackend: AppBackend {
             }
         }
 
-        missing("proper picker updating logic")
-        missing("picker font handling")
+        // TODO: Proper picker updating logic
+        // TODO: Picker font handling
 
         picker.options = options
     }
@@ -1430,9 +1484,7 @@ public final class WinUIBackend: AppBackend {
         tapGestureTarget.background = brush
 
         tapGestureTarget.pointerPressed.addHandler { [weak tapGestureTarget] _, _ in
-            guard let tapGestureTarget else {
-                return
-            }
+            guard let tapGestureTarget else { return }
             tapGestureTarget.clickHandler?()
         }
         return tapGestureTarget
@@ -1743,8 +1795,8 @@ public final class WinUIBackend: AppBackend {
     public func renderPath(
         _ path: Path,
         container: Widget,
-        strokeColor: SwiftCrossUI.Color,
-        fillColor: SwiftCrossUI.Color,
+        strokeColor: SwiftCrossUI.Color.Resolved,
+        fillColor: SwiftCrossUI.Color.Resolved,
         overrideStrokeStyle: StrokeStyle?
     ) {
         let winUiPath = container as! WinUI.Path
@@ -1876,30 +1928,11 @@ public final class WinUIBackend: AppBackend {
     // }
 }
 
-extension SwiftCrossUI.Color {
-    var uwpColor: UWP.Color {
-        UWP.Color(
-            a: UInt8((alpha * Float(UInt8.max)).rounded()),
-            r: UInt8((red * Float(UInt8.max)).rounded()),
-            g: UInt8((green * Float(UInt8.max)).rounded()),
-            b: UInt8((blue * Float(UInt8.max)).rounded())
-        )
-    }
-
-    init(uwpColor: UWP.Color) {
-        self.init(
-            Float(uwpColor.r) / Float(UInt8.max),
-            Float(uwpColor.g) / Float(UInt8.max),
-            Float(uwpColor.b) / Float(UInt8.max),
-            Float(uwpColor.a) / Float(UInt8.max)
-        )
-    }
-}
-
 extension EnvironmentValues {
+    @MainActor
     var winUIForegroundBrush: WinUI.Brush {
         let brush = SolidColorBrush()
-        brush.color = suggestedForegroundColor.uwpColor
+        brush.color = suggestedForegroundColor.resolve(in: self).uwpColor
         return brush
     }
 

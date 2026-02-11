@@ -37,13 +37,6 @@ final class RootViewController: UIViewController {
         fatalError("init(coder:) is not used for the root view controller")
     }
 
-    override func loadView() {
-        super.loadView()
-        if traitCollection.userInterfaceStyle != .dark {
-            view.backgroundColor = .white
-        }
-    }
-
     override func viewWillTransition(
         to size: CGSize, with coordinator: any UIViewControllerTransitionCoordinator
     ) {
@@ -88,6 +81,10 @@ extension UIKitBackend {
             window = UIWindow()
         }
 
+        #if !os(tvOS)
+            window.backgroundColor = .systemBackground
+        #endif
+
         window.rootViewController = RootViewController(backend: self)
         return window
     }
@@ -131,6 +128,17 @@ extension UIKitBackend {
         window.makeKeyAndVisible()
     }
 
+    public func close(window: Window) {
+        logger.notice("UIKitBackend: ignoring \(#function) call")
+    }
+
+    public func setCloseHandler(
+        ofWindow window: Window,
+        to action: @escaping () -> Void
+    ) {
+        logger.notice("UIKitBackend: ignoring \(#function) call")
+    }
+
     public func isWindowProgrammaticallyResizable(_ window: Window) -> Bool {
         #if os(visionOS)
             true
@@ -139,8 +147,18 @@ extension UIKitBackend {
         #endif
     }
 
-    public func setResizability(ofWindow window: Window, to resizable: Bool) {
-        logger.notice("ignoring \(#function) call")
+    public func setBehaviors(
+        ofWindow window: Window,
+        closable: Bool,
+        minimizable: Bool,
+        resizable: Bool
+    ) {
+        if #available(iOS 16, tvOS 16, macCatalyst 16, *) {
+            window.windowScene?.windowingBehaviors?.isClosable = closable
+            window.windowScene?.windowingBehaviors?.isMiniaturizable = minimizable
+        }
+
+        logger.notice("ignoring resizability change")
     }
 
     public func setSize(ofWindow window: Window, to newSize: SIMD2<Int>) {
@@ -157,10 +175,20 @@ extension UIKitBackend {
         #endif
     }
 
-    public func setMinimumSize(ofWindow window: Window, to minimumSize: SIMD2<Int>) {
+    public func setSizeLimits(
+        ofWindow window: Window,
+        minimum minimumSize: SIMD2<Int>,
+        maximum maximumSize: SIMD2<Int>?
+    ) {
         // if windowScene is nil, either the window isn't shown or it must be fullscreen
-        // if sizeRestrictions is nil, the device doesn't support setting a minimum window size
-        window.windowScene?.sizeRestrictions?.minimumSize = CGSize(
-            width: CGFloat(minimumSize.x), height: CGFloat(minimumSize.y))
+        // if sizeRestrictions is nil, the device doesn't support setting window size bounds
+        window.windowScene?.sizeRestrictions?.minimumSize =
+            CGSize(width: minimumSize.x, height: minimumSize.y)
+        window.windowScene?.sizeRestrictions?.maximumSize =
+            if let maximumSize {
+                CGSize(width: maximumSize.x, height: maximumSize.y)
+            } else {
+                CGSize(width: Double.infinity, height: .infinity)
+            }
     }
 }
