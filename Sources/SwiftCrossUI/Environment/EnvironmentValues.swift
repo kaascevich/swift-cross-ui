@@ -305,16 +305,14 @@ public struct EnvironmentValues {
     public let supportedDatePickerStyles: [DatePickerStyle]
 
     /// Creates the default environment.
-<<<<<<< HEAD
     ///
-    /// - Parameter backend: The app's backend.
-    package init<Backend: AppBackend>(backend: Backend) {
-=======
+    /// - Parameters:
+    ///   - backend: The app's backend.
+    ///   - appStorageProvider: The app storage provider.
     package init<Backend: AppBackend>(
         backend: Backend,
         appStorageProvider: any AppStorageProvider = DefaultAppStorageProvider()
     ) {
->>>>>>> main
         self.backend = backend
         self.appStorageProvider = appStorageProvider
 

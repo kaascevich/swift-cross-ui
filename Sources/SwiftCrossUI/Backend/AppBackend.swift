@@ -210,16 +210,21 @@ public protocol AppBackend: Sendable {
     ///   - window: The window to set the size of.
     ///   - newSize: The new size.
     func setSize(ofWindow window: Window, to newSize: SIMD2<Int>)
-<<<<<<< HEAD
-    /// Sets the minimum width and height of the window.
+    /// Sets the minimum and maximum width and height of a window.
     ///
-    /// Prevents the user from making the window any smaller than the given
-    /// size.
+    /// Prevents the user from making the window any smaller or larger than the
+    /// given minimum and maximum sizes, respectively.
     ///
     /// - Parameters:
-    ///   - window: The window to set the minimum size of.
-    ///   - minimumSize: The new minimum size.
-    func setMinimumSize(ofWindow window: Window, to minimumSize: SIMD2<Int>)
+    ///   - window: The window to set the size limits of.
+    ///   - minimumSize: The minimum window size.
+    ///   - maximumSize: The maximum window size. If `nil`, any existing maximum
+    ///     size constraints should be removed.
+    func setSizeLimits(
+        ofWindow window: Window,
+        minimum minimumSize: SIMD2<Int>,
+        maximum maximumSize: SIMD2<Int>?
+    )
     /// Sets the handler for the window's resizing events.
     ///
     /// Setting the resize handler overrides any previous handler.
@@ -230,26 +235,6 @@ public protocol AppBackend: Sendable {
     ///     returns its final size (which allows SwiftCrossUI to implement
     ///     features such as dynamic minimum window sizes based off the
     ///     content's minimum size).
-=======
-    /// Sets the minimum and maximum width and height of a window.
-    ///
-    /// Prevents the user from making the window any smaller or larger than the given minimum and
-    /// maximum sizes, respectively.
-    /// - Parameters:
-    ///   - window: The window to set the size limits of.
-    ///   - minimumSize: The minimum window size.
-    ///   - maximumSize: The maximum window size. If `nil`, any existing maximum size
-    ///     constraints should be removed.
-    func setSizeLimits(
-        ofWindow window: Window,
-        minimum minimumSize: SIMD2<Int>,
-        maximum maximumSize: SIMD2<Int>?
-    )
-    /// Sets the handler for the window's resizing events. `action` takes the proposed size
-    /// of the window and returns the final size for the window (which allows SwiftCrossUI
-    /// to implement features such as dynamic minimum window sizes based off the content's
-    /// minimum size). Setting the resize handler overrides any previous handler.
->>>>>>> main
     func setResizeHandler(
         ofWindow window: Window,
         to action: @escaping (_ newSize: SIMD2<Int>) -> Void
@@ -347,7 +332,19 @@ public protocol AppBackend: Sendable {
     /// - Returns: The resolved text style.
     func resolveTextStyle(_ textStyle: Font.TextStyle) -> Font.TextStyle.Resolved
 
-<<<<<<< HEAD
+    /// Resolves the given adaptive color to a concrete color given the current environment.
+    ///
+    /// The default implementation uses Apple's adaptive colors.
+    ///
+    /// - Parameters:
+    ///   - adaptiveColor: The adaptive color to resolve.
+    ///   - environment: The environment to resolve the color in.
+    /// - Returns: The resolved color.
+    func resolveAdaptiveColor(
+        _ adaptiveColor: Color.SystemAdaptive,
+        in environment: EnvironmentValues
+    ) -> Color.Resolved
+
     /// Computes a window's environment based off the root environment.
     ///
     /// This may involve updating ``EnvironmentValues/windowScaleFactor``, etc.
@@ -356,18 +353,6 @@ public protocol AppBackend: Sendable {
     ///   - window: The window to compute the environment for.
     ///   - rootEnvironment: The root environment.
     /// - Returns: The computed window environment.
-=======
-    /// Resolves the given adaptive color to a concrete color given the current environment.
-    ///
-    /// The default implementation uses Apple's adaptive colors.
-    func resolveAdaptiveColor(
-        _ adaptiveColor: Color.SystemAdaptive,
-        in environment: EnvironmentValues
-    ) -> Color.Resolved
-
-    /// Computes a window's environment based off the root environment. This may involve
-    /// updating ``EnvironmentValues/windowScaleFactor`` etc.
->>>>>>> main
     func computeWindowEnvironment(
         window: Window,
         rootEnvironment: EnvironmentValues
@@ -470,15 +455,11 @@ public protocol AppBackend: Sendable {
     /// - Returns: A colorable rectangle.
     func createColorableRectangle() -> Widget
     /// Sets the color of a colorable rectangle.
-<<<<<<< HEAD
     ///
     /// - Parameters:
     ///   - widget: The rectangle to set the color of.
     ///   - color: The new color.
-    func setColor(ofColorableRectangle widget: Widget, to color: Color)
-=======
     func setColor(ofColorableRectangle widget: Widget, to color: Color.Resolved)
->>>>>>> main
 
     /// Sets the corner radius of a widget (any widget). Should affect the view's border radius
     /// as well.
