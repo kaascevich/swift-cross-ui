@@ -51,7 +51,7 @@ public struct Font: Hashable, Sendable {
 
     /// Selects whether or not to use the font's emphasized variant.
     ///
-    /// - Paramater emphasized: Whether to emphasize the font.
+    /// - Parameter emphasized: Whether to emphasize the font.
     /// - Returns: The updated font.
     public func emphasized(_ emphasized: Bool = true) -> Font {
         var font = self
@@ -61,7 +61,7 @@ public struct Font: Hashable, Sendable {
 
     /// Selects whether or not to italicize the font.
     ///
-    /// - Paramater emphasized: Whether to italicize the font.
+    /// - Parameter italic: Whether to italicize the font.
     /// - Returns: The updated font.
     public func italic(_ italic: Bool = true) -> Font {
         var font = self
@@ -71,7 +71,7 @@ public struct Font: Hashable, Sendable {
 
     /// Overrides the font's weight.
     ///
-    /// - Paramater weight: The font's new weight. If `nil`, this method does
+    /// - Parameter weight: The font's new weight. If `nil`, this method does
     ///   nothing.
     /// - Returns: The updated font.
     public func weight(_ weight: Weight?) -> Font {
@@ -84,7 +84,7 @@ public struct Font: Hashable, Sendable {
 
     /// Overrides the font's design.
     ///
-    /// - Paramater design: The font's new design. If `nil`, this method does
+    /// - Parameter design: The font's new design. If `nil`, this method does
     ///   nothing.
     /// - Returns: The updated font.
     public func design(_ design: Design?) -> Font {
@@ -97,7 +97,7 @@ public struct Font: Hashable, Sendable {
 
     /// Overrides the font's point size.
     ///
-    /// - Paramater design: The font's new point size.
+    /// - Parameter design: The font's new point size.
     /// - Returns: The updated font.
     public func pointSize(_ pointSize: Double) -> Font {
         var font = self
@@ -121,6 +121,8 @@ public struct Font: Hashable, Sendable {
     /// Selects whether or not to use the font's monospaced variant.
     ///
     /// - Parameter monospaced: Whether to use the font's monospaced variant.
+    ///   If `false` and the font is currently monospaced, then the font's
+    ///   design gets reverted to its default value.
     /// - Returns: The updated font.
     public func monospaced(_ monospaced: Bool = true) -> Font {
         var font = self

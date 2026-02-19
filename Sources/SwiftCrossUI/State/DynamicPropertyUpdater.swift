@@ -10,7 +10,7 @@
 var updaterCache: [ObjectIdentifier: Any] = [:]
 
 /// A helper for updating the dynamic properties of a stateful struct (e.g.
-/// a ``View``- or ``App``-conforming struct).
+/// a struct conforming to ``View`` or ``App``).
 ///
 /// Dynamic properties are those that conform to ``DynamicProperty``, e.g. those
 /// annotated with the ``State`` property wrapper.

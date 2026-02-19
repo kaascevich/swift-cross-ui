@@ -282,7 +282,7 @@ public struct Path: Sendable {
     /// The stroke style for this path.
     public private(set) var strokeStyle = StrokeStyle(width: 1.0)
 
-    /// Creates a ``Path`` instance.
+    /// Creates an empty ``Path`` instance.
     public init() {}
 
     /// Move the path's current point to the given point.

@@ -1,10 +1,10 @@
 /// Alignment of items layed out along the horizontal axis.
 public enum HorizontalAlignment: Sendable {
-    /// Leading alignment (left in left-to-right locales).
+    /// Leading alignment (left alignment in left-to-right locales).
     case leading
     /// Center alignment.
     case center
-    /// Trailing alignment (right in left-to-right locales).
+    /// Trailing alignment (right alignment in left-to-right locales).
     case trailing
 
     /// Converts this value to a ``StackAlignment``.

@@ -10,12 +10,13 @@ public protocol View {
     /// Gets the view's children as a type-erased collection of view graph
     /// nodes.
     ///
-    /// Type-erased to avoid leaking complex requirements to users implementing
-    /// their own regular views.
+    /// The collection is type-erased to avoid leaking complex requirements to
+    /// users implementing their own regular views.
     ///
     /// - Parameters:
     ///   - backend: The app's backend.
-    ///   - snapshots: <#FIXME: document#>
+    ///   - snapshots: A list of snapshots, used to restore view state during a
+    ///     hot reload.
     ///   - environment: The current environment.
     /// - Returns: The view's children as a type-erased collection of view graph
     ///   nodes.
@@ -59,7 +60,7 @@ public protocol View {
     /// - Parameters:
     ///   - children: The view's children.
     ///   - backend: The app's backend.
-    /// - Returns: The view's underlying widget for `backend`.
+    /// - Returns: The view's widget created using the given backend.
     func asWidget<Backend: AppBackend>(
         _ children: any ViewGraphNodeChildren,
         backend: Backend
@@ -69,8 +70,7 @@ public protocol View {
     /// available space.
     ///
     /// This method should _not_ apply the layout to `widget`; that should be
-    /// done in <doc:/documentation/SwiftCrossUI/View/commit(_:children:layout:environment:backend:)-6kzjk>
-    /// instead.
+    /// done in ``commit(_:children:layout:environment:backend:)`` instead.
     ///
     /// `proposedSize` is the size suggested by the parent container, but child
     /// views always get the final call on their own size.
@@ -99,7 +99,7 @@ public protocol View {
     ///   - children: The view's children.
     ///   - layout: The layout to use for the view. Guaranteed to be the
     ///     last value returned by
-    ///     <doc:/documentation/SwiftCrossUI/View/computeLayout(_:children:proposedSize:environment:backend:)-2gzmc>.
+    ///     ``computeLayout(_:children:proposedSize:environment:backend:)``.
     ///   - environment: The current environment.
     ///   - backend: The app's backend.
     func commit<Backend: AppBackend>(

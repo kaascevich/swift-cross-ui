@@ -14,6 +14,9 @@ public enum ColorScheme: Sendable {
     }
 
     /// The default foreground color for this color scheme.
+    ///
+    /// This only applies on backends that don't define an interpretation of
+    /// color schemes themselves.
     public var defaultForegroundColor: Color {
         switch self {
             case .light: .black

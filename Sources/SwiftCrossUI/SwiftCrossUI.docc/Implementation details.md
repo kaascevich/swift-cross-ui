@@ -72,25 +72,28 @@ view graph node's lifecycle is also what ``View/onAppear(perform:)`` and
 ``View/onDisappear(perform:)`` runs when a node deinits.
 
 ``ViewGraphNode``s store their children using types conforming to the
-``ViewGraphNodeChildren`` protocol.Tthe exact type is determined by the
+``ViewGraphNodeChildren`` protocol. The exact type is determined by the
 associated view. For example, ``TupleView3`` stores its three child nodes ---
 `child0`, `child1`, and `child2` --- using ``TupleViewChildren3``, while
 ``ForEach`` stores its children in the `ForEachViewChildren` class which is
 designed for storing a homogenous array of child nodes. It's the responsibility
-of ``View/computeLayout(_:children:proposedSize:environment:backend:)-2gzmc``
+of ``View/computeLayout(_:children:proposedSize:environment:backend:)``
 implementations to propagate updates on to any relevant child nodes.
 
 ### View updates
 
-View updates happen in two phases; the dry-run phase and the commit phase.
+View updates happen in two phases; the layout phase and the commit phase.
 
-The dry-run phase allows views to efficiently be queried for their layout at
-multiple different sizes without too much overhead. During a dry run,
+The layout phase allows views to efficiently be queried for their layout at
+multiple different sizes without too much overhead. During the layout phase,
 ``ViewGraphNode`` can avoid querying its associated view for a potentially
 expensive layout computation if it believes that it can already satisfy the
 query using basic assumptions about view layout behaviour and the results of
 previous layout updates (see `ViewGraphNode.resultCache` and
 `ViewGraphNode.currentResult`).
+
+The commit phase simply applies the result of the last layout computation to
+the view's underlying widget.
 
 There are two types of view updates; top-down and bottom-up. Top-down updates
 occur when a view's parent view has updated for some reason (be that a state
@@ -109,7 +112,7 @@ when you're implementing regular views.
 The following requirements are used to implement internal views such as
 ``Button``:
 
-- term ``View/children(backend:snapshots:environment:)-3yoia``: This method
+- term ``View/children(backend:snapshots:environment:)``: This method
   produces the ``ViewGraphNodeChildren`` instance that the view would like to
   use to store its children. The return type is an existential because otherwise
   we would need to expose an `associatedtype Children: ViewGraphNodeChildren`
@@ -117,31 +120,31 @@ The following requirements are used to implement internal views such as
   ``View/body`` requirement. (There is an internal `TypeSafeView` protocol that
   adds this requirement.)
 
-- term ``View/layoutableChildren(backend:children:)-182zg``: This method is only
+- term ``View/layoutableChildren(backend:children:)``: This method is only
   implemented by the `TupleViewN` types. It essentially just gets the view's
   children as an array of ``LayoutSystem/LayoutableChild``s, the type that
   ``LayoutSystem`` works with when computing stack layouts.
 
-- term ``View/asWidget(_:backend:)-88tbd``: This method is generally pretty
+- term ``View/asWidget(_:backend:)``: This method is generally pretty
   simple; just use the backend instance to produce the widget type the view
   wants to use. Views only ever have a single associated widget instance; views
   that want to change their underlying widget can use an intermediate container
   widget to satisfy this requirement.
 
   This method shouldn't configure the widget at all, that's handled by
-  ``View/computeLayout(_:children:proposedSize:environment:backend:)-2gzmc`` and
-  ``View/commit(_:children:layout:environment:backend:)-6kzjk``
-  (which are guaranteed to be called between ``View/asWidget(_:backend:)-88tbd``
+  ``View/computeLayout(_:children:proposedSize:environment:backend:)`` and
+  ``View/commit(_:children:layout:environment:backend:)``
+  (which are guaranteed to be called between ``View/asWidget(_:backend:)``
   and the first time the view appears on screen).
 
-- term ``View/computeLayout(_:children:proposedSize:environment:backend:)-2gzmc``:
+- term ``View/computeLayout(_:children:proposedSize:environment:backend:)``:
   This method is the meat of most view implementations; its role is to compute
   view layouts. It may be called multiple times before the layout system settles
   on a result.
 
-- term ``View/commit(_:children:layout:environment:backend:)-6kzjk``: This
+- term ``View/commit(_:children:layout:environment:backend:)``: This
   method updates the widgets to be displayed on-screen. It recieves the most
-  recent result of ``View/computeLayout(_:children:proposedSize:environment:backend:)-2gzmc``
+  recent result of ``View/computeLayout(_:children:proposedSize:environment:backend:)``
   as the `layout` parameter.
 
 Internally, we have the `ElementaryView` and `TypeSafeView` protocols (which
@@ -153,7 +156,7 @@ certain purposes. `ElementaryView` is for views with no children, and
 
 If a view or modifier wants to change the environment for all child views, it
 does this in
-``View/computeLayout(_:children:proposedSize:environment:backend:)-2gzmc`` by
+``View/computeLayout(_:children:proposedSize:environment:backend:)`` by
 passing a modified copy of the environment to child nodes when calling their
 update methods.
 

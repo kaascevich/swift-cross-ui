@@ -35,7 +35,7 @@ public class ViewGraph<Root: View> {
     /// Creates a view graph for a root view with a specific backend.
     ///
     /// - Parameters:
-    ///   - view: The view to create a graph for.
+    ///   - view: The root view to create a graph for.
     ///   - backend: The app's backend.
     ///   - environment: The current environment.
     public init<Backend: AppBackend>(

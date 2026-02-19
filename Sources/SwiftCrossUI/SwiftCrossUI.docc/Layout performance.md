@@ -9,7 +9,7 @@ lead maintainer).
 
 [the PR]: https://github.com/stackotter/swift-cross-ui/pull/278
 
-## Optimisations
+## Optimizations
 
 ### Splitting `View.update` into `View.computeLayout` and `View.commit`
 
@@ -64,7 +64,7 @@ Adopting said approximations went hand in hand with updating ``ViewSize`` to be
 a simple size type (rather than tracking minimum size, maximum size, ideal size,
 etc), and our proposed view sizes to be 2D vectors of `Double?`.
 
-Together, adopting the approximations and updating simplifying our ``ViewSize``
+Together, adopting the approximations and simplifying our ``ViewSize``
 type allowed us to reduce our effective child layout passes per stack layout
 pass to 1. I say effective layout passes, because we still query the child
 multiple times for its minimum, maximum, and final sizes, but together those
@@ -75,8 +75,8 @@ requires computing the minimum, maximum or ideal sizes of its children
 respectively. This means that minimum, maximum and ideal size requests are
 linear in the number of views in the stack's view hierarchy. Additionally, our
 probing child layout requests enable `environment.allowLayoutCaching`, so any
-given view only ends up computing its minimum, maximum or ideal size once during 
-given update cycle. This means that even though our stack layout algorithm
+given view only ends up computing its minimum, maximum or ideal size once during
+a given update cycle. This means that even though our stack layout algorithm
 technically queries each child multiple times, the minimum and maximum size
 requests are free if any parent view has already computed them, meaning that we
 effectively only query each child once.
@@ -141,7 +141,7 @@ All benchmarking has been done on my M2 MacBook Air with 8GB of RAM.
 - The message list benchmark is now 4 times faster (it didn't benefit as much
   from our branching factor reductions because it has less nesting).
 - @bbrk24's private DiscordBotGUI app now has 29 times faster window resize
-  handling, and a synthetic benchmark based of the core of its performance
+  handling, and a synthetic benchmark based off the core of its performance
   issues is 11.34 times faster.
 
 ### Future directions
