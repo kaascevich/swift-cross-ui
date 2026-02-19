@@ -67,8 +67,9 @@ public struct ProgressView<Label: View>: View {
         self.progress = value.map(Double.init)
     }
 
-    /// Makes the ProgressView resize to fit the available space.
-    /// Only affects ``Kind/spinner``.
+    /// Makes the `ProgressView` resize to fit the available space.
+    ///
+    /// This only affects spinners.
     public func resizable(_ isResizable: Bool = true) -> Self {
         var progressView = self
         progressView.isSpinnerResizable = isResizable

@@ -218,7 +218,11 @@ public struct EnvironmentValues {
     /// Displays as a modal for the current window, or the entire app if
     /// accessed outside of a scene's view graph (in which case the backend
     /// can decide whether to make it an app modal, a standalone window, or a
-    /// window of its choosing).
+    /// modal for a window of its choosing).
+    ///
+    /// - Important: GtkBackend, Gtk3Backend, and WinUIBackend will only
+    ///   enable _either_ files or directories for selection, but won't
+    ///   enable both types in a single dialog.
     @MainActor
     @available(tvOS, unavailable, message: "tvOS does not provide file system access")
     public var chooseFile: PresentSingleFileOpenDialogAction {
@@ -308,7 +312,7 @@ public struct EnvironmentValues {
     ///
     /// - Parameters:
     ///   - backend: The app's backend.
-    ///   - appStorageProvider: The app storage provider.
+    ///   - appStorageProvider: The app's app storage provider
     package init<Backend: AppBackend>(
         backend: Backend,
         appStorageProvider: any AppStorageProvider = DefaultAppStorageProvider()

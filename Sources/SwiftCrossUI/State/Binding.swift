@@ -1,20 +1,34 @@
-/// A value that can read and write a different value owned by a source of
-/// truth.
+/// A value that can read and write a value owned by a source of truth.
 ///
 /// You can create a binding in several different ways:
 /// - by accessing the ``projectedValue`` (via leading `$` syntax) on a piece of
-///   ``State`` or another `Binding`
+///   ``State`` or another `Binding`:
+///   ```swift
+///   @State var name = "John Appleseed"
+///   TextField("Name", text: $name)
+///   ```
 /// - by _projecting_ a property of an existing binding with dynamic member
-///   lookup (``subscript(dynamicMember:)``)
-/// - by calling ``init(get:set:)`` with a custom getter and setter
+///   lookup (``subscript(dynamicMember:)``):
+///   ```swift
+///   @Binding var account: Account
+///   TextField("Email", text: $account.email)
+///   Toggle("Notifications", isOn: $account.notificationsEnabled)
+///   ```
+/// - by calling ``init(get:set:)`` with a custom getter and setter:
+///   ```swift
+///   let binding = Binding(
+///       get: { endpoint.getData() },
+///       set: { endpoint.setData(to: $0) }
+///   )
+///   ```
 ///
 /// That last one reveals something important about bindings: while they can be
 /// thought of as writable references to their sources of truth, in reality
 /// they're nothing more than getter-setter pairs. A binding can have any
 /// arbitrary getter and setter, and the two functions don't even have to be
-/// related. However, SwiftCrossUI's reactivity relies on a binding's getter and
-/// setter consistently managing the same source of truth; see
-/// ``init(get:set:)`` for more info.
+/// related. However, SwiftCrossUI's reactivity relies on a binding's getter
+/// and setter acting in a consistent manner; see  ``init(get:set:)`` for more
+/// info.
 @dynamicMemberLookup
 @propertyWrapper
 public struct Binding<Value> {

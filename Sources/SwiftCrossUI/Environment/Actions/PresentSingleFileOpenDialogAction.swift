@@ -8,9 +8,9 @@ public struct PresentSingleFileOpenDialogAction: Sendable {
 
     /// Presents an 'Open file' dialog fit for selecting a single file.
     ///
-    /// - Important: Some backends will only enable _either_ files or
-    ///   directories for selection, but won't enable both types in a
-    ///   single dialog. (TODO: which backends?)
+    /// - Important: GtkBackend, Gtk3Backend, and WinUIBackend will only
+    ///   enable _either_ files or directories for selection, but won't
+    ///   enable both types in a single dialog.
     ///
     /// - Parameters:
     ///   - title: The dialog's title. Defaults to "Open".
@@ -20,7 +20,7 @@ public struct PresentSingleFileOpenDialogAction: Sendable {
     ///   - initialDirectory: The directory to start the dialog in. Defaults
     ///     to `nil`, which lets the backend choose (usually it'll be the
     ///     app's current working directory and/or the directory where the
-    ///     previous dialog was dismissed in).
+    ///     previous dialog was dismissed).
     ///   - showHiddenFiles: Whether to show hidden files. Defaults to `false`.
     ///   - allowSelectingFiles: Whether to allow selecting files (as opposed
     ///     to directories) in the dialog. Defaults to `true`.

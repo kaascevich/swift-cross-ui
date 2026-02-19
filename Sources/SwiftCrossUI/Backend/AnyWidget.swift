@@ -40,7 +40,7 @@ public class AnyWidget {
     ///
     /// Often more concise than using ``AnyWidget/concreteWidget(for:)``.
     ///
-    /// - Precondition: `T` is the same type as the widget.
+    /// - Precondition: The underlying widget is of type `T`.
     ///
     /// - Returns: The converted widget.
     public func into<T>() -> T {

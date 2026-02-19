@@ -9,7 +9,8 @@ import Foundation
 /// not a production-ready fallback for views that cannot be represented by a
 /// given backend. The methods you need to implemented up-front (which don't
 /// have default implementations) are: ``AppBackend/createWindow(withDefaultSize:)``,
-/// ``AppBackend/setTitle(ofWindow:to:)``, ``AppBackend/setResizability(ofWindow:to:)``,
+/// ``AppBackend/setTitle(ofWindow:to:)``,
+/// ``AppBackend/setBehaviors(ofWindow:closable:minimizable:resizable:)``,
 /// ``AppBackend/setChild(ofWindow:to:)``, ``AppBackend/show(window:)``,
 /// ``AppBackend/runMainLoop(_:)``, ``AppBackend/runInMainThread(action:)``,
 /// ``AppBackend/isWindowProgrammaticallyResizable(_:)``,
@@ -114,7 +115,7 @@ public protocol AppBackend: Sendable {
     var supportsMultipleWindows: Bool { get }
 
     /// The supported date picker styles.
-    /// 
+    ///
     /// Must include ``DatePickerStyle/automatic`` if date pickers are supported at all.
     nonisolated var supportedDatePickerStyles: [DatePickerStyle] { get }
 
@@ -426,9 +427,10 @@ public protocol AppBackend: Sendable {
     /// - Parameters:
     ///   - child: The child to insert.
     ///   - container: The container to insert the child into.
+    ///   - index: The index to insert the child at.
     func insert(_ child: Widget, into container: Widget, at index: Int)
     /// Swaps the child at firstIndex with the child at secondIndex.
-    /// 
+    ///
     /// May crash if either index is out of bounds.
     ///
     /// - Parameters:
@@ -1314,7 +1316,7 @@ public protocol AppBackend: Sendable {
     /// Create a path.
     ///
     /// The path will not be shown until
-    /// ``renderPath(_:container:strokeColor:fillColor:overrideStrokeStyle:)-2qfb0``
+    /// ``renderPath(_:container:strokeColor:fillColor:overrideStrokeStyle:)``
     /// is called.
     ///
     /// - Returns: A path.
@@ -1322,7 +1324,7 @@ public protocol AppBackend: Sendable {
     /// Update a path.
     ///
     /// The updates do not need to be visible before
-    /// ``renderPath(_:container:strokeColor:fillColor:overrideStrokeStyle:)-2qfb0``
+    /// ``renderPath(_:container:strokeColor:fillColor:overrideStrokeStyle:)``
     /// is called.
     ///
     /// - Parameters:

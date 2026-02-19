@@ -15,7 +15,7 @@ public struct PresentFileSaveDialogAction: Sendable {
     ///   - initialDirectory: The directory to start the dialog in. Defaults
     ///     to `nil`, which lets the backend choose (usually it'll be the
     ///     app's current working directory and/or the directory where the
-    ///     previous dialog was dismissed in).
+    ///     previous dialog was dismissed).
     ///   - showHiddenFiles: Whether to show hidden files. Defaults to `false`.
     ///   - nameFieldLabel: The placeholder label for the file name field.
     ///     Defaults to `nil`, which uses the backend-specific default.

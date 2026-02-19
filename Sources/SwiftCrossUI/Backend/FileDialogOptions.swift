@@ -13,8 +13,8 @@ public struct FileDialogOptions {
     /// The definition of "hidden" is platform-specific, but typically involves
     /// a special metadata flag and/or a leading period in the file name.
     public var showHiddenFiles: Bool
-    /// Whether to allow selecting items that are not one of the types specified
-    /// in ``allowedContentTypes``.
+    /// Whether to allow the user to provide a custom extension not specified in
+    /// ``allowedContentTypes`` when saving files.
     public var allowOtherContentTypes: Bool
     /// The directory the file dialog starts in. If `nil`, the starting
     /// directory is backend-specific.

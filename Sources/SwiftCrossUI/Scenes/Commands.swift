@@ -12,7 +12,8 @@ public struct Commands: Sendable {
     /// Overlays `newCommands` onto `self`.
     ///
     /// If top-level menus in `newCommands` and `self` have conflicting names,
-    /// the ones in `self` win out.
+    /// the menus get merged, with the items from `self`'s menu first, followed
+    /// by the items from `newCommands`'s menus.
     ///
     /// - Parameter newCommands: The commands to overlay.
     /// - Returns: The overlayed commands.
