@@ -1,7 +1,7 @@
 extension View {
     /// Sets the background of this view to another view.
     ///
-    /// - Parameter background: The view to set as this view's background.
+    /// - Parameter background: The view to place behind this view.
     public func background<Background: View>(_ background: Background) -> some View {
         BackgroundModifier(background: background, foreground: self)
     }

@@ -1,10 +1,11 @@
 import Foundation
 
 extension View {
-    /// Performs an action whenever a URL is opened.
+    /// Performs an action whenever the system asks the app to handle
+    /// a URL with a registered scheme.
     ///
-    /// - Parameter action: The action to perform when a URL is opened. Receives
-    ///   the URL in question.
+    /// - Parameter action: The action to perform. Receives the URL in
+    ///   question.
     public func onOpenURL(
         perform action: @escaping (URL) -> Void
     ) -> some View {

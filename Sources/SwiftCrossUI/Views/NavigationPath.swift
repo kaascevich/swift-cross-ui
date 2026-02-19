@@ -24,7 +24,7 @@ public struct NavigationPath {
         /// a view. By design they come after the `encodedEntries` (because they
         /// can only be the result of appending and maybe popping).
         var path: [any Codable] = []
-        /// Entries that will be encoded when this navigation path is first used
+        /// Entries that will be decoded when this navigation path is first used
         /// by a ``NavigationStack``.
         ///
         /// It is not possible to decode the entries without first knowing what
@@ -34,8 +34,9 @@ public struct NavigationPath {
     }
 
     /// The path and any elements waiting to be decoded are stored in a class so
-    /// that changes are triggered from within ``NavigationStack`` when decoding
-    /// the elements (which causes an infinite loop of updates).
+    /// that changes are triggered from within ``NavigationStack`` instead of
+    /// ``NavigationPath`` when decoding the elements (which avoids an infinite
+    /// loop of updates).
     private var storage = Storage()
 
     /// Indicates whether this path is empty.

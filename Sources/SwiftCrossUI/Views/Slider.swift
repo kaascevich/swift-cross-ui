@@ -5,7 +5,7 @@ public struct Slider: ElementaryView, View {
 
     /// A binding to the current value.
     private var value: Binding<Double>?
-    /// The slider's range of values.
+    /// The slider's selectable range of values.
     private var range: ClosedRange<Double>
     /// The number of decimal places used when displaying the value.
     private var decimalPlaces: Int
@@ -24,7 +24,7 @@ public struct Slider: ElementaryView, View {
     ///
     /// - Parameters:
     ///   - value: A binding to the current value.
-    ///   - range: The slider's range of values.
+    ///   - range: The slider's selectable range of values.
     public init<T: BinaryInteger>(value: Binding<T>? = nil, in range: ClosedRange<T>) {
         if let value {
             self.value = Binding<Double>(

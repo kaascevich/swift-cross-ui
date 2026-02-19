@@ -6,7 +6,7 @@ struct NavigationStackRootPath: Codable {}
 /// over the root view.
 ///
 /// Use ``navigationDestination(for:destination:)`` on this view instead of its
-/// children unlike, Apple's SwiftUI API.
+/// children, unlike Apple's SwiftUI API.
 public struct NavigationStack<Detail: View>: View {
     public var body: some View {
         if let element = elements.last {

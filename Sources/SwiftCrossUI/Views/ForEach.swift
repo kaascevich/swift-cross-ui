@@ -22,8 +22,8 @@ extension ForEach: TypeSafeView, View where Child: View {
     /// - Parameters:
     ///   - elements: The collection to build an array of views from.
     ///   - keyPath: A key path to the element type's ID.
-    ///   - child: A menu items builder that takes an element of `elements` and
-    ///     returns an appropriate list of menu items.
+    ///   - child: A view builder that returns an appropriate view for
+    ///     each element of `elements`.
     public init(
         _ elements: Items,
         id keyPath: KeyPath<Items.Element, ID>,

@@ -48,8 +48,7 @@ public struct Text: Sendable {
     /// The string to be shown in the text view.
     var string: String
 
-    /// Creates a new text view that displays a string with configurable
-    /// wrapping.
+    /// Creates a new text view that displays a string.
     ///
     /// - Parameter string: The string to display.
     public init(_ string: String) {

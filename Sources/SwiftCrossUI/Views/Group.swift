@@ -5,7 +5,7 @@ public struct Group<Content: View>: View {
 
     /// Creates a group.
     ///
-    /// - Parameter content: The content of this group.
+    /// - Parameter content: The content of the group.
     public init(@ViewBuilder content: () -> Content) {
         self.init(content: content())
     }

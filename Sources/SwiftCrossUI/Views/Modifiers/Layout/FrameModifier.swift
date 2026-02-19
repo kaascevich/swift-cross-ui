@@ -3,11 +3,11 @@ extension View {
     /// minimum size constraints.
     ///
     /// - Parameters:
-    ///   - width: The view's exact width. `nil` lets the view choose its own
+    ///   - width: The frame's exact width. `nil` lets the view choose its own
     ///     width instead.
-    ///   - height: The view's exact height. `nil` lets the view choose its own
+    ///   - height: The frame's exact height. `nil` lets the view choose its own
     ///     height instead.
-    ///   - alignment: How to align this view within its container.
+    ///   - alignment: How to align the view within its container.
     public func frame(
         width: Int? = nil,
         height: Int? = nil,
@@ -25,19 +25,19 @@ extension View {
     /// minimum size constraints.
     ///
     /// - Parameters:
-    ///   - minWidth: The view's minimum width. `nil` means there is no minimum
-    ///     width.
-    ///   - idealWidth: The view's ideal width. `nil` lets the view choose its
-    ///     own width instead.
-    ///   - maxWidth: The view's maximum width. `nil` means there is no maximum
-    ///     width.
-    ///   - minHeight: The view's minimum height. `nil` means there is no
-    ///     minimum height.
-    ///   - idealHeight: The view's ideal height. `nil` lets the view choose its
-    ///     own height instead.
-    ///   - maxHeight: The view's maximum height. `nil` means there is no
-    ///     maximum height.
-    ///   - alignment: How to align this view within its container.
+    ///   - minWidth: The frame's minimum width. `nil` means the frame inherits
+    ///     the minimum width of its content
+    ///   - idealWidth: The frame's ideal width. `nil` lets the frame choose its
+    ///     own ideal width instead.
+    ///   - maxWidth: The frame's maximum width. `nil` means the frame inherits
+    ///     the maximum width of its content
+    ///   - minHeight: The frame's minimum height. `nil` means the frame inherits
+    ///     the minimum height of its content
+    ///   - idealHeight: The frame's ideal height. `nil` lets the frame choose its
+    ///     own ideal height instead.
+    ///   - maxHeight: The frame's maximum height. `nil` means the frame inherits
+    ///     the maximum height of its content
+    ///   - alignment: How to align the view within its container.
     public func frame(
         minWidth: Int? = nil,
         idealWidth: Int? = nil,

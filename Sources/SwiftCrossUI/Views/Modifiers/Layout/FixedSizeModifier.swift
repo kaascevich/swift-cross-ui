@@ -4,7 +4,21 @@ extension View {
         FixedSizeModifier(self, horizontal: true, vertical: true)
     }
 
-    /// Locks this view's size.
+    /// Locks this view's size on the specified axes.
+    ///
+    /// What this modifier does is propose an unspecified size along the specified
+    /// dimensions; this has the effect of making the view immune to changes in
+    /// size proposals along its 'fixed' axes. But the view's size along those
+    /// axes **may still change** if the incoming size proposal changes along a
+    /// 'non-fixed' axis. This is particularly pertinent in the case of views like
+    /// ``Text``, which have a tradeoff between width and height; a 'fixed'
+    /// horizontal size can still change if the vertical size changes, and vice
+    /// versa.
+    ///
+    /// If both `horizontal` and `vertical` are `true` (i.e. if both axes are
+    /// 'fixed'), then the child will take on its ideal size along both axes and
+    /// will _actually_ be of a fixed size. ``fixedSize()`` (with no arguments)
+    /// provides a shorthand for this.
     ///
     /// - Parameters:
     ///   - horizontal: Whether to lock this view's size on the horizontal axis.

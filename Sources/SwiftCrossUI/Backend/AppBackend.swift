@@ -121,7 +121,7 @@ public protocol AppBackend: Sendable {
 
     /// Runs the backend's main run loop.
     ///
-    /// The app will exit when this method returns. This wall always be the
+    /// The app will exit when this method returns. This will always be the
     /// first method called by SwiftCrossUI.
     ///
     /// Often in UI frameworks (such as Gtk), code is run in a callback
@@ -232,10 +232,7 @@ public protocol AppBackend: Sendable {
     ///
     /// - Parameters:
     ///   - window: The window to set the resize handler of.
-    ///   - action: The new resize handler. Takes the window's proposed size and
-    ///     returns its final size (which allows SwiftCrossUI to implement
-    ///     features such as dynamic minimum window sizes based off the
-    ///     content's minimum size).
+    ///   - action: The new resize handler. Takes the window's proposed size.
     func setResizeHandler(
         ofWindow window: Window,
         to action: @escaping (_ newSize: SIMD2<Int>) -> Void
@@ -329,7 +326,7 @@ public protocol AppBackend: Sendable {
     ///
     /// - SeeAlso: ``Font/TextStyle/resolve(for:)``
     ///
-    /// - Parameter textStyle: The unresolved text style.
+    /// - Parameter textStyle: The text style to resolve.
     /// - Returns: The resolved text style.
     func resolveTextStyle(_ textStyle: Font.TextStyle) -> Font.TextStyle.Resolved
 
@@ -441,15 +438,15 @@ public protocol AppBackend: Sendable {
     /// Sets the position of the specified child in a container.
     ///
     /// - Parameters:
-    ///   - index: The index of the child to position.
+    ///   - index: The index of the child to set the position of.
     ///   - container: The container holding the child.
-    ///   - position: The position to set.
+    ///   - position: The new position.
     func setPosition(ofChildAt index: Int, in container: Widget, to position: SIMD2<Int>)
     /// Removes the child at the given index from the given container.
     ///
     /// - Parameters:
     ///   - index: The index of the child to remove.
-    ///   - container: The container holding the child.
+    ///   - container: The container to remove the child from.
     func remove(childAt index: Int, from container: Widget)
 
     /// Creates a rectangular widget with configurable color.
@@ -498,7 +495,7 @@ public protocol AppBackend: Sendable {
     ///
     /// - Parameters:
     ///   - scrollView: The scroll container widget previously created by
-    ///     ``createScrollContainer(for:)-96edi.
+    ///     ``createScrollContainer(for:)``.
     ///   - environment: The current ``EnvironmentValues`` to apply.
     func updateScrollContainer(
         _ scrollView: Widget,
@@ -633,8 +630,8 @@ public protocol AppBackend: Sendable {
     ///   - widget: The target widget. Some backends (such as GTK) require a
     ///     reference to the target widget to get a text layout context.
     ///   - proposedWidth: The proposed width of the text. If `nil`, the text
-    ///     should be laid out on a single line taking up as much width as it
-    ///     needs.
+    ///     should take up as much height as necessary to respect the proposed
+    ///     width without getting ellipsized.
     ///   - proposedHeight: The proposed height of the text.
     ///   - environment: The current environment.
     /// - Returns: The size of `text` if it were laid out while attempting to
@@ -653,7 +650,7 @@ public protocol AppBackend: Sendable {
     ///
     /// The returned widget should truncate and ellipsize its content when
     /// given a size which isn't big enough to fit the full content, as per
-    /// ``size(of:whenDisplayedIn:proposedWidth:proposedHeight:environment:)-757xh``.
+    /// ``size(of:whenDisplayedIn:proposedWidth:proposedHeight:environment:)``.
     ///
     /// - Returns: A text view.
     func createTextView() -> Widget
@@ -669,7 +666,7 @@ public protocol AppBackend: Sendable {
         environment: EnvironmentValues
     )
 
-    /// Creates an image view from an image file (specified by path).
+    /// Creates an image view.
     ///
     /// Predominantly used by ``Image``.
     ///
@@ -724,7 +721,7 @@ public protocol AppBackend: Sendable {
     /// the table to the number of labels provided.
     ///
     /// - Parameters:
-    ///   - table: The table.
+    ///   - table: The table to set the column labels of.
     ///   - labels: The column labels to set.
     ///   - environment: The current environment.
     func setColumnLabels(
@@ -924,8 +921,7 @@ public protocol AppBackend: Sendable {
     /// - Returns: `textField`'s content.
     func getContent(ofTextField textField: Widget) -> String
 
-    /// Creates an editable multi-line text editor with a placeholder label and change
-    /// handler.
+    /// Creates an editable multi-line text editor.
     ///
     /// Predominantly used by ``TextEditor``.
     ///
@@ -1120,7 +1116,7 @@ public protocol AppBackend: Sendable {
     /// Dismisses an alert programmatically without invoking the response
     /// handler.
     ///
-    /// Must only be called after ``showAlert(_:window:responseHandler:)-9iu82``.
+    /// Must only be called after ``showAlert(_:window:responseHandler:)``.
     ///
     /// - Parameters:
     ///   - alert: The alert to dismiss.
@@ -1145,7 +1141,7 @@ public protocol AppBackend: Sendable {
     ///     platforms such as tvOS to compute layout constraints.
     ///
     ///     The sheet shouldn't be attached to the window by `updateSheet`. That
-    ///     is handled by ``presentSheet(_:window:parentSheet:)-5w3ko`` which is
+    ///     is handled by ``presentSheet(_:window:parentSheet:)`` which is
     ///     guaranteed to be called exactly once (unlike `updateSheet` which
     ///     gets called whenever preferences or sizing change).
     ///   - environment: The environment that the sheet will be presented in.
@@ -1225,8 +1221,8 @@ public protocol AppBackend: Sendable {
     /// folders.
     ///
     /// - Parameters:
-    ///   - fileDialogOptions: The general options for the file dialog.
-    ///   - openDialogOptions: The options specific to the open dialog.
+    ///   - fileDialogOptions: The general file dialog options to use.
+    ///   - openDialogOptions: The open dialog-specific options to use.
     ///   - window: The window to attach the dialog to. If `nil`, the backend
     ///     can either make the dialog a whole app modal, a standalone window,
     ///     or a modal for a window of its choosing.
@@ -1244,8 +1240,8 @@ public protocol AppBackend: Sendable {
     /// destination.
     ///
     /// - Parameters:
-    ///   - fileDialogOptions: The general options for the file dialog.
-    ///   - saveDialogOptions: The options specific to the save dialog.
+    ///   - fileDialogOptions: The general file dialog options to use.
+    ///   - saveDialogOptions: The save dialog-specific options to use.
     ///   - window: The window to attach the dialog to. If `nil`, the backend
     ///     can either make the dialog a whole app modal, a standalone window,
     ///     or a modal for a window of its choosing.

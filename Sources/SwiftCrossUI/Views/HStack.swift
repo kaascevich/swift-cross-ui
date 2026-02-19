@@ -13,7 +13,7 @@ public struct HStack<Content: View>: View {
     ///   - alignment: The alignment of the stack's children in the vertical
     ///     direction.
     ///   - spacing: The amount of spacing to apply between children.
-    ///   - content: The content of this stack.
+    ///   - content: The content of the stack.
     public init(
         alignment: VerticalAlignment = .center,
         spacing: Int? = nil,

@@ -1,6 +1,6 @@
 import Foundation
 
-/// A progress indicator, either a bar or a spinner.
+/// A progress indicator; either a bar or a spinner.
 public struct ProgressView<Label: View>: View {
     /// The label for this progress view.
     private var label: Label

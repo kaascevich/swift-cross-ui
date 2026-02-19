@@ -15,7 +15,7 @@ public struct VStack<Content: View>: View {
     ///   - alignment: The alignment of the stack's children in the horizontal
     ///     direction.
     ///   - spacing: The amount of spacing to apply between children.
-    ///   - content: The content of this stack.
+    ///   - content: The content of the stack.
     public init(
         alignment: HorizontalAlignment = .center,
         spacing: Int? = nil,
@@ -30,7 +30,7 @@ public struct VStack<Content: View>: View {
     ///   - alignment: The alignment of the stack's children in the horizontal
     ///     direction.
     ///   - spacing: The amount of spacing to apply between children.
-    ///   - content: The content of this stack.
+    ///   - content: The content of the stack.
     init(
         alignment: HorizontalAlignment = .center,
         spacing: Int? = nil,
