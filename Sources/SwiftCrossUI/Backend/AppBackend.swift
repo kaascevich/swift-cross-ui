@@ -914,7 +914,7 @@ public protocol AppBackend: Sendable {
     /// Predominantly used by ``TextField``.
     ///
     /// - Returns: A text field.
-    func createTextField() -> Widget
+    func createTextField(secure: Bool) -> Widget
     /// Sets the placeholder label and change handler of an editable text field.
     ///
     /// - Parameters:

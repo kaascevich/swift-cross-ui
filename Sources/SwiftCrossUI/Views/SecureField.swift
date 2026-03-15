@@ -1,6 +1,6 @@
-/// A control that displays an editable text interface.
-public struct TextField: ElementaryView, View {
-    /// The ideal width of a TextField.
+/// A control that displays an editable text interface with hidden input.
+public struct SecureField: ElementaryView, View {
+    /// The ideal width of a SecureField.
     private static let idealWidth: Double = 100
 
     /// The label to show when the field is empty.
@@ -9,7 +9,7 @@ public struct TextField: ElementaryView, View {
     @Binding
     private var text: String
 
-    /// Creates an editable text field with a given placeholder.
+    /// Creates an editable secure text field with a given placeholder.
     ///
     /// - Parameters:
     ///   - placeholder: The label to show when the field is empty.
@@ -19,11 +19,11 @@ public struct TextField: ElementaryView, View {
         self._text = text
     }
 
-    /// Creates an editable text field with a given placeholder.
+    /// Creates an editable secure text field with a given placeholder.
     @available(
         *, deprecated,
-        message: "Use TextField(_:text:) instead",
-        renamed: "TextField.init(_:text:)"
+        message: "Use SecureField(_:text:) instead",
+        renamed: "SecureField.init(_:text:)"
     )
     public init(_ placeholder: String = "", _ value: Binding<String>? = nil) {
         self.placeholder = placeholder
@@ -32,7 +32,7 @@ public struct TextField: ElementaryView, View {
     }
 
     func asWidget<Backend: AppBackend>(backend: Backend) -> Backend.Widget {
-        return backend.createTextField(secure: false)
+        return backend.createTextField(secure: true)
     }
 
     func computeLayout<Backend: AppBackend>(
