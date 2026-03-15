@@ -189,20 +189,14 @@ public struct EnvironmentValues {
     @MainActor
     public var scenePhase: ScenePhase {
         func scenePhase<Backend: AppBackend>(backend: Backend) -> ScenePhase {
-            if let window {
-                if backend.isWindowActive(window as! Backend.Window) {
-                    .active
-                } else {
-                    .inactive
-                }
+            let isActive = if let window {
+                backend.isWindowActive(window as! Backend.Window)
             } else {
-                if backend.isApplicationActive() {
-                    .active
-                } else {
-                    .inactive
-                }
+                backend.isApplicationActive()
             }
+            return if isActive { .active } else { .inactive }
         }
+
         return scenePhase(backend: backend)
     }
 

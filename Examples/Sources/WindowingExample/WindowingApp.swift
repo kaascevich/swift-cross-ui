@@ -194,10 +194,13 @@ struct TertiaryWindowView: View {
 
 struct SingletonWindowView: View {
     @Environment(\.dismissWindow) private var dismissWindow
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         VStack {
             Text("This a singleton window!")
+
+            Text("Window scene phase: \(scenePhase)")
 
             Button("Close window") {
                 dismissWindow()
@@ -218,6 +221,8 @@ struct WindowingApp: App {
     @State var closable = true
     @State var minimizable = true
 
+    @Environment(\.scenePhase) var scenePhase
+
     var body: some Scene {
         WindowGroup(title) {
             #hotReloadable {
@@ -226,6 +231,8 @@ struct WindowingApp: App {
                         Text("Window title:")
                         TextField("My window", text: $title)
                     }
+
+                    Text("App scene phase: \(scenePhase)")
 
                     Toggle("Enable resizing", isOn: $resizable)
                         .windowResizeBehavior(resizable ? .enabled : .disabled)
