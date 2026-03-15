@@ -1002,8 +1002,10 @@ public final class Gtk3Backend: AppBackend {
         (slider as! Scale).value = value
     }
 
-    public func createTextField() -> Widget {
-        return Entry()
+    public func createTextField(secure: Bool) -> Widget {
+        let entry = Entry()
+        entry.visibility = secure
+        return entry
     }
 
     public func updateTextField(

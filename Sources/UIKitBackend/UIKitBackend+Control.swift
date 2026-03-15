@@ -306,8 +306,10 @@ extension UIKitBackend {
         buttonWidget.child.isEnabled = environment.isEnabled
     }
 
-    public func createTextField() -> Widget {
-        TextFieldWidget()
+    public func createTextField(secure: Bool) -> Widget {
+        let textField = TextFieldWidget()
+        textField.child.isSecureTextEntry = secure
+        return textField
     }
 
     public func updateTextField(

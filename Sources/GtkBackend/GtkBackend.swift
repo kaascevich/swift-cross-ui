@@ -1029,8 +1029,10 @@ public final class GtkBackend: AppBackend {
         }
     }
 
-    public func createTextField() -> Widget {
-        return Entry()
+    public func createTextField(secure: Bool) -> Widget {
+        let entry = Entry()
+        entry.visibility = secure
+        return entry
     }
 
     public func updateTextField(
