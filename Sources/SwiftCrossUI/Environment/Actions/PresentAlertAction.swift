@@ -1,12 +1,19 @@
-/// Presents an alert to the user. Returns once an action has been selected and
-/// the corresponding action handler has been run. Returns the index of the
-/// selected action. By default, the alert will have a single button labelled
-/// `OK`. All buttons will dismiss the alert even if you provide your own
-/// actions.
+/// Presents an alert to the user.
+///
+/// Returns once an action has been selected and the corresponding action
+/// handler has been run. Returns the index of the selected action. By default,
+/// the alert will have a single button labelled "OK". All buttons will dismiss
+/// the alert even if you provide your own actions.
 @MainActor
 public struct PresentAlertAction {
     let environment: EnvironmentValues
 
+    /// Presents an alert to the user.
+    ///
+    /// - Parameters:
+    ///   - title: The title of the alert.
+    ///   - actions: A list of actions the user can perform.
+    /// - Returns: The index of the chosen action.
     @discardableResult
     public func callAsFunction(
         _ title: String,
@@ -24,12 +31,7 @@ public struct PresentAlertAction {
                         actionLabels: actions.map(\.label),
                         environment: environment
                     )
-                    let window: Backend.Window? =
-                        if let window = environment.window {
-                            .some(window as! Backend.Window)
-                        } else {
-                            nil
-                        }
+                    let window = environment.window.map { $0 as! Backend.Window }
                     backend.showAlert(alert, window: window) { actionIndex in
                         actions[actionIndex].action()
                         continuation.resume(returning: actionIndex)

@@ -25,6 +25,7 @@ public final class UIKitBackend: AppBackend {
     public let requiresImageUpdateOnScaleFactorChange = false
 
     public let canRevealFiles = false
+    public let supportsMultipleWindows = false
 
     public var deviceClass: DeviceClass {
         switch UIDevice.current.userInterfaceIdiom {
@@ -55,6 +56,36 @@ public final class UIKitBackend: AppBackend {
                 [.automatic, .compact, .wheel]
             } else {
                 [.automatic]
+            }
+        #endif
+    }
+
+    public var defaultPickerStyle: BackendPickerStyle {
+        #if os(tvOS)
+            .segmented
+        #elseif os(visionOS)
+            .menu
+        #else
+            if #available(iOS 14, macCatalyst 14, *) {
+                .menu
+            } else {
+                .wheel
+            }
+        #endif
+    }
+
+    public var supportedPickerStyles: [BackendPickerStyle] {
+        #if os(tvOS)
+            if #available(tvOS 17, *) {
+                [.menu, .segmented]
+            } else {
+                [.segmented]
+            }
+        #else
+            if #available(iOS 14, macCatalyst 14, *) {
+                [.menu, .segmented, .wheel]
+            } else {
+                [.segmented, .wheel]
             }
         #endif
     }

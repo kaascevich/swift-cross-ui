@@ -11,12 +11,6 @@ extension App {
     }
 }
 
-extension SwiftCrossUI.Color {
-    public var gtkColor: Gtk.Color {
-        return Gtk.Color(red, green, blue, alpha)
-    }
-}
-
 public final class GtkBackend: AppBackend {
     public typealias Window = Gtk.ApplicationWindow
     public typealias Widget = Gtk.Widget
@@ -41,9 +35,11 @@ public final class GtkBackend: AppBackend {
     public let requiresImageUpdateOnScaleFactorChange = false
     public let menuImplementationStyle = MenuImplementationStyle.dynamicPopover
     public let canRevealFiles = true
+    public let supportsMultipleWindows = true
     public let deviceClass = DeviceClass.desktop
     public let defaultSheetCornerRadius = 10
     public let supportedDatePickerStyles: [DatePickerStyle] = [.automatic, .graphical]
+    public let supportedPickerStyles: [BackendPickerStyle] = [.menu]
 
     var gtkApp: Application
 
@@ -55,6 +51,8 @@ public final class GtkBackend: AppBackend {
     /// All current windows associated with the application. Doesn't include the
     /// precreated window until it gets 'created' via `createWindow`.
     var windows: [Window] = []
+
+    private var measurementCustomLabel: CustomLabel!
 
     private struct LogLocation: Hashable, Equatable {
         let file: String
@@ -97,6 +95,7 @@ public final class GtkBackend: AppBackend {
 
     public func runMainLoop(_ callback: @escaping @MainActor () -> Void) {
         gtkApp.run { window in
+            self.measurementCustomLabel = (self.createTextView() as! CustomLabel)
             self.precreatedWindow = window
             callback()
 
@@ -266,6 +265,20 @@ public final class GtkBackend: AppBackend {
 
     public func isApplicationActive() -> Bool {
         windows.contains(where: \.isActive)
+    }
+
+    public func close(window: Window) {
+        window.close()
+    }
+
+    public func setCloseHandler(
+        ofWindow window: Window,
+        to action: @escaping () -> Void
+    ) {
+        window.onCloseRequest = { _ in
+            action()
+            window.destroy()
+        }
     }
 
     public func openExternalURL(_ url: URL) throws {
@@ -540,7 +553,10 @@ public final class GtkBackend: AppBackend {
         return Box()
     }
 
-    public func setColor(ofColorableRectangle widget: Widget, to color: SwiftCrossUI.Color) {
+    public func setColor(
+        ofColorableRectangle widget: Widget,
+        to color: SwiftCrossUI.Color.Resolved
+    ) {
         widget.css.set(property: .backgroundColor(color.gtkColor))
     }
 
@@ -628,6 +644,14 @@ public final class GtkBackend: AppBackend {
         return listView
     }
 
+    public func updateSelectableListView(
+        _ selectableListView: Widget,
+        environment: EnvironmentValues
+    ) {
+        let selectableListView = selectableListView as! CustomListBox
+        selectableListView.sensitive = environment.isEnabled
+    }
+
     public func baseItemPadding(
         ofSelectableListView listView: Widget
     ) -> SwiftCrossUI.EdgeInsets {
@@ -688,6 +712,7 @@ public final class GtkBackend: AppBackend {
         textView.wrap = true
         textView.lineWrapMode = .wordCharacter
         textView.ellipsize = .end
+        textView.yalign = 0.0
         return textView
     }
 
@@ -707,6 +732,7 @@ public final class GtkBackend: AppBackend {
                 case .trailing:
                     Justification.right
             }
+
         textView.selectable = environment.isTextSelectionEnabled
         textView.css.clear()
         textView.css.set(properties: Self.cssProperties(for: environment))
@@ -719,14 +745,53 @@ public final class GtkBackend: AppBackend {
         proposedHeight: Int?,
         environment: EnvironmentValues
     ) -> SIMD2<Int> {
+        let ellipsize: EllipsizeMode
+        if let widget = widget as? CustomLabel {
+            ellipsize = widget.ellipsize
+        } else if let widget = widget as? TextView {
+            // We don't ellipsize multi-line text editors
+            ellipsize = .none
+        } else {
+            logger.warning(
+                "\(#function) called with unexpected widget type \(type(of: widget))"
+            )
+            ellipsize = .none
+        }
+
         let pango = Pango(for: widget)
         let (width, height) = pango.getTextSize(
             text,
-            ellipsize: (widget as! CustomLabel).ellipsize,
+            ellipsize: proposedHeight == nil ? .none : ellipsize,
             proposedWidth: proposedWidth.map(Double.init),
             proposedHeight: proposedHeight.map(Double.init)
         )
-        return SIMD2(width, height)
+
+        var imposedHeight = height
+
+        if let lineLimitSettings = environment.lineLimitSettings {
+            let multilineString = [String](repeating: "a", count: lineLimitSettings.limit)
+                .joined(separator: "\n")
+            updateTextView(
+                measurementCustomLabel,
+                content: "",
+                environment: environment
+            )
+
+            let pango = Pango(for: measurementCustomLabel)
+
+            let (_, heightLimit) = pango.getTextSize(
+                multilineString,
+                ellipsize: .none,
+                proposedWidth: nil,
+                proposedHeight: nil
+            )
+
+            if heightLimit < imposedHeight || lineLimitSettings.reservesSpace {
+                imposedHeight = heightLimit
+            }
+        }
+
+        return SIMD2(width, imposedHeight)
     }
 
     public func createImageView() -> Widget {
@@ -885,7 +950,11 @@ public final class GtkBackend: AppBackend {
     }
 
     public func setState(ofToggle toggle: Widget, to state: Bool) {
-        (toggle as! Gtk.ToggleButton).active = state
+        let toggle = toggle as! Gtk.ToggleButton
+
+        toggle.withBlockedSignal(named: "toggled") {
+            toggle.active = state
+        }
     }
 
     public func createSwitch() -> Widget {
@@ -905,7 +974,11 @@ public final class GtkBackend: AppBackend {
     }
 
     public func setState(ofSwitch switchWidget: Widget, to state: Bool) {
-        (switchWidget as! Gtk.Switch).active = state
+        let switchWidget = switchWidget as! Gtk.Switch
+
+        switchWidget.withBlockedSignal(named: "notify::active") {
+            switchWidget.active = state
+        }
     }
 
     public func createCheckbox() -> Widget {
@@ -925,7 +998,11 @@ public final class GtkBackend: AppBackend {
     }
 
     public func setState(ofCheckbox checkboxWidget: Widget, to state: Bool) {
-        (checkboxWidget as! Gtk.CheckButton).active = state
+        let checkboxWidget = checkboxWidget as! Gtk.CheckButton
+
+        checkboxWidget.withBlockedSignal(named: "notify::active") {
+            checkboxWidget.active = state
+        }
     }
 
     public func createSlider() -> Widget {
@@ -953,7 +1030,11 @@ public final class GtkBackend: AppBackend {
     }
 
     public func setValue(ofSlider slider: Widget, to value: Double) {
-        (slider as! Scale).value = value
+        let slider = slider as! Scale
+
+        slider.withBlockedSignal(named: "value-changed") {
+            slider.value = value
+        }
     }
 
     public func createTextField() -> Widget {
@@ -982,7 +1063,11 @@ public final class GtkBackend: AppBackend {
     }
 
     public func setContent(ofTextField textField: Widget, to content: String) {
-        (textField as! Entry).text = content
+        let textField = textField as! Entry
+
+        textField.withBlockedSignal(named: "changed") {
+            textField.text = content
+        }
     }
 
     public func getContent(ofTextField textField: Widget) -> String {
@@ -1012,7 +1097,10 @@ public final class GtkBackend: AppBackend {
 
     public func setContent(ofTextEditor textEditor: Widget, to content: String) {
         let textEditor = textEditor as! Gtk.TextView
-        textEditor.buffer.text = content
+
+        textEditor.buffer.withBlockedSignal(named: "changed") {
+            textEditor.buffer.text = content
+        }
     }
 
     public func getContent(ofTextEditor textEditor: Widget) -> String {
@@ -1020,7 +1108,13 @@ public final class GtkBackend: AppBackend {
         return textEditor.buffer.text
     }
 
-    public func createPicker() -> Widget {
+    public func createPicker(style: BackendPickerStyle) -> Widget {
+        if style != .menu {
+            let message = "unsupported picker style \(style)"
+            logger.critical("\(message)")
+            fatalError(message)
+        }
+
         return DropDown(strings: [])
     }
 
@@ -1142,7 +1236,7 @@ public final class GtkBackend: AppBackend {
         // Compute styles
         let menuBackground: Gtk.Color
         let menuItemHoverBackground: Gtk.Color
-        let foreground = environment.suggestedForegroundColor.gtkColor
+        let foreground = environment.suggestedForegroundColor.resolve(in: environment).gtkColor
         switch environment.colorScheme {
             case .light:
                 menuBackground = Gtk.Color(1, 1, 1)
@@ -1436,8 +1530,8 @@ public final class GtkBackend: AppBackend {
     public func renderPath(
         _ path: Path,
         container: Widget,
-        strokeColor: SwiftCrossUI.Color,
-        fillColor: SwiftCrossUI.Color,
+        strokeColor: SwiftCrossUI.Color.Resolved,
+        fillColor: SwiftCrossUI.Color.Resolved,
         overrideStrokeStyle: StrokeStyle?
     ) {
         let drawingArea = container as! Gtk.DrawingArea
@@ -1490,7 +1584,7 @@ public final class GtkBackend: AppBackend {
                 Double(fillColor.red),
                 Double(fillColor.green),
                 Double(fillColor.blue),
-                Double(fillColor.alpha)
+                Double(fillColor.opacity)
             )
             cairo_set_source(cairo, fillPattern)
             cairo_fill_preserve(cairo)
@@ -1500,7 +1594,7 @@ public final class GtkBackend: AppBackend {
                 Double(strokeColor.red),
                 Double(strokeColor.green),
                 Double(strokeColor.blue),
-                Double(strokeColor.alpha)
+                Double(strokeColor.opacity)
             )
             cairo_set_source(cairo, strokePattern)
             cairo_stroke(cairo)
@@ -1646,7 +1740,11 @@ public final class GtkBackend: AppBackend {
         isControl: Bool = false
     ) -> [CSSProperty] {
         var properties: [CSSProperty] = []
-        properties.append(.foregroundColor(environment.suggestedForegroundColor.gtkColor))
+        properties.append(
+            .foregroundColor(
+                environment.suggestedForegroundColor.resolve(in: environment).gtkColor
+            )
+        )
         let font = environment.resolvedFont
         switch font.identifier.kind {
             case .system:
@@ -1717,6 +1815,7 @@ public final class GtkBackend: AppBackend {
             }
 
             self.runInMainThread {
+                self.dismissSheet(sheet)
                 sheet.onDismiss?()
             }
         }
@@ -1746,7 +1845,7 @@ public final class GtkBackend: AppBackend {
         cornerRadius: Double?,
         detents: [PresentationDetent],
         dragIndicatorVisibility: Visibility,
-        backgroundColor: SwiftCrossUI.Color?,
+        backgroundColor: SwiftCrossUI.Color.Resolved?,
         interactiveDismissDisabled: Bool
     ) {
         sheet.size = Size(width: size.x, height: size.y)
@@ -1754,7 +1853,12 @@ public final class GtkBackend: AppBackend {
 
         // Add a slight border to not be just a flat corner
         sheet.css.clear()
-        sheet.css.set(property: .border(color: SwiftCrossUI.Color.gray.gtkColor, width: 1))
+        sheet.css.set(
+            property: .border(
+                color: SwiftCrossUI.Color.gray.resolve(in: environment).gtkColor,
+                width: 1
+            )
+        )
 
         // Respect corner radius and background Color
         let radius = cornerRadius.map(Int.init) ?? defaultSheetCornerRadius

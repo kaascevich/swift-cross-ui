@@ -14,6 +14,7 @@ public final class DummyBackend: AppBackend {
         public var minimizable = true
         public var content: Widget?
         public var resizeHandler: ((SIMD2<Int>) -> Void)?
+        public var closeHandler: (() -> Void)?
         public var isActive = false
 
         public init(defaultSize: SIMD2<Int>?) {
@@ -118,7 +119,7 @@ public final class DummyBackend: AppBackend {
     public class TextView: Widget {
         public var content: String = ""
         public var font: Font.Resolved?
-        public var color = Color.black
+        public var color = Color.Resolved(red: 0.0, green: 0.0, blue: 0.0)
     }
 
     public class ImageView: Widget {
@@ -172,7 +173,7 @@ public final class DummyBackend: AppBackend {
     }
 
     public class Rectangle: Widget {
-        public var color = Color.clear
+        public var color = Color.Resolved(red: 0.0, green: 0.0, blue: 0.0, opacity: 0.0)
     }
 
     public class SplitView: Widget {
@@ -251,7 +252,9 @@ public final class DummyBackend: AppBackend {
     public var menuImplementationStyle = MenuImplementationStyle.dynamicPopover
     public var deviceClass = DeviceClass.desktop
     public var canRevealFiles = false
+    public var supportsMultipleWindows = true
     public var supportedDatePickerStyles: [DatePickerStyle] = []
+    public var supportedPickerStyles: [BackendPickerStyle] = []
 
     public var incomingURLHandler: ((URL) -> Void)?
     public var isAppActive = true
@@ -327,6 +330,14 @@ public final class DummyBackend: AppBackend {
         isAppActive
     }
 
+    public func close(window: Window) {
+        window.closeHandler?()
+    }
+
+    public func setCloseHandler(ofWindow window: Window, to action: @escaping () -> Void) {
+        window.closeHandler = action
+    }
+
     public func runInMainThread(action: @escaping @MainActor () -> Void) {
         DispatchQueue.main.async {
             action()
@@ -388,7 +399,7 @@ public final class DummyBackend: AppBackend {
         Rectangle()
     }
 
-    public func setColor(ofColorableRectangle widget: Widget, to color: Color) {
+    public func setColor(ofColorableRectangle widget: Widget, to color: Color.Resolved) {
         (widget as! Rectangle).color = color
     }
 
@@ -422,6 +433,11 @@ public final class DummyBackend: AppBackend {
     public func createSelectableListView() -> Widget {
         SelectableListView()
     }
+
+    public func updateSelectableListView(
+        _ selectableListView: Widget,
+        environment: EnvironmentValues
+    ) {}
 
     public func baseItemPadding(ofSelectableListView listView: Widget) -> EdgeInsets {
         EdgeInsets(top: 0, bottom: 0, leading: 0, trailing: 0)
@@ -507,11 +523,14 @@ public final class DummyBackend: AppBackend {
         TextView()
     }
 
-    public func updateTextView(_ textView: Widget, content: String, environment: EnvironmentValues)
-    {
+    public func updateTextView(
+        _ textView: Widget,
+        content: String,
+        environment: EnvironmentValues
+    ) {
         let textView = textView as! TextView
         textView.content = content
-        textView.color = environment.suggestedForegroundColor
+        textView.color = environment.suggestedForegroundColor.resolve(in: environment)
         textView.font = environment.resolvedFont
     }
 
@@ -520,8 +539,14 @@ public final class DummyBackend: AppBackend {
     }
 
     public func updateImageView(
-        _ imageView: Widget, rgbaData: [UInt8], width: Int, height: Int, targetWidth: Int,
-        targetHeight: Int, dataHasChanged: Bool, environment: EnvironmentValues
+        _ imageView: Widget,
+        rgbaData: [UInt8],
+        width: Int,
+        height: Int,
+        targetWidth: Int,
+        targetHeight: Int,
+        dataHasChanged: Bool,
+        environment: EnvironmentValues
     ) {
         let imageView = imageView as! ImageView
         imageView.rgbaData = rgbaData
@@ -538,13 +563,17 @@ public final class DummyBackend: AppBackend {
     }
 
     public func setColumnLabels(
-        ofTable table: Widget, to labels: [String], environment: EnvironmentValues
+        ofTable table: Widget,
+        to labels: [String],
+        environment: EnvironmentValues
     ) {
         (table as! Table).columnLabels = labels
     }
 
     public func setCells(
-        ofTable table: Widget, to cells: [Widget], withRowHeights rowHeights: [Int]
+        ofTable table: Widget,
+        to cells: [Widget],
+        withRowHeights rowHeights: [Int]
     ) {
         let table = table as! Table
         table.cells = cells
@@ -556,7 +585,9 @@ public final class DummyBackend: AppBackend {
     }
 
     public func updateButton(
-        _ button: Widget, label: String, environment: EnvironmentValues,
+        _ button: Widget,
+        label: String,
+        environment: EnvironmentValues,
         action: @escaping () -> Void
     ) {
         let button = button as! Button
@@ -565,7 +596,10 @@ public final class DummyBackend: AppBackend {
     }
 
     public func updateButton(
-        _ button: Widget, label: String, menu: Menu, environment: EnvironmentValues
+        _ button: Widget,
+        label: String,
+        menu: Menu,
+        environment: EnvironmentValues
     ) {
         let button = button as! Button
         button.label = label
@@ -578,7 +612,9 @@ public final class DummyBackend: AppBackend {
     }
 
     public func updateToggle(
-        _ toggle: Widget, label: String, environment: EnvironmentValues,
+        _ toggle: Widget,
+        label: String,
+        environment: EnvironmentValues,
         onChange: @escaping (Bool) -> Void
     ) {
         let toggle = toggle as! ToggleButton
@@ -596,7 +632,8 @@ public final class DummyBackend: AppBackend {
     }
 
     public func updateSwitch(
-        _ switchWidget: Widget, environment: SwiftCrossUI.EnvironmentValues,
+        _ switchWidget: Widget,
+        environment: SwiftCrossUI.EnvironmentValues,
         onChange: @escaping (Bool) -> Void
     ) {
         (switchWidget as! ToggleSwitch).toggleHandler = onChange
@@ -626,8 +663,12 @@ public final class DummyBackend: AppBackend {
     }
 
     public func updateSlider(
-        _ slider: Widget, minimum: Double, maximum: Double, decimalPlaces: Int,
-        environment: SwiftCrossUI.EnvironmentValues, onChange: @escaping (Double) -> Void
+        _ slider: Widget,
+        minimum: Double,
+        maximum: Double,
+        decimalPlaces: Int,
+        environment: SwiftCrossUI.EnvironmentValues,
+        onChange: @escaping (Double) -> Void
     ) {
         let slider = slider as! Slider
         slider.minimumValue = minimum
@@ -645,8 +686,11 @@ public final class DummyBackend: AppBackend {
     }
 
     public func updateTextField(
-        _ textField: Widget, placeholder: String, environment: SwiftCrossUI.EnvironmentValues,
-        onChange: @escaping (String) -> Void, onSubmit: @escaping () -> Void
+        _ textField: Widget,
+        placeholder: String,
+        environment: SwiftCrossUI.EnvironmentValues,
+        onChange: @escaping (String) -> Void,
+        onSubmit: @escaping () -> Void
     ) {
         let textField = textField as! TextField
         textField.placeholder = placeholder
@@ -735,7 +779,7 @@ public final class DummyBackend: AppBackend {
 
     // }
 
-    // public func updateSheet(_ sheet: Sheet, window: Window, environment: SwiftCrossUI.EnvironmentValues, size: SIMD2<Int>, onDismiss: @escaping () -> Void, cornerRadius: Double?, detents: [SwiftCrossUI.PresentationDetent], dragIndicatorVisibility: SwiftCrossUI.Visibility, backgroundColor: SwiftCrossUI.Color?, interactiveDismissDisabled: Bool) {
+    // public func updateSheet(_ sheet: Sheet, window: Window, environment: SwiftCrossUI.EnvironmentValues, size: SIMD2<Int>, onDismiss: @escaping () -> Void, cornerRadius: Double?, detents: [SwiftCrossUI.PresentationDetent], dragIndicatorVisibility: SwiftCrossUI.Visibility, backgroundColor: SwiftCrossUI.Color.Resolved?, interactiveDismissDisabled: Bool) {
 
     // }
 
@@ -787,7 +831,7 @@ public final class DummyBackend: AppBackend {
 
     // }
 
-    // public func renderPath(_ path: Path, container: Widget, strokeColor: SwiftCrossUI.Color, fillColor: SwiftCrossUI.Color, overrideStrokeStyle: SwiftCrossUI.StrokeStyle?) {
+    // public func renderPath(_ path: Path, container: Widget, strokeColor: SwiftCrossUI.Color.Resolved, fillColor: SwiftCrossUI.Color.Resolved, overrideStrokeStyle: SwiftCrossUI.StrokeStyle?) {
 
     // }
 

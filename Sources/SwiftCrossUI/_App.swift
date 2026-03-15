@@ -1,7 +1,7 @@
 // TODO: This could possibly be renamed to ``SceneGraph`` now that that's basically the role
 //   it has taken on since introducing scenes.
 /// A top-level wrapper providing an entry point for the app. Exists to be able to persist
-/// the view graph alongside the app (we can't do that on a user's `App` implementation because
+/// the view graph alongside the app (we can't do that on a user's ``App`` implementation because
 /// we can only add computed properties).
 @MainActor
 class _App<AppRoot: App> {
@@ -22,7 +22,10 @@ class _App<AppRoot: App> {
     init(_ app: AppRoot) {
         backend = app.backend
         self.app = app
-        self.environment = EnvironmentValues(backend: backend)
+        self.environment = EnvironmentValues(
+            backend: backend,
+            appStorageProvider: app.appStorageProvider
+        )
         self.cancellables = []
 
         dynamicPropertyUpdater = DynamicPropertyUpdater(for: app)
@@ -35,19 +38,22 @@ class _App<AppRoot: App> {
         dynamicPropertyUpdater.update(app, with: environment, previousValue: nil)
 
         if let sceneGraphRoot {
-            let result = sceneGraphRoot.update(
-                app.body,
+            let result = sceneGraphRoot.updateNode(app.body, environment: environment)
+            backend.setApplicationMenu(result.preferences.commands.resolve())
+            sceneGraphRoot.update(
                 backend: backend,
                 environment: environment
             )
-            backend.setApplicationMenu(result.preferences.commands.resolve())
         }
     }
 
     /// Runs the app using the app's selected backend.
     func run() {
         backend.runMainLoop { [self] in
-            let baseEnvironment = EnvironmentValues(backend: backend)
+            let baseEnvironment = EnvironmentValues(
+                backend: backend,
+                appStorageProvider: app.appStorageProvider
+            )
             environment = backend.computeRootEnvironment(
                 defaultEnvironment: baseEnvironment
             )
@@ -90,17 +96,13 @@ class _App<AppRoot: App> {
                 self.refreshSceneGraph()
             }
 
-            let result = rootNode.update(
-                nil,
-                backend: backend,
-                environment: backend.computeRootEnvironment(
-                    defaultEnvironment: baseEnvironment
-                )
-            )
-            self.sceneGraphRoot = rootNode
+            let result = rootNode.updateNode(nil, environment: environment)
 
             // Update application-wide menu
             backend.setApplicationMenu(result.preferences.commands.resolve())
+
+            rootNode.update(backend: backend, environment: environment)
+            self.sceneGraphRoot = rootNode
         }
     }
 }

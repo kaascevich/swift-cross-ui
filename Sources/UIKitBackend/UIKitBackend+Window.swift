@@ -37,13 +37,6 @@ final class RootViewController: UIViewController {
         fatalError("init(coder:) is not used for the root view controller")
     }
 
-    override func loadView() {
-        super.loadView()
-        if traitCollection.userInterfaceStyle != .dark {
-            view.backgroundColor = .white
-        }
-    }
-
     override func viewWillTransition(
         to size: CGSize, with coordinator: any UIViewControllerTransitionCoordinator
     ) {
@@ -87,6 +80,10 @@ extension UIKitBackend {
         } else {
             window = UIWindow()
         }
+
+        #if !os(tvOS)
+            window.backgroundColor = .systemBackground
+        #endif
 
         window.rootViewController = RootViewController(backend: self)
         return window
@@ -137,6 +134,17 @@ extension UIKitBackend {
 
     public func isApplicationActive() -> Bool {
         UIApplication.shared.applicationState == .active
+    }
+
+    public func close(window: Window) {
+        logger.notice("UIKitBackend: ignoring \(#function) call")
+    }
+
+    public func setCloseHandler(
+        ofWindow window: Window,
+        to action: @escaping () -> Void
+    ) {
+        logger.notice("UIKitBackend: ignoring \(#function) call")
     }
 
     public func isWindowProgrammaticallyResizable(_ window: Window) -> Bool {

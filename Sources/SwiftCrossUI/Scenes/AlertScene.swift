@@ -10,8 +10,6 @@ public struct AlertScene: Scene {
     @Binding var isPresented: Bool
     var actions: [AlertAction]
 
-    public let commands = Commands.empty
-
     /// Creates an alert scene.
     ///
     /// The exact behavior of the alert is backend-dependent, but it typically
@@ -49,15 +47,21 @@ public final class AlertSceneNode: SceneGraphNode {
         self.scene = scene
     }
 
-    public func update<Backend: AppBackend>(
-        _ newScene: AlertScene?,
-        backend: Backend,
+    public func updateNode(
+        _ newScene: NodeScene?,
         environment: EnvironmentValues
-    ) -> SceneUpdateResult {
+    ) -> SceneNodeUpdateResult {
         if let newScene {
             self.scene = newScene
         }
 
+        return .leafScene()
+    }
+
+    public func update<Backend: AppBackend>(
+        backend: Backend,
+        environment: EnvironmentValues
+    ) {
         if scene.isPresented, alert == nil {
             let alert = backend.createAlert()
             backend.updateAlert(
@@ -77,7 +81,5 @@ public final class AlertSceneNode: SceneGraphNode {
             backend.dismissAlert(alert as! Backend.Alert, window: nil)
             self.alert = nil
         }
-
-        return .leafScene()
     }
 }

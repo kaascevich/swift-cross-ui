@@ -9,6 +9,7 @@ open class Window: Widget {
 
     public convenience init() {
         self.init(gtk_window_new())
+        registerSignals()
     }
 
     @GObjectProperty(named: "title") public var title: String?
@@ -88,16 +89,10 @@ open class Window: Widget {
 
     public func present() {
         gtk_window_present(castedPointer())
+    }
 
-        addSignal(name: "close-request") { [weak self] () in
-            guard let self else { return }
-            self.onCloseRequest?(self)
-        }
-
-        addSignal(name: "destroy") { [weak self] () in
-            guard let self else { return }
-            self.onDestroy?(self)
-        }
+    public func close() {
+        gtk_window_close(castedPointer())
     }
 
     public func setEscapeKeyPressedHandler(to handler: (() -> Void)?) {
@@ -114,8 +109,18 @@ open class Window: Widget {
         addEventController(keyEventController)
     }
 
-    private var escapeKeyEventController: EventControllerKey?
+    open override func registerSignals() {
+        addSignal(name: "close-request") { [weak self] () in
+            guard let self else { return }
+            self.onCloseRequest?(self)
+        }
+        addSignal(name: "destroy") { [weak self] () in
+            guard let self else { return }
+            self.onDestroy?(self)
+        }
+    }
 
+    private var escapeKeyEventController: EventControllerKey?
     public var onCloseRequest: ((Window) -> Void)?
     public var onDestroy: ((Window) -> Void)?
     public var escapeKeyPressed: (() -> Void)?

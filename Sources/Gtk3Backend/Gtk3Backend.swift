@@ -11,12 +11,6 @@ extension App {
     }
 }
 
-extension SwiftCrossUI.Color {
-    public var gtkColor: Gtk3.Color {
-        return Gtk3.Color(Double(red), Double(green), Double(blue), Double(alpha))
-    }
-}
-
 public final class Gtk3Backend: AppBackend {
     public typealias Window = Gtk3.ApplicationWindow
     public typealias Widget = Gtk3.Widget
@@ -37,8 +31,10 @@ public final class Gtk3Backend: AppBackend {
     public let requiresImageUpdateOnScaleFactorChange = true
     public let menuImplementationStyle = MenuImplementationStyle.dynamicPopover
     public let canRevealFiles = true
+    public let supportsMultipleWindows = true
     public let deviceClass = DeviceClass.desktop
     public let supportedDatePickerStyles: [DatePickerStyle] = []
+    public let supportedPickerStyles: [BackendPickerStyle] = []
 
     var gtkApp: Application
 
@@ -91,7 +87,6 @@ public final class Gtk3Backend: AppBackend {
     public func runMainLoop(_ callback: @escaping @MainActor () -> Void) {
         gtkApp.run { window in
             self.precreatedWindow = window
-            callback()
 
             let provider = CSSProvider()
             provider.loadCss(
@@ -142,6 +137,8 @@ public final class Gtk3Backend: AppBackend {
             #if !os(macOS)
                 Self.mainRunLoopTicklingLoop()
             #endif
+
+            callback()
         }
     }
 
@@ -376,6 +373,31 @@ public final class Gtk3Backend: AppBackend {
         windows.contains(where: \.isActive)
     }
 
+    public func close(window: Window) {
+        window.close()
+
+        // NB: It seems GTK3 won't automatically signal `::delete-event` if
+        // the window is closed programmatically. Since the close handler
+        // calls `window.destroy()`, we avoid calling that ourselves to avoid
+        // a double-free; however, if the handler isn't set, we _do_ call
+        // `destroy()` to avoid leaking the window.
+        if let onCloseRequest = window.onCloseRequest {
+            onCloseRequest(window)
+        } else {
+            window.destroy()
+        }
+    }
+
+    public func setCloseHandler(
+        ofWindow window: Window,
+        to action: @escaping () -> Void
+    ) {
+        window.onCloseRequest = { _ in
+            action()
+            window.destroy()
+        }
+    }
+
     public func openExternalURL(_ url: URL) throws {
         // Used instead of gtk_uri_launcher_launch to maintain <4.10 compatibility
         var error: UnsafeMutablePointer<GError>? = nil
@@ -567,7 +589,7 @@ public final class Gtk3Backend: AppBackend {
 
     public func setColor(
         ofColorableRectangle widget: Widget,
-        to color: SwiftCrossUI.Color
+        to color: SwiftCrossUI.Color.Resolved
     ) {
         widget.css.set(property: .backgroundColor(color.gtkColor))
         widget.css.set(property: CSSProperty(key: "background-clip", value: "border-box"))
@@ -655,6 +677,14 @@ public final class Gtk3Backend: AppBackend {
         let listView = ListBox()
         listView.selectionMode = .single
         return listView
+    }
+
+    public func updateSelectableListView(
+        _ selectableListView: Widget,
+        environment: EnvironmentValues
+    ) {
+        let listView = selectableListView as! ListBox
+        listView.sensitive = environment.isEnabled
     }
 
     public func baseItemPadding(
@@ -1370,8 +1400,8 @@ public final class Gtk3Backend: AppBackend {
     public func renderPath(
         _ path: Path,
         container: Widget,
-        strokeColor: SwiftCrossUI.Color,
-        fillColor: SwiftCrossUI.Color,
+        strokeColor: SwiftCrossUI.Color.Resolved,
+        fillColor: SwiftCrossUI.Color.Resolved,
         overrideStrokeStyle: StrokeStyle?
     ) {
         let drawingArea = container as! Gtk3.DrawingArea
@@ -1425,7 +1455,7 @@ public final class Gtk3Backend: AppBackend {
                 Double(fillColor.red),
                 Double(fillColor.green),
                 Double(fillColor.blue),
-                Double(fillColor.alpha)
+                Double(fillColor.opacity)
             )
             cairo_set_source(cairo, fillPattern)
             cairo_fill_preserve(cairo)
@@ -1435,7 +1465,7 @@ public final class Gtk3Backend: AppBackend {
                 Double(strokeColor.red),
                 Double(strokeColor.green),
                 Double(strokeColor.blue),
-                Double(strokeColor.alpha)
+                Double(strokeColor.opacity)
             )
             cairo_set_source(cairo, strokePattern)
             cairo_stroke(cairo)
@@ -1546,7 +1576,11 @@ public final class Gtk3Backend: AppBackend {
         isControl: Bool = false
     ) -> [CSSProperty] {
         var properties: [CSSProperty] = []
-        properties.append(.foregroundColor(environment.suggestedForegroundColor.gtkColor))
+        properties.append(
+            .foregroundColor(
+                environment.suggestedForegroundColor.resolve(in: environment).gtkColor
+            )
+        )
         let font = environment.resolvedFont
         switch font.identifier.kind {
             case .system:
