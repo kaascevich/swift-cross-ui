@@ -511,6 +511,7 @@ public final class Gtk3Backend: AppBackend {
 
     public func setRootEnvironmentChangeHandler(to action: @escaping () -> Void) {
         // TODO: React to theme changes
+        // TODO: Notify when app focus changes
     }
 
     public func computeWindowEnvironment(
@@ -524,8 +525,11 @@ public final class Gtk3Backend: AppBackend {
     public func setWindowEnvironmentChangeHandler(
         of window: Window,
         to action: @escaping () -> Void
-    ) {
+    ) {        
         window.notifyScaleFactor = { _ in
+            action()
+        }
+        window.notifyIsActive = { _ in
             action()
         }
     }

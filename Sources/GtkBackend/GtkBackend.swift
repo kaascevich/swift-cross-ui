@@ -479,6 +479,7 @@ public final class GtkBackend: AppBackend {
 
     public func setRootEnvironmentChangeHandler(to action: @escaping () -> Void) {
         // TODO: React to theme changes
+        // TODO: Notify when app focus changes
     }
 
     public func computeWindowEnvironment(
@@ -494,6 +495,10 @@ public final class GtkBackend: AppBackend {
         to action: @escaping () -> Void
     ) {
         // TODO: Notify when window scale factor changes
+
+        window.notifyIsActive = { _ in
+            action()
+        }
     }
 
     public func setIncomingURLHandler(to action: @escaping (URL) -> Void) {
