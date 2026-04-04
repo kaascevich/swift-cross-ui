@@ -273,6 +273,11 @@ extension EnvironmentValues {
     /// How lines should be aligned relative to each other when line wrapped.
     @Entry public var multilineTextAlignment: HorizontalAlignment = .leading
 
+    /// Whether to override the case of displayed ``Text`` views.
+    ///
+    /// `nil` displays the text without any case changes.
+    @Entry public var textCase: Text.Case?
+
     /// The current color scheme of the current view scope.
     @Entry public var colorScheme: ColorScheme = .light
 
@@ -388,6 +393,9 @@ extension EnvironmentValues {
     /// The current time zone that views should use when handling dates.
     @Entry public var timeZone: TimeZone = .current
 
+    /// The current locale.
+    @Entry public var locale: Locale = .current
+
     /// The display style used by ``Picker``.
     @Entry public var pickerStyle: any PickerStyle = .automatic
 
@@ -407,6 +415,21 @@ extension EnvironmentValues {
         lineLimitSettings?.limit
     }
 }
+
+extension EnvironmentValues {
+    func applyingTextTransforms(to string: String) -> String {
+        var string = string
+
+        switch textCase {
+            case .lowercase: string = string.lowercased(with: locale)
+            case .uppercase: string = string.uppercased(with: locale)
+            case nil: break
+        }
+
+        return string
+    }
+}
+
 
 /// A key that can be used to extend the environment with new properties.
 public protocol EnvironmentKey<Value> {
