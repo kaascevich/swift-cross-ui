@@ -406,6 +406,9 @@ extension EnvironmentValues {
     public var lineLimit: Int? {
         lineLimitSettings?.limit
     }
+
+    /// The keyboard shortcut assigned with controls in this view.
+    @Entry public internal(set) var keyboardShortcut: KeyboardShortcut?
 }
 
 /// A key that can be used to extend the environment with new properties.

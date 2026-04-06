@@ -574,6 +574,25 @@ public final class AppKitBackend: AppBackend {
         field.isSelectable = environment.isTextSelectionEnabled
     }
 
+    func appkitKeyEquivalent(
+        for keyboardShortcut: KeyboardShortcut
+    ) -> (String, NSEvent.ModifierFlags) {
+        let string = String(keyboardShortcut.key.character)
+
+        var modifierFlags = NSEvent.ModifierFlags()
+        if keyboardShortcut.modifiers.contains(.primary) {
+            modifierFlags.insert(.command)
+        }
+        if keyboardShortcut.modifiers.contains(.secondary) {
+            modifierFlags.insert(.shift)
+        }
+        if keyboardShortcut.modifiers.contains(.tertiary) {
+            modifierFlags.insert(.option)
+        }
+
+        return (string, modifierFlags)
+    }
+
     public func createButton() -> Widget {
         return NSButton(title: "", target: nil, action: nil)
     }
@@ -594,6 +613,13 @@ public final class AppKitBackend: AppBackend {
         button.isEnabled = environment.isEnabled
         button.onAction = { _ in
             action()
+        }
+
+        if let keyboardShortcut = environment.keyboardShortcut {
+            let (keyEquivalent, modifierMask) =
+                appkitKeyEquivalent(for: keyboardShortcut)
+            button.keyEquivalent = keyEquivalent
+            button.keyEquivalentModifierMask = modifierMask
         }
     }
 
