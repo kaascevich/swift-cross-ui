@@ -25,33 +25,36 @@ public struct Menu: Sendable {
     func resolve() -> ResolvedMenu.Submenu {
         ResolvedMenu.Submenu(
             label: label,
-            content: Self.resolveItems(items)
+            content: Self.resolve(items: items)
         )
+    }
+
+    @MainActor
+    static func resolve(item: MenuItem) -> ResolvedMenu.Item {
+        switch item {
+            case .button(let button):
+                .button(button.label, button.action)
+            case .text(let text):
+                .button(text.string, nil)
+            case .toggle(let toggle):
+                .toggle(
+                    toggle.label,
+                    toggle.active.wrappedValue,
+                    onChange: { toggle.active.wrappedValue = $0 }
+                )
+            case .separator:
+                .separator
+            case .submenu(let submenu):
+                .submenu(submenu.resolve())
+            case .modifiedEnvironment(let item, let modification):
+                .modifiedEnvironment(resolve(item: item), modification)
+        }
     }
 
     /// Resolves the menu's items to a representation used by backends.
     @MainActor
-    static func resolveItems(_ items: [MenuItem]) -> ResolvedMenu {
-        ResolvedMenu(
-            items: items.map { item in
-                switch item {
-                    case .button(let button):
-                        .button(button.label, button.action)
-                    case .text(let text):
-                        .button(text.string, nil)
-                    case .toggle(let toggle):
-                        .toggle(
-                            toggle.label,
-                            toggle.active.wrappedValue,
-                            onChange: { toggle.active.wrappedValue = $0 }
-                        )
-                    case .separator:
-                        .separator
-                    case .submenu(let submenu):
-                        .submenu(submenu.resolve())
-                }
-            }
-        )
+    static func resolve(items: [MenuItem]) -> ResolvedMenu {
+        ResolvedMenu(items: items.map(resolve(item:)))
     }
 }
 

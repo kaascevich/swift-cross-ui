@@ -33,7 +33,7 @@ public struct CommandMenu: Sendable {
     func resolve() -> ResolvedMenu.Submenu {
         ResolvedMenu.Submenu(
             label: name,
-            content: Menu.resolveItems(content)
+            content: Menu.resolve(items: content)
         )
     }
 }
