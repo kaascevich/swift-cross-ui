@@ -2,7 +2,7 @@
 ///
 /// Due to technical limitations, the minimum supported OS's for menu buttons in
 /// UIKitBackend are iOS 14 and tvOS 17.
-public struct Menu: Sendable {
+public struct Menu {
     /// The menu's label.
     public var label: String
     /// The menu's items.

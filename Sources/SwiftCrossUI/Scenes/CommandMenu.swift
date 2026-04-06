@@ -1,5 +1,5 @@
 /// A command menu.
-public struct CommandMenu: Sendable {
+public struct CommandMenu {
     /// The menu's name.
     var name: String
     /// The menu's contents.

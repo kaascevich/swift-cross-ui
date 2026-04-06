@@ -1,5 +1,5 @@
 /// An item of a ``Menu`` or ``CommandMenu``.
-public enum MenuItem: Sendable {
+public enum MenuItem {
     /// A button.
     case button(Button)
     /// Text.
@@ -14,7 +14,7 @@ public enum MenuItem: Sendable {
     /// A menu item with an environment modifier.
     indirect case modifiedEnvironment(
         MenuItem,
-        @Sendable (EnvironmentValues) -> EnvironmentValues
+        (EnvironmentValues) -> EnvironmentValues
     )
 }
 
