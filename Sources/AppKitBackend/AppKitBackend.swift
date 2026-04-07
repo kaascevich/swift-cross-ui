@@ -667,6 +667,13 @@ public final class AppKitBackend: AppBackend {
             let toggle = toggle as! NSButton
             onChange(toggle.state == .on)
         }
+
+        if let keyboardShortcut = environment.keyboardShortcut {
+            let (keyEquivalent, modifierMask) =
+            appkitKeyEquivalent(for: keyboardShortcut)
+            toggle.keyEquivalent = keyEquivalent
+            toggle.keyEquivalentModifierMask = modifierMask
+        }
     }
 
     public func setState(ofToggle toggle: Widget, to state: Bool) {
@@ -688,6 +695,13 @@ public final class AppKitBackend: AppBackend {
         checkbox.onAction = { toggle in
             let checkbox = toggle as! NSButton
             onChange(checkbox.state == .on)
+        }
+
+        if let keyboardShortcut = environment.keyboardShortcut {
+            let (keyEquivalent, modifierMask) =
+            appkitKeyEquivalent(for: keyboardShortcut)
+            checkbox.keyEquivalent = keyEquivalent
+            checkbox.keyEquivalentModifierMask = modifierMask
         }
     }
 

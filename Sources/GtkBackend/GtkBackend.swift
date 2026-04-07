@@ -949,6 +949,8 @@ public final class GtkBackend: AppBackend {
         button.clicked = { _ in action() }
         button.css.clear()
         button.css.set(properties: Self.cssProperties(for: environment, isControl: true))
+
+        environment.keyboardShortcut?.add(to: button)
     }
 
     public func createToggle() -> Widget {
@@ -971,6 +973,8 @@ public final class GtkBackend: AppBackend {
         // This is a control, but we set isControl to false anyway because isControl overrides
         // the button background and makes the on and off states of the toggle look identical.
         toggle.css.set(properties: Self.cssProperties(for: environment, isControl: false))
+
+        environment.keyboardShortcut?.add(to: toggle)
     }
 
     public func setState(ofToggle toggle: Widget, to state: Bool) {
@@ -995,6 +999,8 @@ public final class GtkBackend: AppBackend {
         switchWidget.notifyActive = { widget, _ in
             onChange(widget.active)
         }
+
+        environment.keyboardShortcut?.add(to: switchWidget)
     }
 
     public func setState(ofSwitch switchWidget: Widget, to state: Bool) {
@@ -1019,6 +1025,8 @@ public final class GtkBackend: AppBackend {
         checkboxWidget.notifyActive = { widget, _ in
             onChange(widget.active)
         }
+
+        environment.keyboardShortcut?.add(to: checkboxWidget)
     }
 
     public func setState(ofCheckbox checkboxWidget: Widget, to state: Bool) {
