@@ -67,8 +67,6 @@ struct ControlsApp: App {
                                     Text("Text item 1")
                                     Text("Text item 2")
                                 }
-                                Button("Disabled item") {}
-                                    .disabled()
                             }
                         }
 
