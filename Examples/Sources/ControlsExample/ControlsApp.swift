@@ -53,7 +53,6 @@ struct ControlsApp: App {
                             Button("Click me!") {
                                 count += 1
                             }
-                            .keyboardShortcut("b", modifiers: [.primary, .secondary])
                             Text("Count: \(count)")
                         }
 

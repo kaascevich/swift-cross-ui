@@ -221,6 +221,13 @@ public final class AppKitBackend: AppBackend {
                     renderedItem.action = #selector(wrappedAction.run)
                     renderedItem.target = wrappedAction
                 }
+
+                if let keyboardShortcut = environment.keyboardShortcut {
+                    let (keyEquivalent, modifierMask) = keyboardShortcut.asAppKitKeyEquivalent()
+                    renderedItem.keyEquivalent = keyEquivalent
+                    renderedItem.keyEquivalentModifierMask = modifierMask
+                }
+
                 return renderedItem
             case .toggle(let label, let value, let onChange):
                 // Custom subclass is used to keep strong reference to action
@@ -241,12 +248,17 @@ public final class AppKitBackend: AppBackend {
                     renderedItem.target = wrappedAction
                 }
 
+                if let keyboardShortcut = environment.keyboardShortcut {
+                    let (keyEquivalent, modifierMask) = keyboardShortcut.asAppKitKeyEquivalent()
+                    renderedItem.keyEquivalent = keyEquivalent
+                    renderedItem.keyEquivalentModifierMask = modifierMask
+                }
+
                 return renderedItem
             case .separator:
                 return NSCustomMenuItem.separator()
             case .submenu(let submenu):
                 return renderSubmenu(submenu, environment: environment)
-
             case .modifiedEnvironment(let item, let modification):
                 return renderMenuItem(
                     item,
@@ -574,25 +586,6 @@ public final class AppKitBackend: AppBackend {
         field.isSelectable = environment.isTextSelectionEnabled
     }
 
-    func appkitKeyEquivalent(
-        for keyboardShortcut: KeyboardShortcut
-    ) -> (String, NSEvent.ModifierFlags) {
-        let string = String(keyboardShortcut.key.character)
-
-        var modifierFlags = NSEvent.ModifierFlags()
-        if keyboardShortcut.modifiers.contains(.primary) {
-            modifierFlags.insert(.command)
-        }
-        if keyboardShortcut.modifiers.contains(.secondary) {
-            modifierFlags.insert(.shift)
-        }
-        if keyboardShortcut.modifiers.contains(.tertiary) {
-            modifierFlags.insert(.option)
-        }
-
-        return (string, modifierFlags)
-    }
-
     public func createButton() -> Widget {
         return NSButton(title: "", target: nil, action: nil)
     }
@@ -616,8 +609,7 @@ public final class AppKitBackend: AppBackend {
         }
 
         if let keyboardShortcut = environment.keyboardShortcut {
-            let (keyEquivalent, modifierMask) =
-                appkitKeyEquivalent(for: keyboardShortcut)
+            let (keyEquivalent, modifierMask) = keyboardShortcut.asAppKitKeyEquivalent()
             button.keyEquivalent = keyEquivalent
             button.keyEquivalentModifierMask = modifierMask
         }
@@ -669,8 +661,7 @@ public final class AppKitBackend: AppBackend {
         }
 
         if let keyboardShortcut = environment.keyboardShortcut {
-            let (keyEquivalent, modifierMask) =
-            appkitKeyEquivalent(for: keyboardShortcut)
+            let (keyEquivalent, modifierMask) = keyboardShortcut.asAppKitKeyEquivalent()
             toggle.keyEquivalent = keyEquivalent
             toggle.keyEquivalentModifierMask = modifierMask
         }
@@ -698,8 +689,7 @@ public final class AppKitBackend: AppBackend {
         }
 
         if let keyboardShortcut = environment.keyboardShortcut {
-            let (keyEquivalent, modifierMask) =
-            appkitKeyEquivalent(for: keyboardShortcut)
+            let (keyEquivalent, modifierMask) = keyboardShortcut.asAppKitKeyEquivalent()
             checkbox.keyEquivalent = keyEquivalent
             checkbox.keyEquivalentModifierMask = modifierMask
         }
