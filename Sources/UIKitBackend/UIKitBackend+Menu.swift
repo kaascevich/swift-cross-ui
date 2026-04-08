@@ -1,6 +1,37 @@
 import SwiftCrossUI
 import UIKit
 
+final class CustomKeyCommand: UIKeyCommand {
+    var actionClosure: ((CustomKeyCommand) -> Void)?
+
+    @objc func performAction() {
+        actionClosure?(self)
+    }
+    override var action: Selector? {
+        #selector(performAction)
+    }
+
+    var keyboardShortcut: KeyboardShortcut?
+    override var input: String? {
+        keyboardShortcut.map { String($0.key.character) }
+    }
+    override var modifierFlags: UIKeyModifierFlags {
+        var modifierFlags = UIKeyModifierFlags()
+        if let keyboardShortcut {
+            if keyboardShortcut.modifiers.contains(.primary) {
+                modifierFlags.insert(.command)
+            }
+            if keyboardShortcut.modifiers.contains(.secondary) {
+                modifierFlags.insert(.shift)
+            }
+            if keyboardShortcut.modifiers.contains(.tertiary) {
+                modifierFlags.insert(.alternate)
+            }
+        }
+        return modifierFlags
+    }
+}
+
 extension UIKitBackend {
     public final class Menu {
         var uiMenu: UIMenu?
@@ -22,21 +53,27 @@ extension UIKitBackend {
     ) -> RenderedMenuItem {
         switch item {
             case .button(let label, let action):
+                let keyCommand = CustomKeyCommand()
+                keyCommand.title = label
                 if let action, environment.isEnabled {
-                    .item(UIAction(title: label) { _ in action() })
+                    keyCommand.actionClosure = { _ in action() }
                 } else {
-                    .item(UIAction(title: label, attributes: .disabled) { _ in })
+                    keyCommand.attributes.insert(.disabled)
                 }
+                keyCommand.keyboardShortcut = environment.keyboardShortcut
+                return .item(keyCommand)
             case .toggle(let label, let value, let onChange):
-                .item(
-                    UIAction(
-                        title: label,
-                        attributes: environment.isEnabled ? [] : .disabled,
-                        state: value ? .on : .off
-                    ) { action in
-                        onChange(!action.state.isOn)
-                    }
-                )
+                let keyCommand = CustomKeyCommand()
+                keyCommand.title = label
+                keyCommand.state = value ? .on : .off
+                keyCommand.actionClosure = { action in
+                    onChange(!action.state.isOn)
+                }
+                if !environment.isEnabled {
+                    keyCommand.attributes.insert(.disabled)
+                }
+                keyCommand.keyboardShortcut = environment.keyboardShortcut
+                return .item(keyCommand)
             case .separator:
                 .separator
             case .submenu(let submenu):
