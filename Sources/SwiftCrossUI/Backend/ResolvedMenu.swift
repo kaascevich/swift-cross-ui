@@ -37,9 +37,15 @@ public struct ResolvedMenu {
         case separator
         /// A named submenu.
         case submenu(Submenu)
+        /// A wrapper for a menu item that modifies its environment.
+        ///
+        /// - Parameters:
+        ///   - item: The item to modify the environment of.
+        ///   - modification: A function that modifies a given
+        ///     `EnvironmentValues` instance.
         indirect case modifiedEnvironment(
-            Item,
-            (EnvironmentValues) -> EnvironmentValues
+            _ item: Item,
+            _ modification: (EnvironmentValues) -> EnvironmentValues
         )
     }
 

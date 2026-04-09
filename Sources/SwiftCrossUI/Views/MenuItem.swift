@@ -40,6 +40,7 @@ extension Divider: @MainActor MenuItemRepresentable {
     var asMenuItem: MenuItem { .separator(self) }
 }
 
+@available(iOS 14, macCatalyst 14, tvOS 17, *)
 extension Menu: MenuItemRepresentable {
     var asMenuItem: MenuItem { .submenu(self) }
 }

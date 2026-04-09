@@ -1559,7 +1559,7 @@ extension AppBackend {
 
     public func setApplicationMenu(
         _ submenus: [ResolvedMenu.Submenu],
-        environemnt: EnvironmentValues
+        environment: EnvironmentValues
     ) {
         todo()
     }
