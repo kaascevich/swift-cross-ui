@@ -32,12 +32,12 @@ extension Text: MenuItemRepresentable {
     var asMenuItem: MenuItem { .text(self) }
 }
 
-extension Toggle: @MainActor MenuItemRepresentable {
-    var asMenuItem: MenuItem { .toggle(self) }
+extension Toggle: MenuItemRepresentable {
+    nonisolated var asMenuItem: MenuItem { .toggle(self) }
 }
 
-extension Divider: @MainActor MenuItemRepresentable {
-    var asMenuItem: MenuItem { .separator(self) }
+extension Divider: MenuItemRepresentable {
+    nonisolated var asMenuItem: MenuItem { .separator(self) }
 }
 
 @available(iOS 14, macCatalyst 14, tvOS 17, *)
@@ -49,8 +49,16 @@ extension TupleView1: MenuItemRepresentable where View0: MenuItemRepresentable {
     var asMenuItem: MenuItem { view0.asMenuItem }
 }
 
+#if compiler(>=6.2)
 extension EnvironmentModifier: @MainActor MenuItemRepresentable where Child: MenuItemRepresentable {
     var asMenuItem: MenuItem {
         .modifiedEnvironment(self.body.asMenuItem, self.modification)
     }
 }
+#else
+extension EnvironmentModifier: @preconcurrency MenuItemRepresentable where Child: MenuItemRepresentable {
+    var asMenuItem: MenuItem {
+        .modifiedEnvironment(self.body.asMenuItem, self.modification)
+    }
+}
+#endif
