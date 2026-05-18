@@ -203,6 +203,10 @@ let package = Package(
         //     url: "https://github.com/Longhanks/qlift",
         //     revision: "ddab1f1ecc113ad4f8e05d2999c2734cdf706210"
         // ),
+        .package(
+            url: "https://github.com/lukepistrol/SwiftLintPlugin",
+            from: "0.2.2"
+        ),
     ],
     targets: [
         .target(
@@ -373,6 +377,13 @@ let package = Package(
         // ),
     ]
 )
+
+for target in package.targets where target.type != .system {
+    target.plugins =
+        (target.plugins ?? []) + [
+            .plugin(name: "SwiftLint", package: "SwiftLintPlugin")
+        ]
+}
 
 // Newer versions of swift-log only support Swift >=6.1, and SwiftPM doesn't
 // seem to want to use the tools-version of the package during resolution

@@ -1,5 +1,5 @@
 {
-  "originHash" : "848af29777f0d85216ca529814aeef544ac2b82e4829189e9521f4f5ce3070b3",
+  "originHash" : "b1986b0453e4f8d535d9c1a54053d7f51c233479a926f170e2ebb7f0f4dbe192",
   "pins" : [
     {
       "identity" : "androidkit",
@@ -242,6 +242,15 @@
       "state" : {
         "revision" : "f408b73ebb86a33411f27a668e2d843a10f007c2",
         "version" : "0.2.1"
+      }
+    },
+    {
+      "identity" : "swiftlintplugin",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/lukepistrol/SwiftLintPlugin",
+      "state" : {
+        "revision" : "a3877065a7d72ee40e1fa64e13b9e33e846c667c",
+        "version" : "0.63.1"
       }
     },
     {
