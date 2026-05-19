@@ -13,7 +13,9 @@ disabled_rules:
   - function_body_length
   - function_parameter_count
 
-line_length: 140
+line_length:
+    warning: 140
+    ignores_urls: true
 type_body_length: 400
 
 included:
