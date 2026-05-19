@@ -203,10 +203,6 @@ let package = Package(
         //     url: "https://github.com/Longhanks/qlift",
         //     revision: "ddab1f1ecc113ad4f8e05d2999c2734cdf706210"
         // ),
-        .package(
-            url: "https://github.com/SimplyDanny/SwiftLintPlugins",
-            from: "0.2.2"
-        ),
     ],
     targets: [
         .target(
@@ -378,11 +374,20 @@ let package = Package(
     ]
 )
 
-for target in package.targets where target.type != .system {
-    target.plugins =
-        (target.plugins ?? []) + [
-            .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins")
-        ]
+// NB: even just *depending* on the SwiftLint plugin breaks CI
+if env["CI"] == nil {
+    package.dependencies.append(
+        .package(
+            url: "https://github.com/SimplyDanny/SwiftLintPlugins",
+            from: "0.2.2"
+        )
+    )
+    for target in package.targets where target.type != .system {
+        target.plugins =
+            (target.plugins ?? []) + [
+                .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins")
+            ]
+    }
 }
 
 // Newer versions of swift-log only support Swift >=6.1, and SwiftPM doesn't
