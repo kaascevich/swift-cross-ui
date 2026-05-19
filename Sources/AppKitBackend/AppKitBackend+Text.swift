@@ -23,7 +23,7 @@ extension AppKitBackend {
 
         if let lineLimitSettings = environment.lineLimitSettings {
             let limitedHeight =
-            Double(max(lineLimitSettings.limit, 1)) * environment.resolvedFont.lineHeight
+                Double(max(lineLimitSettings.limit, 1)) * environment.resolvedFont.lineHeight
 
             if limitedHeight < height || lineLimitSettings.reservesSpace {
                 height = limitedHeight
@@ -75,14 +75,14 @@ extension AppKitBackend {
     ) -> [NSAttributedString.Key: Any] {
         let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.alignment =
-        switch environment.multilineTextAlignment {
-            case .leading:
+            switch environment.multilineTextAlignment {
+                case .leading:
                     .left
-            case .center:
+                case .center:
                     .center
-            case .trailing:
+                case .trailing:
                     .right
-        }
+            }
 
         let resolvedFont = environment.resolvedFont
 
@@ -123,23 +123,23 @@ extension AppKitBackend {
     private static func weight(for weight: Font.Weight) -> NSFont.Weight {
         switch weight {
             case .thin:
-                    .thin
+                .thin
             case .ultraLight:
-                    .ultraLight
+                .ultraLight
             case .light:
-                    .light
+                .light
             case .regular:
-                    .regular
+                .regular
             case .medium:
-                    .medium
+                .medium
             case .semibold:
-                    .semibold
+                .semibold
             case .bold:
-                    .bold
+                .bold
             case .black:
-                    .black
+                .black
             case .heavy:
-                    .heavy
+                .heavy
         }
     }
 }

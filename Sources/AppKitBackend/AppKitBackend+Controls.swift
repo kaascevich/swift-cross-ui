@@ -312,7 +312,7 @@ extension AppKitBackend {
         // If the time zone is set to autoupdatingCurrent, then the cursor position is reset after
         // every keystroke. Thanks Apple
         datePicker.timeZone =
-        environment.timeZone == .autoupdatingCurrent ? .current : environment.timeZone
+            environment.timeZone == .autoupdatingCurrent ? .current : environment.timeZone
 
         // A couple properties cause infinite update loops if we assign to them on every update, so
         // check their values first.
@@ -347,12 +347,12 @@ extension AppKitBackend {
         datePicker.maxDate = range.upperBound
 
         datePicker.datePickerStyle =
-        switch environment.datePickerStyle {
-            case .automatic, .compact:
-                .textFieldAndStepper
-            case .graphical:
-                .clockAndCalendar
-        }
+            switch environment.datePickerStyle {
+                case .automatic, .compact:
+                    .textFieldAndStepper
+                case .graphical:
+                    .clockAndCalendar
+            }
     }
 }
 

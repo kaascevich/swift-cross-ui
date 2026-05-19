@@ -153,10 +153,10 @@ extension GtkCodeGen {
         for class_ in gir.namespace.classes {
             guard
                 allowListedClasses.contains(class_.name)
-                    || (gir.namespace.version == "3.0"
-                        && gtk3AllowListedClasses.contains(class_.name))
-                    || (gir.namespace.version == "4.0"
-                        && gtk4AllowListedClasses.contains(class_.name))
+                || (gir.namespace.version == "3.0"
+                    && gtk3AllowListedClasses.contains(class_.name))
+                || (gir.namespace.version == "4.0"
+                    && gtk4AllowListedClasses.contains(class_.name))
             else {
                 continue
             }
@@ -265,7 +265,7 @@ extension GtkCodeGen {
             // Can cause problems with gtk versions older than 4.20.0
             guard
                 !(member.cIdentifier == "GTK_PAD_ACTION_DIAL"
-                  && enumeration.name == "PadActionType")
+                    && enumeration.name == "PadActionType")
             else {
                 return false
             }
@@ -373,7 +373,8 @@ extension GtkCodeGen {
             .enumerated()
             .map {
                 $0.offset == 0
-                ? $0.element.prefix(1).capitalized + $0.element.dropFirst() : $0.element
+                    ? $0.element.prefix(1).capitalized + $0.element.dropFirst()
+                    : $0.element
             }
             .map { "/// \($0)" }
             .joined(separator: "\n") ?? ""
@@ -384,8 +385,8 @@ extension GtkCodeGen {
         for constructor in class_.constructors {
             guard
                 constructor.deprecated != 1
-                    || constructor.cIdentifier == "gtk_dialog_new"
-                    || constructor.cIdentifier == "gtk_file_chooser_native_new"
+                || constructor.cIdentifier == "gtk_dialog_new"
+                || constructor.cIdentifier == "gtk_file_chooser_native_new"
             else {
                 continue
             }
@@ -851,17 +852,18 @@ extension GtkCodeGen {
             }
         }
 
-        return parameters
-            .map { parameter in
-                if let type = parameter.type?.cType {
-                    return "\(parameter.name): \(convertCType(type))"
-                } else if let arrayElementType = parameter.array?.type.cType {
-                    return "\(parameter.name): [\(convertCType(arrayElementType))]"
-                } else {
-                    fatalError("Missing type for '\(parameter.name)'")
+        return
+            parameters
+                .map { parameter in
+                    if let type = parameter.type?.cType {
+                        return "\(parameter.name): \(convertCType(type))"
+                    } else if let arrayElementType = parameter.array?.type.cType {
+                        return "\(parameter.name): [\(convertCType(arrayElementType))]"
+                    } else {
+                        fatalError("Missing type for '\(parameter.name)'")
+                    }
                 }
-            }
-            .joined(separator: ", ")
+                .joined(separator: ", ")
     }
 
     static func generateArguments(_ parameters: Parameters?) -> String {
@@ -877,9 +879,8 @@ extension GtkCodeGen {
                         .unsafeCopy()
                         .baseAddress!
                     """
-            } else if
-                let type = parameter.type?.cType,
-                let destinationType = cTypesManuallyConverted[type]
+            } else if let type = parameter.type?.cType,
+                      let destinationType = cTypesManuallyConverted[type]
             {
                 return "\(destinationType)(\(argument))"
             }

@@ -912,7 +912,7 @@ public final class WinUIBackend:
         listView.selectionMode = .single
         listView.selectionChanged.addHandler { [weak listView] _, _ in
             guard let listView else { return }
-            guard listView.selectedRanges.count > 0 else {
+            guard !listView.selectedRanges.isEmpty else {
                 return
             }
             let selection = Int(listView.selectedRanges[0]!.firstIndex)
@@ -1108,7 +1108,7 @@ public final class WinUIBackend:
 
             // Only update options past this point, otherwise the early return
             // will cause issues.
-            guard options.count > 0 else {
+            guard !options.isEmpty else {
                 picker.options = []
                 return
             }

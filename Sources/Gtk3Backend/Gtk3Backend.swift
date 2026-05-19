@@ -1826,7 +1826,7 @@ final class TooltipContainer: Fixed {
     }
 
     private func deallocateText() {
-        if tooltip.count > 0 {
+        if !tooltip.isEmpty {
             tooltip.deinitialize()
             tooltip.deallocate()
         }
