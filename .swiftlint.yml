@@ -20,7 +20,7 @@ opt_in_rules:
   - contains_over_first_not_nil
   - contains_over_range_nil_comparison
   - empty_count
-#  - empty_string
+  - empty_string
   - first_where
   - reduce_into
 
