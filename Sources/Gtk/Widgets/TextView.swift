@@ -74,7 +74,7 @@ import CGtk
 /// ## Accessibility
 ///
 /// `GtkTextView` uses the [enum@Gtk.AccessibleRole.text_box] role.
-open class TextView: Widget, Scrollable {
+open class TextView: Widget, Scrollable { // swiftlint:disable:this type_body_length
     /// Create a text view with an empty text buffer.
     public init() {
         buffer = TextBuffer(table: nil)

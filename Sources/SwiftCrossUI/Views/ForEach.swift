@@ -131,7 +131,9 @@ extension ForEach: TypeSafeView, View where Child: View {
                     // case they will inherit the view graph node of the previous first element
                     // with that same identifier.
                     logger.warning(
-                        "duplicate identifier in ForEach; view state may not act as you would expect",
+                        """
+                        duplicate identifier in ForEach; view state may not act as you would expect
+                        """,
                         metadata: ["identifier": "\(identifier)"]
                     )
                     duplicateCount += 1
@@ -481,7 +483,8 @@ extension ForEach where Items.Element: Identifiable, Child == [MenuItem], ID == 
 }
 
 extension ForEach where Items.Element: Identifiable, ID == Items.Element.ID {
-    /// Creates a view that creates child views on demand based on a collection of identifiable data.
+    /// Creates a view that creates child views on demand based on a collection of identifiable
+    /// data.
     public init(
         _ elements: Items,
         child: @escaping (Items.Element) -> Child

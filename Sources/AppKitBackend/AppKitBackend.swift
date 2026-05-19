@@ -437,7 +437,9 @@ public final class AppKitBackend: FullAppBackend {
     }
 
     func setSize(of widget: Widget, to proposedSize: ProposedViewSize) {
-        if let constraint = widget.constraints.first(where: { $0.firstAnchor === widget.widthAnchor }) {
+        if let constraint = widget.constraints.first(
+            where: { $0.firstAnchor === widget.widthAnchor }
+        ) {
             if let proposedWidth = proposedSize.width {
                 constraint.constant = CGFloat(proposedWidth)
                 constraint.isActive = true
@@ -448,7 +450,9 @@ public final class AppKitBackend: FullAppBackend {
             widget.widthAnchor.constraint(equalToConstant: proposedWidth).isActive = true
         }
 
-        if let constraint = widget.constraints.first(where: { $0.firstAnchor === widget.heightAnchor }) {
+        if let constraint = widget.constraints.first(
+            where: { $0.firstAnchor === widget.heightAnchor }
+        ) {
             if let proposedHeight = proposedSize.height {
                 constraint.constant = CGFloat(proposedHeight)
                 constraint.isActive = true
@@ -531,8 +535,8 @@ final class ObjectAssociation<T: Any> {
 
     subscript(index: AnyObject) -> T? {
         get {
-            // Force-cast is fine here as we want it to fail loudly if we don't use the correct type.
-            // swiftlint:disable:next force_cast
+            // Force-cast is fine here as we want it to fail loudly if we don't
+            // use the correct type.
             objc_getAssociatedObject(index, Unmanaged.passUnretained(self).toOpaque()) as! T?
         }
         set {

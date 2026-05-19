@@ -1491,7 +1491,7 @@ public final class Gtk3Backend:
         // We don't actually care about leaking backends, but might as well use
         // a weak reference anyway.
         drawingArea.doDraw = { [weak self] cairo in
-            let scaleFactor = path.scaleFactor // FIXME(kaleb): Should this be used anywhere?
+            let scaleFactor = path.scaleFactor // FIXME(kaascevich): Should this be used anywhere?
             guard let self, let path = path.path else {
                 return
             }

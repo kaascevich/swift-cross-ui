@@ -136,7 +136,8 @@ extension BackendFeatures.MenuButtons {
         *,
         unavailable,
         message: """
-            you need to conform to one of 'PopoverMenus' or 'AttachedMenus' for full 'MenuButtons' conformance
+            you need to conform to one of 'PopoverMenus' or 'AttachedMenus' for full 'MenuButtons' \
+            conformance
             """
     )
     public var menuImplementationStyle: MenuImplementationStyle<Widget, Menu> {

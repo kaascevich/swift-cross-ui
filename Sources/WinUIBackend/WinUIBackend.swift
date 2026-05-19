@@ -174,7 +174,8 @@ public final class WinUIBackend:
                 //   let iinspectable =
                 //       application.resources.lookup("ToggleSwitchPreContentMargin")!
                 //       as! WindowsFoundation.IInspectable
-                //   let pv: __ABI_Windows_Foundation.IPropertyValue = try! iinspectable.QueryInterface()
+                //   let pv: __ABI_Windows_Foundation.IPropertyValue =
+                //       try! iinspectable.QueryInterface()
                 //   let value = try! pv.GetDoubleImpl()
 
                 self.measurementTextBlock = (self.createTextView() as! TextBlock)
@@ -2047,7 +2048,10 @@ public final class WinUIBackend:
 
         if components.contains(.hourMinuteAndSecond) {
             print(
-                "DatePickerComponents.hourMinuteAndSecond is not supported in WinUIBackend. Falling back to .hourAndMinute."
+                """
+                DatePickerComponents.hourMinuteAndSecond is not supported in WinUIBackend. \
+                Falling back to .hourAndMinute.
+                """
             )
         }
 

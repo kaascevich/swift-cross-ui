@@ -1902,8 +1902,10 @@ public final class GtkBackend:
     }
 
     public func createSheet(content: Widget) -> Sheet {
-        // TODO: dismissing a sheet with nested sheets doesn't trigger the onDismiss handlers of the nested sheets
-        // TODO: dismissing a sheet with nested sheets causes the app to freeze/deadlock or something along those lines...
+        // TODO: dismissing a sheet with nested sheets doesn't trigger the onDismiss handlers of
+        //    the nested sheets
+        // TODO: dismissing a sheet with nested sheets causes the app to freeze/deadlock or
+        //    something along those lines...
 
         let sheet = Sheet()
         sheet.setChild(content)
@@ -2095,7 +2097,8 @@ final class TooltipContainer: Fixed {
 // but I couldn't get the spin buttons to work. TODOs include:
 // - Fix the spin buttons
 // - Update the strings in the AM/PM picker when the locale changes
-// - Replace the calls to calendar.date(bySetting:value:of:) with something that actually does what we need
+// - Replace the calls to calendar.date(bySetting:value:of:) with something that actually does what
+//   we need
 // - Implement range when possible
 @available(macOS 13, *)
 final class TimePicker: Box {

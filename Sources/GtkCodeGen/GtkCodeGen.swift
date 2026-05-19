@@ -432,9 +432,9 @@ extension GtkCodeGen {
         }
 
         // TODO: Refactor so that notify::property signal handlers aren't just hacked into the
-        //   signal handler generation code so jankily. Ideally we should decouple the signal generation
-        //   code from the GIR types a bit more so that we can synthesize signals without having to
-        //   create fake GIR entries.
+        //   signal handler generation code so jankily. Ideally we should decouple the signal
+        //   generation code from the GIR types a bit more so that we can synthesize signals without
+        //   having to create fake GIR entries.
         var seenProperties: Set<String> = []
         var signals = class_.getAllImplemented(\.signals, namespace: namespace)
         for (classLike, property) in class_.getAllImplemented(\.properties, namespace: namespace) {
@@ -571,7 +571,9 @@ extension GtkCodeGen {
             let parameterTypes = (signal.parameters?.parameters ?? []).map { parameter in
                 guard let girType = parameter.type else {
                     fatalError(
-                        "Missing c type for parameter '\(parameter.name)' of signal '\(signal.name)'"
+                        """
+                        Missing c type for parameter '\(parameter.name)' of signal '\(signal.name)'
+                        """
                     )
                 }
                 var type = swiftType(girType, namespace: namespace)

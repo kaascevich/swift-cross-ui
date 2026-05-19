@@ -108,7 +108,10 @@ public struct EntryMacro: AccessorMacro, PeerMacro {
             )
         else {
             throw MacroError(
-                "@Entry-annotated properties must be direct children of EnvironmentValues or AppStorageValues extensions."
+                """
+                @Entry-annotated properties must be direct children of EnvironmentValues or \
+                AppStorageValues extensions.
+                """
             )
         }
 
