@@ -378,14 +378,14 @@ let package = Package(
 if env["CI"] == nil {
     package.dependencies.append(
         .package(
-            url: "https://github.com/SimplyDanny/SwiftLintPlugins",
+            url: "https://github.com/lukepistrol/SwiftLintPlugin",
             from: "0.2.2"
         )
     )
     for target in package.targets where target.type != .system {
         target.plugins =
             (target.plugins ?? []) + [
-                .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins")
+                .plugin(name: "SwiftLint", package: "SwiftLintPlugin")
             ]
     }
 }
