@@ -204,7 +204,7 @@ let package = Package(
         //     revision: "ddab1f1ecc113ad4f8e05d2999c2734cdf706210"
         // ),
         .package(
-            url: "https://github.com/lukepistrol/SwiftLintPlugin",
+            url: "https://github.com/SimplyDanny/SwiftLintPlugins",
             from: "0.2.2"
         ),
     ],
@@ -381,7 +381,7 @@ let package = Package(
 for target in package.targets where target.type != .system {
     target.plugins =
         (target.plugins ?? []) + [
-            .plugin(name: "SwiftLint", package: "SwiftLintPlugin")
+            .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins")
         ]
 }
 
