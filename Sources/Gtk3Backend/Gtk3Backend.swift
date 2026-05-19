@@ -1367,16 +1367,15 @@ public final class Gtk3Backend:
                     chooser.setCurrentName(defaultFileName)
                 }
             },
-            window: window,
-            resultHandler: { result in
-                switch result {
-                    case .success(let urls):
-                        handleResult(.success(urls[0]))
-                    case .cancelled:
-                        handleResult(.cancelled)
-                }
+            window: window
+        ) { result in
+            switch result {
+                case .success(let urls):
+                    handleResult(.success(urls[0]))
+                case .cancelled:
+                    handleResult(.cancelled)
             }
-        )
+        }
     }
 
     private func showFileChooserDialog(
