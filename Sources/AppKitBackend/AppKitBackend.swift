@@ -520,33 +520,25 @@ public final class AppKitBackend: FullAppBackend {
     }
 
     func setSize(of widget: Widget, to proposedSize: ProposedViewSize) {
-        var foundConstraint = false
-        for constraint in widget.constraints where constraint.firstAnchor === widget.widthAnchor {
+        if let constraint = widget.constraints.first(where: { $0.firstAnchor === widget.widthAnchor }) {
             if let proposedWidth = proposedSize.width {
                 constraint.constant = CGFloat(proposedWidth)
                 constraint.isActive = true
             } else {
                 constraint.isActive = false
             }
-            foundConstraint = true
-        }
-
-        if !foundConstraint, let proposedWidth = proposedSize.width {
+        } else if let proposedWidth = proposedSize.width {
             widget.widthAnchor.constraint(equalToConstant: proposedWidth).isActive = true
         }
 
-        foundConstraint = false
-        for constraint in widget.constraints where constraint.firstAnchor === widget.heightAnchor {
+        if let constraint = widget.constraints.first(where: { $0.firstAnchor === widget.heightAnchor }) {
             if let proposedHeight = proposedSize.height {
                 constraint.constant = CGFloat(proposedHeight)
                 constraint.isActive = true
             } else {
                 constraint.isActive = false
             }
-            foundConstraint = true
-        }
-
-        if !foundConstraint, let proposedHeight = proposedSize.height {
+        } else if let proposedHeight = proposedSize.height {
             widget.heightAnchor.constraint(equalToConstant: proposedHeight).isActive = true
         }
     }
