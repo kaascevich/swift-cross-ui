@@ -23,6 +23,8 @@ opt_in_rules:
   - empty_string
   - first_where
   - reduce_into
+  - sorted_first_last
+  - shorthand_optional_binding
 
 #cyclomatic_complexity:
 #    ignores_case_statements: true
