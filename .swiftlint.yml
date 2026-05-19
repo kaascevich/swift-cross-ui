@@ -1,7 +1,6 @@
 disabled_rules:
   - type_name
   - identifier_name
-  - switch_case_alignment
   - cyclomatic_complexity # Too many false alarms for enum conversion switch statements
   - implicit_optional_initialization
   - closure_parameter_position
@@ -17,9 +16,11 @@ disabled_rules:
 line_length:
     warning: 100
     ignores_urls: true
-type_body_length: 400
+switch_case_alignment:
+    indented_cases: true
 todo:
     only: ["FIXME"]
+type_body_length: 400
 
 included:
   - Sources
