@@ -3,7 +3,7 @@ import SwiftCrossUI
 
 extension AppKitBackend {
     public typealias Alert = NSAlert
-    
+
     public func createAlert() -> Alert {
         NSAlert()
     }
