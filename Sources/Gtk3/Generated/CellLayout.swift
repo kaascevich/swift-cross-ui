@@ -32,7 +32,15 @@ import CGtk3
 ///
 /// This is an example of a UI definition fragment specifying attributes:
 ///
-/// |[<!-- language="xml" --><object class="GtkCellView"><child><object class="GtkCellRendererText"/><attributes><attribute name="text">0</attribute></attributes></child></object>
+/// |[<!-- language="xml" -->
+/// <object class="GtkCellView">
+///     <child>
+///         <object class="GtkCellRendererText"/>
+///         <attributes>
+///             <attribute name="text">0</attribute>
+///         </attributes>
+///     </child>
+/// </object>
 /// ]|
 ///
 /// Furthermore for implementations of GtkCellLayout that use a #GtkCellArea
@@ -43,7 +51,16 @@ import CGtk3
 ///
 /// Here is a UI definition fragment specifying cell properties:
 ///
-/// |[<!-- language="xml" --><object class="GtkTreeViewColumn"><child><object class="GtkCellRendererText"/><cell-packing><property name="align">True</property><property name="expand">False</property></cell-packing></child></object>
+/// |[<!-- language="xml" -->
+/// <object class="GtkTreeViewColumn">
+///     <child>
+///         <object class="GtkCellRendererText"/>
+///         <cell-packing>
+///             <property name="align">True</property>
+///             <property name="expand">False</property>
+///         </cell-packing>
+///     </child>
+/// </object>
 /// ]|
 ///
 /// # Subclassing GtkCellLayout implementations
