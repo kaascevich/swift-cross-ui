@@ -809,7 +809,7 @@ public final class GtkBackend:
         let ellipsize: EllipsizeMode
         if let widget = widget as? CustomLabel {
             ellipsize = widget.ellipsize
-        } else if let widget = widget as? TextView {
+        } else if widget is TextView {
             // We don't ellipsize multi-line text editors
             ellipsize = .none
         } else {
@@ -1488,7 +1488,7 @@ public final class GtkBackend:
         configure(chooser)
 
         chooser.registerSignals()
-        chooser.response = { (_: NativeDialog, response: Int) -> Void in
+        chooser.response = { (_: NativeDialog, response: Int) in
             // Release our intentional retain cycle which ironically only exists
             // because of this line. The retain cycle keeps the file chooser
             // around long enough for the user to respond (it gets released
@@ -2074,7 +2074,7 @@ final class TooltipContainer: Fixed {
                 deallocateText()
 
                 tooltip = .allocate(capacity: buf.count)
-                tooltip.initialize(from: buf)
+                _ = tooltip.initialize(from: buf)
             }
         }
 
@@ -2223,7 +2223,7 @@ final class TimePicker: Box {
         )
 
         if self.hourCycle == .oneToTwelve || self.hourCycle == .zeroToEleven {
-            if let amPmPicker {
+            if amPmPicker != nil {
                 // update strings if necessary
             } else {
                 amPmPicker = DropDown(strings: [calendar.amSymbol, calendar.pmSymbol])
