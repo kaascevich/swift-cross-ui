@@ -49,7 +49,7 @@ extension BackendFeatures {
         /// Sets a button's label and menu.
         ///
         /// Only used when ``BackendFeatures/MenuButtons/menuImplementationStyle`` is
-        /// ``MenuImplementationStyle/menuButton``.
+        /// ``MenuImplementationStyle/menuButton(_:)``.
         ///
         /// - Parameters:
         ///   - button: The button to update.
@@ -70,7 +70,7 @@ extension BackendFeatures {
         /// Shows the popover menu at a position relative to the given widget.
         ///
         /// Only used when ``BackendFeatures/MenuButtons/menuImplementationStyle`` is
-        /// ``MenuImplementationStyle/dynamicPopover``.
+        /// ``MenuImplementationStyle/dynamicPopover(_:)``.
         ///
         /// - Parameters:
         ///   - menu: The menu to show.

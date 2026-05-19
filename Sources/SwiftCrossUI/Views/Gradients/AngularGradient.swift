@@ -29,7 +29,7 @@ public struct AngularGradient: ElementaryView {
 
     /// Creates an angular gradient that completes a partial rotation.
     ///
-    /// For each ``Gradient.Stop``, a location of 0 corresponds to 0°, and a location of 1 corresponds to 360°.
+    /// For each ``Gradient/Stop``, a location of 0 corresponds to 0°, and a location of 1 corresponds to 360°.
     public init(
         gradient: Gradient,
         center: UnitPoint,

@@ -1367,16 +1367,16 @@ public final class Gtk3Backend:
                     chooser.setCurrentName(defaultFileName)
                 }
             },
-            window: window
-        ) { result in
-            switch result {
-                case .success(let urls):
-                    handleResult(.success(urls[0]))
-                case .cancelled:
-                    handleResult(.cancelled)
+            window: window,
+            resultHandler: { result in
+                switch result {
+                    case .success(let urls):
+                        handleResult(.success(urls[0]))
+                    case .cancelled:
+                        handleResult(.cancelled)
+                }
             }
-        }
-
+        )
     }
 
     private func showFileChooserDialog(
@@ -1401,7 +1401,7 @@ public final class Gtk3Backend:
         configure(chooser)
 
         chooser.registerSignals()
-        chooser.response = { (_: NativeDialog, response: Int) -> Void in
+        chooser.response = { (_: NativeDialog, response: Int) in
             // Release our intentional retain cycle which ironically only exists
             // because of this line. The retain cycle keeps the file chooser
             // around long enough for the user to respond (it gets released
@@ -1819,7 +1819,7 @@ final class TooltipContainer: Fixed {
                 deallocateText()
 
                 tooltip = .allocate(capacity: buf.count)
-                tooltip.initialize(from: buf)
+                _ = tooltip.initialize(from: buf)
             }
         }
 

@@ -11,6 +11,7 @@ import Mutex
 
 // Many force tries are required for the WinUI backend but we don't really want them
 // anywhere else so just disable the lint rule at a file level.
+// swiftlint:disable:next blanket_disable_command
 // swiftlint:disable force_try
 
 extension App {
@@ -1238,8 +1239,8 @@ public final class WinUIBackend:
             switch textField {
                 case is TextBox:
                     switch textContentType {
-                        case .decimal(_): .number
-                        case .digits(_): .digits
+                        case .decimal: .number
+                        case .digits: .digits
                         case .emailAddress: .emailSmtpAddress
                         case .name: .personalFullName
                         case .phoneNumber: .telephoneNumber
@@ -1248,7 +1249,7 @@ public final class WinUIBackend:
                     }
                 case is PasswordBox:
                     switch textContentType {
-                        case .digits(_): .numericPin
+                        case .digits: .numericPin
                         case .text: .password
                         default: nil
                     }
@@ -2384,9 +2385,9 @@ final class CustomDatePicker: StackPanel {
 
         var discriminator: Discriminator {
             switch self {
-                case .calendarView(_): .calendarView
-                case .calendarDatePicker(_): .calendarDatePicker
-                case .datePicker(_): .datePicker
+                case .calendarView: .calendarView
+                case .calendarDatePicker: .calendarDatePicker
+                case .datePicker: .datePicker
             }
         }
     }

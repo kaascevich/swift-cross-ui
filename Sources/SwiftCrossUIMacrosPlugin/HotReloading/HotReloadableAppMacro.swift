@@ -114,7 +114,10 @@ extension HotReloadableAppMacro: MemberMacro {
                                 print("Hot reloading: received new dylib")
                                 try await client.handlePackets { @Sendable dylib in
                                     Task { @MainActor in
-                                        guard let symbol = dylib.symbol(named: "body", ofType: (@convention(c) (UnsafeRawPointer, Int) -> Any).self) else {
+                                        guard let symbol = dylib.symbol(
+                                            named: "body",
+                                            ofType: (@convention(c) (UnsafeRawPointer, Int) -> Any).self
+                                        ) else {
                                             print("Hot reloading: Missing 'body' symbol")
                                             return
                                         }

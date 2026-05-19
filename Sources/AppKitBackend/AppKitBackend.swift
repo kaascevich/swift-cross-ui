@@ -521,17 +521,14 @@ public final class AppKitBackend: FullAppBackend {
 
     func setSize(of widget: Widget, to proposedSize: ProposedViewSize) {
         var foundConstraint = false
-        for constraint in widget.constraints {
-            if constraint.firstAnchor === widget.widthAnchor {
-                if let proposedWidth = proposedSize.width {
-                    constraint.constant = CGFloat(proposedWidth)
-                    constraint.isActive = true
-                } else {
-                    constraint.isActive = false
-                }
-                foundConstraint = true
-                break
+        for constraint in widget.constraints where constraint.firstAnchor === widget.widthAnchor {
+            if let proposedWidth = proposedSize.width {
+                constraint.constant = CGFloat(proposedWidth)
+                constraint.isActive = true
+            } else {
+                constraint.isActive = false
             }
+            foundConstraint = true
         }
 
         if !foundConstraint, let proposedWidth = proposedSize.width {
@@ -539,17 +536,14 @@ public final class AppKitBackend: FullAppBackend {
         }
 
         foundConstraint = false
-        for constraint in widget.constraints {
-            if constraint.firstAnchor === widget.heightAnchor {
-                if let proposedHeight = proposedSize.height {
-                    constraint.constant = CGFloat(proposedHeight)
-                    constraint.isActive = true
-                } else {
-                    constraint.isActive = false
-                }
-                foundConstraint = true
-                break
+        for constraint in widget.constraints where constraint.firstAnchor === widget.heightAnchor {
+            if let proposedHeight = proposedSize.height {
+                constraint.constant = CGFloat(proposedHeight)
+                constraint.isActive = true
+            } else {
+                constraint.isActive = false
             }
+            foundConstraint = true
         }
 
         if !foundConstraint, let proposedHeight = proposedSize.height {

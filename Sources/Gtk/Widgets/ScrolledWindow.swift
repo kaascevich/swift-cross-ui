@@ -7,6 +7,9 @@ public class ScrolledWindow: Widget {
         self.init(gtk_scrolled_window_new())
     }
 
+    // NB: This declaration adds an `open` modifier that isn't present in the superclass's
+    // implementation.
+    // swiftlint:disable:next unneeded_override
     open override func didMoveToParent() {
         super.didMoveToParent()
     }
