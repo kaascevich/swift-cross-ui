@@ -375,20 +375,22 @@ let package = Package(
 )
 
 // NB: even just *depending* on the SwiftLint plugin breaks CI
-if env["CI"] == nil {
-    package.dependencies.append(
-        .package(
-            url: "https://github.com/lukepistrol/SwiftLintPlugin",
-            from: "0.2.2"
+#if !os(Windows)
+    if env["CI"] == nil {
+        package.dependencies.append(
+            .package(
+                url: "https://github.com/lukepistrol/SwiftLintPlugin",
+                from: "0.2.2"
+            )
         )
-    )
-    for target in package.targets where target.type != .system {
-        target.plugins =
-            (target.plugins ?? []) + [
-                .plugin(name: "SwiftLint", package: "SwiftLintPlugin")
-            ]
+        for target in package.targets where target.type != .system {
+            target.plugins =
+                (target.plugins ?? []) + [
+                    .plugin(name: "SwiftLint", package: "SwiftLintPlugin")
+                ]
+        }
     }
-}
+#endif
 
 // Newer versions of swift-log only support Swift >=6.1, and SwiftPM doesn't
 // seem to want to use the tools-version of the package during resolution
