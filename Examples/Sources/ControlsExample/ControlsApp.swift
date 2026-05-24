@@ -66,6 +66,16 @@ struct ControlsApp: App {
                             Text("Count: \(count)")
                         }
 
+                        VStack {
+                            Text("Icons")
+                            HStack {
+                                Icon.share
+                                Icon.plus
+                                Icon.edit
+                                Icon.back
+                            }
+                        }
+
                         #if !canImport(AndroidBackend)
                             VStack {
                                 Text("Menu button")

@@ -1,7 +1,7 @@
 import AppKit
 import SwiftCrossUI
 
-extension AppKitBackend {
+extension AppKitBackend: BackendFeatures.Gradients {
     public func createLinearGradientWidget() -> Widget {
         LinearGradientView()
     }
