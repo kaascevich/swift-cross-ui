@@ -40,13 +40,7 @@ import CGtk3
 ///
 /// An example of a UI definition fragment specifying Pango attributes:
 ///
-/// |[<!-- language="xml" -->
-/// <object class="GtkLabel">
-///     <attributes>
-///         <attribute name="weight" value="PANGO_WEIGHT_BOLD"/>
-///         <attribute name="background" value="red" start="5" end="10"/>
-///     </attributes>
-/// </object>
+/// |[<!-- language="xml" --><object class="GtkLabel"><attributes><attribute name="weight" value="PANGO_WEIGHT_BOLD"/><attribute name="background" value="red" start="5" end="10"/></attributes></object>
 /// ]|
 ///
 /// The start and end attributes specify the range of characters to which the

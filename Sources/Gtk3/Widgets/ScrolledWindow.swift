@@ -5,13 +5,6 @@ public class ScrolledWindow: Bin {
         self.init(gtk_scrolled_window_new(nil, nil))
     }
 
-    // NB: This declaration adds an `open` modifier that isn't present in the superclass's
-    // implementation.
-    // swiftlint:disable:next unneeded_override
-    open override func didMoveToParent() {
-        super.didMoveToParent()
-    }
-
     @GObjectProperty(named: "min-content-width") public var minimumContentWidth: Int
     @GObjectProperty(named: "max-content-width") public var maximumContentWidth: Int
 

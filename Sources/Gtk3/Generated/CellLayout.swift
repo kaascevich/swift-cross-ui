@@ -51,16 +51,7 @@ import CGtk3
 ///
 /// Here is a UI definition fragment specifying cell properties:
 ///
-/// |[<!-- language="xml" -->
-/// <object class="GtkTreeViewColumn">
-///     <child>
-///         <object class="GtkCellRendererText"/>
-///         <cell-packing>
-///             <property name="align">True</property>
-///             <property name="expand">False</property>
-///         </cell-packing>
-///     </child>
-/// </object>
+/// |[<!-- language="xml" --><object class="GtkTreeViewColumn"><child><object class="GtkCellRendererText"/><cell-packing><property name="align">True</property><property name="expand">False</property></cell-packing></child></object>
 /// ]|
 ///
 /// # Subclassing GtkCellLayout implementations

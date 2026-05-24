@@ -380,7 +380,7 @@ let package = Package(
         package.dependencies.append(
             .package(
                 url: "https://github.com/lukepistrol/SwiftLintPlugin",
-                from: "0.63.2"
+                from: "0.63.1"
             )
         )
         for target in package.targets where target.type != .system {
