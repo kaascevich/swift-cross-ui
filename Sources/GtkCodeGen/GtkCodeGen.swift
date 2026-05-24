@@ -879,8 +879,9 @@ extension GtkCodeGen {
                         .unsafeCopy()
                         .baseAddress!
                     """
-            } else if let type = parameter.type?.cType,
-                      let destinationType = cTypesManuallyConverted[type]
+            } else if
+                let type = parameter.type?.cType,
+                let destinationType = cTypesManuallyConverted[type]
             {
                 return "\(destinationType)(\(argument))"
             }
