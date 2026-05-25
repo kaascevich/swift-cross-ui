@@ -68,8 +68,8 @@ open class Calendar: Widget {
         )
     }
 
-    open override func registerSignals() {
-        super.registerSignals()
+    open override func didMoveToParent() {
+        super.didMoveToParent()
 
         addSignal(name: "day-selected") { [weak self] () in
             guard let self else { return }

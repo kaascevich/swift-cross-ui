@@ -91,8 +91,8 @@ open class DrawingArea: Widget {
         )
     }
 
-    open override func registerSignals() {
-        super.registerSignals()
+    open override func didMoveToParent() {
+        super.didMoveToParent()
 
         let handler0: @convention(c) (
             UnsafeMutableRawPointer, Int, Int, UnsafeMutableRawPointer

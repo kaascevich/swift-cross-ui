@@ -112,8 +112,8 @@ open class GLArea: Widget {
         )
     }
 
-    open override func registerSignals() {
-        super.registerSignals()
+    open override func didMoveToParent() {
+        super.didMoveToParent()
 
         addSignal(name: "create-context") { [weak self] () in
             guard let self else { return }

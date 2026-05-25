@@ -84,8 +84,8 @@ open class Popover: Widget, Native, ShortcutManager {
         )
     }
 
-    open override func registerSignals() {
-        super.registerSignals()
+    open override func didMoveToParent() {
+        super.didMoveToParent()
 
         addSignal(name: "activate-default") { [weak self] () in
             guard let self else { return }

@@ -77,8 +77,8 @@ open class ListBox: Widget {
         )
     }
 
-    open override func registerSignals() {
-        super.registerSignals()
+    open override func didMoveToParent() {
+        super.didMoveToParent()
 
         addSignal(name: "activate-cursor-row") { [weak self] () in
             guard let self else { return }
