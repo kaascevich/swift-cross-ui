@@ -1,7 +1,7 @@
 /// A class of devices. Used to determine adaptive sizing behaviour such as
 /// the sizes of the various dynamic ``Font/TextStyle``s.
 public struct DeviceClass: Hashable, Sendable {
-    @_spi(Backends) public enum Kind {
+    @_spi(Backends) public enum Kind: Sendable {
         case desktop
         case phone
         case tablet
