@@ -1,13 +1,13 @@
-@_spi(Backends) public struct EnvironmentModifier<Child: View>: View {
-    public var body: TupleView1<Child>
+struct EnvironmentModifier<Child: View>: View {
+    var body: TupleView1<Child>
     var modification: (EnvironmentValues) -> EnvironmentValues
 
-    public init(_ child: Child, modification: @escaping (EnvironmentValues) -> EnvironmentValues) {
+    init(_ child: Child, modification: @escaping (EnvironmentValues) -> EnvironmentValues) {
         self.body = TupleView1(child)
         self.modification = modification
     }
 
-    public func children<Backend: BaseAppBackend>(
+    func children<Backend: BaseAppBackend>(
         backend: Backend,
         snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
         environment: EnvironmentValues
@@ -19,7 +19,7 @@
         )
     }
 
-    public func computeLayout<Backend: BaseAppBackend>(
+    func computeLayout<Backend: BaseAppBackend>(
         _ widget: Backend.Widget,
         children: any ViewGraphNodeChildren,
         proposedSize: ProposedViewSize,
@@ -35,7 +35,7 @@
         )
     }
 
-    public func commit<Backend: BaseAppBackend>(
+    func commit<Backend: BaseAppBackend>(
         _ widget: Backend.Widget,
         children: any ViewGraphNodeChildren,
         layout: ViewLayoutResult,
