@@ -1,4 +1,4 @@
-import SwiftCrossUI
+@_spi(Backends) import SwiftCrossUI
 import UIKit
 
 /// An item which can be displayed in a keyboard toolbar. Implementers of this do not have

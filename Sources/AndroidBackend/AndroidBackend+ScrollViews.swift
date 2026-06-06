@@ -1,5 +1,5 @@
 import AndroidKit
-import SwiftCrossUI
+@_spi(Backends) import SwiftCrossUI
 
 extension AndroidBackend: BackendFeatures.ScrollContainers {
     public var scrollBarWidth: Int { 0 }
