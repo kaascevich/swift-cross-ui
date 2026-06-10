@@ -64,7 +64,7 @@ public struct ProgressView<Label: View>: View {
     public init<Value: BinaryFloatingPoint>(_ label: Label, value: Value?) {
         self.label = label
         self.kind = .bar
-        self.progress = value.map(Double.init)
+        self.progress = value.map { Double($0) }
     }
 
     /// Makes the `ProgressView` resize to fit the available space.
@@ -105,7 +105,7 @@ extension ProgressView where Label == EmptyView {
     public init<Value: BinaryFloatingPoint>(value: Value?) {
         self.label = EmptyView()
         self.kind = .bar
-        self.progress = value.map(Double.init)
+        self.progress = value.map { Double($0) }
     }
 }
 
@@ -141,7 +141,7 @@ extension ProgressView where Label == Text {
     public init<Value: BinaryFloatingPoint>(_ label: String, value: Value?) {
         self.label = Text(label)
         self.kind = .bar
-        self.progress = value.map(Double.init)
+        self.progress = value.map { Double($0) }
     }
 }
 
@@ -152,11 +152,11 @@ struct ProgressSpinnerView: ElementaryView {
         self.isResizable = isResizable
     }
 
-    func asWidget<Backend: AppBackend>(backend: Backend) -> Backend.Widget {
+    func asWidget<Backend: BaseAppBackend>(backend: Backend) -> Backend.Widget {
         backend.createProgressSpinner()
     }
 
-    func computeLayout<Backend: AppBackend>(
+    func computeLayout<Backend: BaseAppBackend>(
         _ widget: Backend.Widget,
         proposedSize: ProposedViewSize,
         environment: EnvironmentValues,
@@ -185,7 +185,7 @@ struct ProgressSpinnerView: ElementaryView {
         )
     }
 
-    func commit<Backend: AppBackend>(
+    func commit<Backend: BaseAppBackend>(
         _ widget: Backend.Widget,
         layout: ViewLayoutResult,
         environment: EnvironmentValues,
@@ -208,11 +208,11 @@ struct ProgressBarView: ElementaryView {
         self.value = value
     }
 
-    func asWidget<Backend: AppBackend>(backend: Backend) -> Backend.Widget {
+    func asWidget<Backend: BaseAppBackend>(backend: Backend) -> Backend.Widget {
         backend.createProgressBar()
     }
 
-    func computeLayout<Backend: AppBackend>(
+    func computeLayout<Backend: BaseAppBackend>(
         _ widget: Backend.Widget,
         proposedSize: ProposedViewSize,
         environment: EnvironmentValues,
@@ -227,7 +227,7 @@ struct ProgressBarView: ElementaryView {
         return ViewLayoutResult.leafView(size: size)
     }
 
-    func commit<Backend: AppBackend>(
+    func commit<Backend: BaseAppBackend>(
         _ widget: Backend.Widget,
         layout: ViewLayoutResult,
         environment: EnvironmentValues,

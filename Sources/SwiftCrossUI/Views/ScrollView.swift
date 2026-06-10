@@ -2,8 +2,8 @@ import Foundation
 
 /// A view that is scrollable when it would otherwise overflow available space.
 ///
-/// Use the ``View/frame(width:height:alignment:)`` modifier to constrain width
-/// or height if necessary.
+/// Use the ``View/frame(width:height:alignment:)-(Double?,_,_)`` modifier to
+/// constrain width or height if necessary.
 public struct ScrollView<Content: View>: TypeSafeView, View {
     public var body: VStack<Content>
     public var axes: Axis.Set
@@ -19,7 +19,7 @@ public struct ScrollView<Content: View>: TypeSafeView, View {
         body = VStack(content: content())
     }
 
-    func children<Backend: AppBackend>(
+    func children<Backend: BaseAppBackend>(
         backend: Backend,
         snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
         environment: EnvironmentValues
@@ -36,21 +36,21 @@ public struct ScrollView<Content: View>: TypeSafeView, View {
         )
     }
 
-    func layoutableChildren<Backend: AppBackend>(
+    func layoutableChildren<Backend: BaseAppBackend>(
         backend: Backend,
         children: TupleViewChildren1<VStack<Content>>
     ) -> [LayoutSystem.LayoutableChild] {
         []
     }
 
-    func asWidget<Backend: AppBackend>(
+    func asWidget<Backend: BaseAppBackend>(
         _ children: ScrollViewChildren<Content>,
         backend: Backend
     ) -> Backend.Widget {
         return backend.createScrollContainer(for: children.innerContainer.into())
     }
 
-    func computeLayout<Backend: AppBackend>(
+    func computeLayout<Backend: BaseAppBackend>(
         _ widget: Backend.Widget,
         children: ScrollViewChildren<Content>,
         proposedSize: ProposedViewSize,
@@ -130,7 +130,7 @@ public struct ScrollView<Content: View>: TypeSafeView, View {
         if axes.contains(.horizontal) {
             outerSize.width =
                 proposedSize.width
-                ?? (finalChildResult.size.width + verticalScrollBarWidth)
+                    ?? (finalChildResult.size.width + verticalScrollBarWidth)
         } else {
             outerSize.width += verticalScrollBarWidth
         }
@@ -138,7 +138,7 @@ public struct ScrollView<Content: View>: TypeSafeView, View {
         if axes.contains(.vertical) {
             outerSize.height =
                 proposedSize.height
-                ?? (finalChildResult.size.height + horizontalScrollBarHeight)
+                    ?? (finalChildResult.size.height + horizontalScrollBarHeight)
         } else {
             outerSize.height += horizontalScrollBarHeight
         }
@@ -150,7 +150,7 @@ public struct ScrollView<Content: View>: TypeSafeView, View {
         )
     }
 
-    func commit<Backend: AppBackend>(
+    func commit<Backend: BaseAppBackend>(
         _ widget: Backend.Widget,
         children: ScrollViewChildren<Content>,
         layout: ViewLayoutResult,
@@ -192,7 +192,7 @@ public struct ScrollView<Content: View>: TypeSafeView, View {
         } else {
             contentY = 0
         }
-        
+
         backend.setPosition(
             ofChildAt: 0,
             in: children.innerContainer.into(),
@@ -234,7 +234,7 @@ class ScrollViewChildren<Content: View>: ViewGraphNodeChildren {
         children.erasedNodes
     }
 
-    init<Backend: AppBackend>(
+    init<Backend: BaseAppBackend>(
         wrapping children: TupleView1<VStack<Content>>.Children,
         backend: Backend
     ) {

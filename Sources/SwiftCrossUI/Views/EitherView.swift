@@ -24,10 +24,16 @@ public struct EitherView<A: View, B: View> {
 }
 
 extension EitherView: View {
+    public var _asMenuItems: [MenuItem] {
+        switch storage {
+            case .a(let a): a._asMenuItems
+            case .b(let b): b._asMenuItems
+        }
+    }
 }
 
 extension EitherView: TypeSafeView {
-    func children<Backend: AppBackend>(
+    func children<Backend: BaseAppBackend>(
         backend: Backend,
         snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
         environment: EnvironmentValues
@@ -40,14 +46,14 @@ extension EitherView: TypeSafeView {
         )
     }
 
-    func asWidget<Backend: AppBackend>(
+    func asWidget<Backend: BaseAppBackend>(
         _ children: EitherViewChildren<A, B>,
         backend: Backend
     ) -> Backend.Widget {
         return backend.createContainer()
     }
 
-    func computeLayout<Backend: AppBackend>(
+    func computeLayout<Backend: BaseAppBackend>(
         _ widget: Backend.Widget,
         children: EitherViewChildren<A, B>,
         proposedSize: ProposedViewSize,
@@ -109,7 +115,7 @@ extension EitherView: TypeSafeView {
         return result
     }
 
-    func commit<Backend: AppBackend>(
+    func commit<Backend: BaseAppBackend>(
         _ widget: Backend.Widget,
         children: EitherViewChildren<A, B>,
         layout: ViewLayoutResult,
@@ -173,7 +179,7 @@ class EitherViewChildren<A: View, B: View>: ViewGraphNodeChildren {
     }
 
     /// Creates storage for an either view's current child (which can change at any time).
-    init<Backend: AppBackend>(
+    init<Backend: BaseAppBackend>(
         from view: EitherView<A, B>,
         backend: Backend,
         snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,

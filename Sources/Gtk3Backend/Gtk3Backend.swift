@@ -12,12 +12,26 @@ extension App {
     }
 }
 
-public final class Gtk3Backend: AppBackend {
+public final class Gtk3Backend:
+    BaseAppBackend,
+    BackendFeatures.IncomingURLs,
+    BackendFeatures.ExternalURLs,
+    BackendFeatures.RevealFiles,
+    BackendFeatures.ApplicationMenus,
+    BackendFeatures.FileDialogs,
+    BackendFeatures.Alerts,
+    BackendFeatures.CornerRadius,
+    BackendFeatures.TapGestures,
+    BackendFeatures.PopoverMenus,
+    BackendFeatures.Paths,
+    BackendFeatures.Tooltips,
+    BackendFeatures.Colors,
+    BackendFeatures.Windowing
+{
     public typealias Window = Gtk3.ApplicationWindow
     public typealias Widget = Gtk3.Widget
     public typealias Menu = Gtk3.Menu
     public typealias Alert = Gtk3.MessageDialog
-    public typealias Sheet = Gtk3.Window
 
     public final class Path {
         var path: SwiftCrossUI.Path?
@@ -30,17 +44,14 @@ public final class Gtk3Backend: AppBackend {
     public let requiresToggleSwitchSpacer = false
     public let scrollBarWidth = 0
     public let requiresImageUpdateOnScaleFactorChange = true
-    public let menuImplementationStyle = MenuImplementationStyle.dynamicPopover
-    public let canRevealFiles = true
     public let supportsMultipleWindows = true
     public let deviceClass = DeviceClass.desktop
-    public let supportedDatePickerStyles: [DatePickerStyle] = []
     public let supportedPickerStyles: [BackendPickerStyle] = []
     public let canOverrideWindowColorScheme = false
 
     var gtkApp: Application
 
-    /// A window to be returned on the next call to ``GtkBackend/createWindow``.
+    /// A window to be returned on the next call to ``Gtk3Backend/createWindow``.
     /// This is necessary because Gtk creates a root window no matter what, and
     /// this needs to be returned on the first call to `createWindow`.
     var precreatedWindow: Window?
@@ -48,6 +59,8 @@ public final class Gtk3Backend: AppBackend {
     /// All current windows associated with the application. Doesn't include the
     /// precreated window until it gets 'created' via `createWindow`.
     var windows: [Window] = []
+
+    private var rootEnvironmentChangeHandler: (() -> Void)?
 
     private struct LogLocation: Hashable, Equatable {
         let file: String
@@ -71,7 +84,7 @@ public final class Gtk3Backend: AppBackend {
         #endif
     }
 
-    // A separate initializer to satisfy ``AppBackend``'s requirements.
+    // A separate initializer to satisfy `BackendFeatures.Core`'s requirements.
     public convenience init() {
         self.init(appIdentifier: nil)
     }
@@ -173,6 +186,10 @@ public final class Gtk3Backend: AppBackend {
                 width: defaultSize.x,
                 height: defaultSize.y
             )
+        }
+
+        window.notifyIsActive = { _ in
+            self.rootEnvironmentChangeHandler?()
         }
 
         return window
@@ -302,7 +319,15 @@ public final class Gtk3Backend: AppBackend {
                             actionName: "\(actionNamespace).\(actionName)"
                         )
                     case .toggle(let label, let value, let onChange):
+<<<<<<< HEAD
                         let gAction = GSimpleAction(name: actionName, state: value, action: onChange)
+=======
+                        let gAction = GSimpleAction(
+                            name: actionName,
+                            state: value,
+                            action: onChange
+                        )
+>>>>>>> main
                         gAction.enabled = environment.isEnabled
                         actionMap.addAction(gAction)
 
@@ -436,7 +461,8 @@ public final class Gtk3Backend: AppBackend {
             )
             let process = Process()
             process.arguments = [
-                "dbus-send", "--print-reply",
+                "dbus-send",
+                "--print-reply",
                 "--dest=org.freedesktop.FileManager1",
                 "/org/freedesktop/FileManager1",
                 "org.freedesktop.FileManager1.ShowItems",
@@ -494,7 +520,7 @@ public final class Gtk3Backend: AppBackend {
 
     private static func runInMainThread(
         afterMilliseconds delay: Int,
-        action: @escaping () -> Void
+        action: @escaping @MainActor () -> Void
     ) {
         let action = ThreadActionContext(action: action)
         g_timeout_add_full(
@@ -521,10 +547,14 @@ public final class Gtk3Backend: AppBackend {
 
     public func computeRootEnvironment(defaultEnvironment: EnvironmentValues) -> EnvironmentValues {
         defaultEnvironment
+            .with(\.appPhase, windows.contains(where: \.isActive) ? .active : .inactive)
     }
 
-    public func setRootEnvironmentChangeHandler(to action: @escaping () -> Void) {
+    public func setRootEnvironmentChangeHandler(
+        to action: @escaping @Sendable @MainActor () -> Void
+    ) {
         // TODO: React to theme changes
+        self.rootEnvironmentChangeHandler = action
     }
 
     public func computeWindowEnvironment(
@@ -532,12 +562,14 @@ public final class Gtk3Backend: AppBackend {
         rootEnvironment: EnvironmentValues
     ) -> EnvironmentValues {
         let windowScaleFactor = Int(gtk_widget_get_scale_factor(window.widgetPointer))
-        return rootEnvironment.with(\.windowScaleFactor, Double(windowScaleFactor))
+        return rootEnvironment
+            .with(\.windowScaleFactor, Double(windowScaleFactor))
+            .with(\.scenePhase, window.isActive ? .active : .inactive)
     }
 
     public func setWindowEnvironmentChangeHandler(
         of window: Window,
-        to action: @escaping () -> Void
+        to action: @escaping @Sendable @MainActor () -> Void
     ) {
         window.notifyScaleFactor = { _ in
             action()
@@ -645,7 +677,7 @@ public final class Gtk3Backend: AppBackend {
         to action: @escaping () -> Void
     ) {
         let splitView = splitView as! Paned
-        splitView.notifyPosition = { splitView in
+        splitView.notifyPosition = { _ in
             action()
         }
     }
@@ -1422,8 +1454,8 @@ public final class Gtk3Backend: AppBackend {
             guard
                 environment.isEnabled,
                 eventType == GDK_BUTTON_PRESS
-                    || eventType == GDK_2BUTTON_PRESS
-                    || eventType == GDK_3BUTTON_PRESS
+                || eventType == GDK_2BUTTON_PRESS
+                || eventType == GDK_3BUTTON_PRESS
             else {
                 return
             }
@@ -1571,9 +1603,12 @@ public final class Gtk3Backend: AppBackend {
                     let control2 = (end + 2 * control) / 3
                     cairo_curve_to(
                         cairo,
-                        control1.x, control1.y,
-                        control2.x, control2.y,
-                        end.x, end.y
+                        control1.x,
+                        control1.y,
+                        control2.x,
+                        control2.y,
+                        end.x,
+                        end.y
                     )
                 case .cubicCurve(let control1, let control2, let end):
                     if index == 0 {
@@ -1581,25 +1616,30 @@ public final class Gtk3Backend: AppBackend {
                     }
                     cairo_curve_to(
                         cairo,
-                        control1.x, control1.y,
-                        control2.x, control2.y,
-                        end.x, end.y
+                        control1.x,
+                        control1.y,
+                        control2.x,
+                        control2.y,
+                        end.x,
+                        end.y
                     )
                 case .rectangle(let rect):
                     cairo_rectangle(
                         cairo,
-                        rect.origin.x, rect.origin.y,
-                        rect.size.x, rect.size.y
+                        rect.origin.x,
+                        rect.origin.y,
+                        rect.size.x,
+                        rect.size.y
                     )
                 case .circle(let center, let radius):
                     cairo_arc(cairo, center.x, center.y, radius, 0, 2 * .pi)
                 case .arc(
-                    let center,
-                    let radius,
-                    let startAngle,
-                    let endAngle,
-                    let clockwise
-                ):
+                let center,
+                let radius,
+                let startAngle,
+                let endAngle,
+                let clockwise
+            ):
                     let arcFunc = clockwise ? cairo_arc : cairo_arc_negative
                     arcFunc(
                         cairo,
@@ -1689,6 +1729,28 @@ public final class Gtk3Backend: AppBackend {
         }
 
         return properties
+    }
+
+    // MARK: - Unimplemented Features
+
+    public func createPicker(style: BackendPickerStyle) -> Widget {
+        fatalError("\(Self.self): \(#function) not implemented")
+    }
+
+    public func updatePicker(
+        _ picker: Widget,
+        options: [String],
+        environment: EnvironmentValues,
+        onChange: @escaping (Int?) -> Void
+    ) {
+        fatalError("\(Self.self): \(#function) not implemented")
+    }
+
+    public func setSelectedOption(
+        ofPicker picker: Widget,
+        to selectedOption: Int?
+    ) {
+        fatalError("\(Self.self): \(#function) not implemented")
     }
 }
 

@@ -33,12 +33,49 @@ final class CustomKeyCommand: UIKeyCommand {
 }
 
 extension UIKitBackend {
-    public final class Menu {
-        var uiMenu: UIMenu?
+    private enum RenderedMenuItem {
+        case item(UIMenuElement)
+        case separator
     }
 
-    public func createPopoverMenu() -> Menu {
-        return Menu()
+    @available(tvOS 14, *)
+    private static func renderMenuItem(
+        _ item: ResolvedMenu.Item,
+        environment: EnvironmentValues
+    ) -> RenderedMenuItem {
+        switch item {
+            case .button(let label, let action):
+                if let action, environment.isEnabled {
+                    .item(UIAction(title: label) { _ in action() })
+                } else {
+                    .item(UIAction(title: label, attributes: .disabled) { _ in })
+                }
+            case .toggle(let label, let value, let onChange):
+                .item(
+                    UIAction(
+                        title: label,
+                        attributes: environment.isEnabled ? [] : .disabled,
+                        state: value ? .on : .off
+                    ) { action in
+                        onChange(!action.state.isOn)
+                    }
+                )
+            case .separator:
+                .separator
+            case .submenu(let submenu):
+                .item(
+                    buildMenu(
+                        content: submenu.content,
+                        label: submenu.label,
+                        environment: environment
+                    )
+                )
+            case .modifiedEnvironment(let item, let modification):
+                renderMenuItem(
+                    item,
+                    environment: modification(environment)
+                )
+        }
     }
 
     private enum RenderedMenuItem {
@@ -129,21 +166,28 @@ extension UIKitBackend {
 
         return UIMenu(title: label, identifier: identifier, children: children)
     }
+}
+
+@available(iOS 14, macCatalyst 14, tvOS 17, *)
+extension UIKitBackend: BackendFeatures.AttachedMenus {
+    public final class Menu {
+        var uiMenu: UIMenu?
+    }
+
+    public func createPopoverMenu() -> Menu {
+        return Menu()
+    }
 
     public func updatePopoverMenu(
         _ menu: Menu,
         content: ResolvedMenu,
         environment: EnvironmentValues
     ) {
-        if #available(iOS 14, macCatalyst 14, tvOS 17, *) {
-            menu.uiMenu = UIKitBackend.buildMenu(
-                content: content,
-                label: "",
-                environment: environment
-            )
-        } else {
-            preconditionFailure("Current OS is too old to support menu buttons.")
-        }
+        menu.uiMenu = UIKitBackend.buildMenu(
+            content: content,
+            label: "",
+            environment: environment
+        )
     }
 
     public func updateButton(
@@ -152,40 +196,37 @@ extension UIKitBackend {
         menu: Menu,
         environment: EnvironmentValues
     ) {
-        if #available(iOS 14, macCatalyst 14, tvOS 17, *) {
-            let buttonWidget = button as! ButtonWidget
-            buttonWidget.child.isEnabled = environment.isEnabled
-            setButtonTitle(buttonWidget, label, environment: environment)
-            buttonWidget.child.menu = menu.uiMenu
-            buttonWidget.child.showsMenuAsPrimaryAction = true
-            if #available(iOS 16, macCatalyst 16, *) {
-                buttonWidget.child.preferredMenuElementOrder =
-                    switch environment.menuOrder {
-                        case .automatic: .automatic
-                        case .priority: .priority
-                        case .fixed: .fixed
-                    }
-            }
-        } else {
-            preconditionFailure("Current OS is too old to support menu buttons.")
+        let buttonWidget = button as! ButtonWidget
+        buttonWidget.child.isEnabled = environment.isEnabled
+        setButtonTitle(buttonWidget, label, environment: environment)
+        buttonWidget.child.menu = menu.uiMenu
+        buttonWidget.child.showsMenuAsPrimaryAction = true
+        if #available(iOS 16, macCatalyst 16, *) {
+            buttonWidget.child.preferredMenuElementOrder =
+                switch environment.menuOrder {
+                    case .automatic: .automatic
+                    case .priority: .priority
+                    case .fixed: .fixed
+                }
         }
     }
+}
 
-    public func setApplicationMenu(
-        _ submenus: [ResolvedMenu.Submenu],
-        environment: EnvironmentValues
-    ) {
-        #if targetEnvironment(macCatalyst)
+// Once keyboard shortcuts are implemented, it might be possible to do them on
+// more platforms than just Mac Catalyst. For now, we only conform to the
+// protocol when built for Catalyst.
+#if targetEnvironment(macCatalyst)
+    extension UIKitBackend: BackendFeatures.ApplicationMenus {
+        public func setApplicationMenu(
+            _ submenus: [ResolvedMenu.Submenu],
+            environment: EnvironmentValues
+        ) {
             let appDelegate = UIApplication.shared.delegate as! ApplicationDelegate
             appDelegate.menu = submenus
             appDelegate.environment = environment
-        #else
-            // Once keyboard shortcuts are implemented, it might be possible to do them on more
-            // platforms than just Mac Catalyst. For now, this is a no-op.
-            logger.notice("ignoring \(#function) call")
-        #endif
+        }
     }
-}
+#endif
 
 extension UIMenuElement.State {
     var isOn: Bool {

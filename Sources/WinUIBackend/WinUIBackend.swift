@@ -6,7 +6,8 @@ import WinAppSDK
 import WinSDK
 import WinUI
 import WinUIInterop
-import WindowsFoundation
+@preconcurrency import WindowsFoundation
+import Mutex
 
 // Many force tries are required for the WinUI backend but we don't really want them
 // anywhere else so just disable the lint rule at a file level.
@@ -20,15 +21,38 @@ extension App {
     }
 }
 
-class WinUIApplication: SwiftApplication {
-    static var callback: ((WinUIApplication) -> Void)?
+class WinUIApplication: SwiftApplication, @unchecked Sendable {
+    static let callback = Mutex<(@MainActor (WinUIApplication) -> Void)?>(nil)
 
     override func onLaunched(_ args: WinUI.LaunchActivatedEventArgs) {
-        Self.callback?(self)
+        Self.callback.withLock { callback in
+            // We can't explicitly hop to the main actor because we haven't set up
+            // our WinUI MainActor fix yet.
+            MainActor.assumeIsolated {
+                callback?(self)
+            }
+        }
     }
 }
 
-public final class WinUIBackend: AppBackend {
+public final class WinUIBackend:
+    BaseAppBackend,
+    BackendFeatures.ApplicationMenus,
+    BackendFeatures.ExternalURLs,
+    BackendFeatures.IncomingURLs,
+    BackendFeatures.FileDialogs,
+    BackendFeatures.Alerts,
+    BackendFeatures.CornerRadius,
+    BackendFeatures.Gestures,
+    BackendFeatures.AttachedMenus,
+    BackendFeatures.Paths,
+    BackendFeatures.Tooltips,
+    BackendFeatures.Colors,
+    BackendFeatures.DatePickers,
+    BackendFeatures.Windowing,
+    BackendFeatures.LinearGradients,
+    BackendFeatures.RadialGradients
+{
     // Logging
     private struct LogLocation: Hashable, Equatable {
         let file: String
@@ -57,19 +81,19 @@ public final class WinUIBackend: AppBackend {
     public typealias Menu = WinUI.MenuFlyout
     public typealias Alert = WinUI.ContentDialog
     public typealias Path = GeometryGroupHolder
-    public typealias Sheet = CustomWindow // Only for protocol conformance. WinUI doesn't currently support it.
 
     public let defaultTableRowContentHeight = 20
     public let defaultTableCellVerticalPadding = 4
     public let defaultPaddingAmount = 10
     public let requiresToggleSwitchSpacer = false
     public let requiresImageUpdateOnScaleFactorChange = false
-    public let menuImplementationStyle = MenuImplementationStyle.menuButton
-    public let canRevealFiles = false
     public let supportsMultipleWindows = true
     public let deviceClass = DeviceClass.desktop
     public let supportedDatePickerStyles: [DatePickerStyle] = [
-        .automatic, .graphical, .compact, .wheel,
+        .automatic,
+        .graphical,
+        .compact,
+        .wheel,
     ]
     public let supportedPickerStyles: [BackendPickerStyle] = [.menu, .radioGroup]
     public let canOverrideWindowColorScheme = true
@@ -85,8 +109,8 @@ public final class WinUIBackend: AppBackend {
         var sliderChangeActions: [ObjectIdentifier: (Double) -> Void] = [:]
         var textFieldChangeActions: [ObjectIdentifier: (String) -> Void] = [:]
         var textFieldSubmitActions: [ObjectIdentifier: () -> Void] = [:]
-        var themeChangeAction: (() -> Void)?
     }
+    private var rootEnvironmentChangeHandler: (@Sendable @MainActor () -> Void)?
 
     var internalState: InternalState
     nonisolated(unsafe) private var dispatcherQueue: WinAppSDK.DispatcherQueue?
@@ -128,30 +152,34 @@ public final class WinUIBackend: AppBackend {
         // Ensure that the app's windows adapt to DPI changes at runtime
         SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2)
 
-        WinUIApplication.callback = { application in
-            // Toggle Switch has annoying default 'internal margins' (not Control
-            // margins that we can set directly) that we can luckily get rid of by
-            // overriding the relevant resource values.
-            _ = application.resources.insert("ToggleSwitchPreContentMargin", 0.0 as Double)
-            _ = application.resources.insert("ToggleSwitchPostContentMargin", 0.0 as Double)
+        WinUIApplication.callback.withLock { launchCallback in
+            launchCallback = { application in
+                // Toggle Switch has annoying default 'internal margins' (not Control
+                // margins that we can set directly) that we can luckily get rid of by
+                // overriding the relevant resource values.
+                _ = application.resources.insert("ToggleSwitchPreContentMargin", 0.0 as Double)
+                _ = application.resources.insert("ToggleSwitchPostContentMargin", 0.0 as Double)
 
-            // Handle theme changes
-            UWP.UISettings().colorValuesChanged.addHandler { _, _ in
-                self.internalState.themeChangeAction?()
+                // Handle theme changes
+                UWP.UISettings().colorValuesChanged.addHandler { _, _ in
+                    Task { @MainActor in
+                        self.rootEnvironmentChangeHandler?()
+                    }
+                }
+
+                // TODO: Read in previously hardcoded values from the application's
+                // resources dictionary for future-proofing. Example code for getting
+                // property values;
+                //   let iinspectable =
+                //       application.resources.lookup("ToggleSwitchPreContentMargin")!
+                //       as! WindowsFoundation.IInspectable
+                //   let pv: __ABI_Windows_Foundation.IPropertyValue = try! iinspectable.QueryInterface()
+                //   let value = try! pv.GetDoubleImpl()
+
+                self.measurementTextBlock = (self.createTextView() as! TextBlock)
+
+                callback()
             }
-
-            // TODO: Read in previously hardcoded values from the application's
-            // resources dictionary for future-proofing. Example code for getting
-            // property values;
-            //   let iinspectable =
-            //       application.resources.lookup("ToggleSwitchPreContentMargin")!
-            //       as! WindowsFoundation.IInspectable
-            //   let pv: __ABI_Windows_Foundation.IPropertyValue = try! iinspectable.QueryInterface()
-            //   let value = try! pv.GetDoubleImpl()
-
-            self.measurementTextBlock = (self.createTextView() as! TextBlock)
-
-            callback()
         }
         WinUIApplication.main()
     }
@@ -292,7 +320,9 @@ public final class WinUIBackend: AppBackend {
         window.setChild(widget)
         try! widget.updateLayout()
         widget.actualThemeChanged.addHandler { _, _ in
-            self.internalState.themeChangeAction?()
+            Task { @MainActor in
+                self.rootEnvironmentChangeHandler?()
+            }
         }
     }
 
@@ -330,7 +360,7 @@ public final class WinUIBackend: AppBackend {
     public func show(widget _: Widget) {}
 
     private func renderMenuItem(
-        _ items: ResolvedMenu.Item,
+        _ item: ResolvedMenu.Item,
         environment: EnvironmentValues
     ) -> MenuFlyoutItemBase {
         switch item {
@@ -416,11 +446,14 @@ public final class WinUIBackend: AppBackend {
 
         return
             defaultEnvironment
-            .with(\.colorScheme, isLight ? .light : .dark)
+                .with(\.colorScheme, isLight ? .light : .dark)
+                .with(\.appPhase, windows.contains(where: \.isActive) ? .active : .inactive)
     }
 
-    public func setRootEnvironmentChangeHandler(to action: @escaping () -> Void) {
-        internalState.themeChangeAction = action
+    public func setRootEnvironmentChangeHandler(
+        to action: @escaping @Sendable @MainActor () -> Void
+    ) {
+        self.rootEnvironmentChangeHandler = action
     }
 
     public func computeWindowEnvironment(
@@ -430,13 +463,25 @@ public final class WinUIBackend: AppBackend {
         // TODO: Compute window scale factor (easy enough, but we would also have to keep
         //   it up-to-date then, which is kinda annoying for now)
         rootEnvironment
+            .with(\.scenePhase, window.isActive ? .active : .inactive)
     }
 
     public func setWindowEnvironmentChangeHandler(
         of window: Window,
-        to action: @escaping () -> Void
+        to action: @escaping @Sendable @MainActor () -> Void
     ) {
         // TODO: Notify when window scale factor changes
+
+        // NB: This event fires when the window is activated _or_ deactivated.
+        window.activated.addHandler { _, _ in
+            if let rootHandler = self.rootEnvironmentChangeHandler {
+                rootHandler()
+                // Don't bother calling `action` since this window's environment
+                // will be recomputed anyway.
+            } else {
+                action()
+            }
+        }
     }
 
     public func setIncomingURLHandler(to action: @escaping (URL) -> Void) {
@@ -660,7 +705,7 @@ public final class WinUIBackend: AppBackend {
                 5 + 6 + 2
             )
         } else if let toggleButton = widget as? WinUI.ToggleButton,
-            toggleButton.padding == noPadding
+                  toggleButton.padding == noPadding
         {
             // See the above comment regarding Button. Very similar situation.
             adjustment = SIMD2(
@@ -679,7 +724,8 @@ public final class WinUIBackend: AppBackend {
             // weekdays wrap, making it taller than it says it is. Value was derived by trial and
             // error.
             adjustment = SIMD2(20, 0)
-        } else if computedSize.width == 0 && computedSize.height == 0 && widget is CalendarDatePicker
+        } else if
+            computedSize.width == 0 && computedSize.height == 0 && widget is CalendarDatePicker
         {
             // I can't find any source on what the size of CalendarDatePicker is, but it reports 0x0
             // in at least some cases before initial render. In these cases, use a size derived
@@ -695,7 +741,7 @@ public final class WinUIBackend: AppBackend {
         widget.width = Double(size.x)
         widget.height = Double(size.y)
     }
-    
+
     public func createTooltipContainer(wrapping child: Widget) -> Widget {
         // TODO(bbrk24): Look into removing the container, like on AppKit
         TooltipContainer(child: child)
@@ -872,7 +918,7 @@ public final class WinUIBackend: AppBackend {
     public func createSelectableListView() -> Widget {
         let listView = CustomListView()
         listView.selectionMode = .single
-        listView.selectionChanged.addHandler { [weak listView] _, args in
+        listView.selectionChanged.addHandler { [weak listView] _, _ in
             guard let listView else { return }
             guard listView.selectedRanges.count > 0 else {
                 return
@@ -1223,7 +1269,7 @@ public final class WinUIBackend: AppBackend {
         let inputScopeName = InputScopeName(inputScope)
 
         if let inputScope = textField.inputScope,
-            inputScope.names.count == 1
+           inputScope.names.count == 1
         {
             inputScope.names[0] = inputScopeName
         } else {
@@ -1504,6 +1550,10 @@ public final class WinUIBackend: AppBackend {
         }
     }
 
+    public func dismissAlert(_ alert: Alert, window: Window?) {
+        try! alert.hide()
+    }
+
     public func showOpenDialog(
         fileDialogOptions: FileDialogOptions,
         openDialogOptions: OpenDialogOptions,
@@ -1758,7 +1808,7 @@ public final class WinUIBackend: AppBackend {
     ) -> PathFigure {
         var pathGeometry: PathGeometry
         if collection.size > 0,
-            let castedLast = collection.getAt(collection.size - 1) as? PathGeometry
+           let castedLast = collection.getAt(collection.size - 1) as? PathGeometry
         {
             pathGeometry = castedLast
         } else {
@@ -1791,8 +1841,8 @@ public final class WinUIBackend: AppBackend {
                     lastPoint = Point(x: Float(point.x), y: Float(point.y))
 
                     if geometry.size > 0,
-                        let pathGeometry = geometry.getAt(geometry.size - 1) as? PathGeometry,
-                        pathGeometry.figures.size > 0
+                       let pathGeometry = geometry.getAt(geometry.size - 1) as? PathGeometry,
+                       pathGeometry.figures.size > 0
                     {
                         let figure = pathGeometry.figures.getAt(pathGeometry.figures.size - 1)!
                         if figure.segments.size > 0 {
@@ -1852,12 +1902,12 @@ public final class WinUIBackend: AppBackend {
                     ellipse.center = Point(x: Float(center.x), y: Float(center.y))
                     geometry.append(ellipse)
                 case .arc(
-                    let center,
-                    let radius,
-                    let startAngle,
-                    let endAngle,
-                    let clockwise
-                ):
+                let center,
+                let radius,
+                let startAngle,
+                let endAngle,
+                let clockwise
+            ):
                     let startPoint = Point(
                         x: Float(center.x + radius * cos(startAngle)),
                         y: Float(center.y + radius * sin(startAngle))
@@ -1927,8 +1977,8 @@ public final class WinUIBackend: AppBackend {
                     }
 
                     if geometry.size > 0,
-                        let pathGeometry = geometry.getAt(geometry.size - 1) as? PathGeometry,
-                        pathGeometry.figures.contains(where: { ($0?.segments.size ?? 0) > 0 })
+                       let pathGeometry = geometry.getAt(geometry.size - 1) as? PathGeometry,
+                       pathGeometry.figures.contains(where: { ($0?.segments.size ?? 0) > 0 })
                     {
                         // Start a new PathGeometry so that transforms don't apply going forward
                         geometry.append(PathGeometry())
@@ -1944,7 +1994,7 @@ public final class WinUIBackend: AppBackend {
         // Having empty paths in the geometry group causes rendering it to silently crash
         for i in (0..<geometry.size).reversed() {
             if let pathGeo = geometry.getAt(i) as? PathGeometry,
-                pathGeo.figures.size == 0
+               pathGeo.figures.size == 0
             {
                 geometry.removeAt(i)
             }
@@ -2184,7 +2234,7 @@ final class TooltipContainer: WinUI.Canvas {
     init(child: WinUI.FrameworkElement) {
         self.child = child
         self.tooltip = ToolTip()
-        
+
         super.init()
 
         children.append(child)
@@ -2218,6 +2268,7 @@ public class CustomWindow: WinUI.Window {
     var child: WinUIBackend.Widget?
     var grid: WinUI.Grid
     var cachedAppWindow: WinAppSDK.AppWindow!
+    var isActive = false
 
     private(set) var menuBarIsVisible = false
 
@@ -2266,6 +2317,18 @@ public class CustomWindow: WinUI.Window {
         grid.children.append(menuBar)
         WinUI.Grid.setRow(menuBar, 0)
         self.content = grid
+
+        // NB: This event fires when the window is activated _or_ deactivated.
+        self.activated.addHandler { [weak self] _, args in
+            switch args?.windowActivationState {
+                case .codeActivated, .pointerActivated: self?.isActive = true
+                case .deactivated: self?.isActive = false
+                // NB: The compiler apparently thinks we didn't exhaustively switch
+                // over this enum without this `default` (even after adding a `case nil`).
+                // Might be because it doesn't treat the underlying C enum as a Swift enum?
+                default: break
+            }
+        }
 
         // Caching appWindow is apparently a good idea in terms of performance:
         // https://github.com/thebrowsercompany/swift-winrt/issues/199#issuecomment-2611006020
@@ -2324,7 +2387,9 @@ final class CustomDatePicker: StackPanel {
         }
 
         enum Discriminator {
-            case calendarView, calendarDatePicker, datePicker
+            case calendarView
+            case calendarDatePicker
+            case datePicker
         }
 
         var discriminator: Discriminator {
@@ -2356,7 +2421,7 @@ final class CustomDatePicker: StackPanel {
                 guard let change else { return }
                 self.date =
                     calendar.startOfDay(for: date)
-                    + Double(change.newTime.duration) / ticksPerSecond
+                        + Double(change.newTime.duration) / ticksPerSecond
                 self.onChange?(self.date)
             }
             needsUpdate = true
@@ -2418,7 +2483,9 @@ final class CustomDatePicker: StackPanel {
 
                     guard let newDate = change?.newDate else { return }
                     self.date = componentsToFoundationDate(
-                        dateTime: newDate, timeSpan: timeView?.selectedTime)
+                        dateTime: newDate,
+                        timeSpan: timeView?.selectedTime
+                    )
                     self.onChange?(self.date)
                 }
                 needsUpdate = true
@@ -2432,7 +2499,9 @@ final class CustomDatePicker: StackPanel {
 
                     guard let selectedDate = datePicker.selectedDate else { return }
                     self.date = componentsToFoundationDate(
-                        dateTime: selectedDate, timeSpan: timeView?.selectedTime)
+                        dateTime: selectedDate,
+                        timeSpan: timeView?.selectedTime
+                    )
                     self.onChange?(self.date)
                 }
                 needsUpdate = true

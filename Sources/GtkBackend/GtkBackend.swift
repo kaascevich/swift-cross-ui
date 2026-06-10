@@ -12,7 +12,26 @@ extension App {
     }
 }
 
-public final class GtkBackend: AppBackend {
+public final class GtkBackend:
+    BaseAppBackend,
+    BackendFeatures.IncomingURLs,
+    BackendFeatures.ExternalURLs,
+    BackendFeatures.RevealFiles,
+    BackendFeatures.ApplicationMenus,
+    BackendFeatures.FileDialogs,
+    BackendFeatures.Alerts,
+    BackendFeatures.Sheets,
+    BackendFeatures.CornerRadius,
+    BackendFeatures.Gestures,
+    BackendFeatures.PopoverMenus,
+    BackendFeatures.Paths,
+    BackendFeatures.Tooltips,
+    BackendFeatures.Colors,
+    BackendFeatures.DatePickers,
+    BackendFeatures.Windowing,
+    BackendFeatures.LinearGradients,
+    BackendFeatures.RadialGradients
+{
     public typealias Window = Gtk.ApplicationWindow
     public typealias Widget = Gtk.Widget
     public typealias Menu = Gtk.PopoverMenu
@@ -34,8 +53,6 @@ public final class GtkBackend: AppBackend {
     public let scrollBarWidth = 0
     public let requiresToggleSwitchSpacer = false
     public let requiresImageUpdateOnScaleFactorChange = false
-    public let menuImplementationStyle = MenuImplementationStyle.dynamicPopover
-    public let canRevealFiles = true
     public let supportsMultipleWindows = true
     public let deviceClass = DeviceClass.desktop
     public let defaultSheetCornerRadius = 10
@@ -53,6 +70,8 @@ public final class GtkBackend: AppBackend {
     /// All current windows associated with the application. Doesn't include the
     /// precreated window until it gets 'created' via `createWindow`.
     var windows: [Window] = []
+
+    private var rootEnvironmentChangeHandler: (() -> Void)?
 
     private var measurementCustomLabel: CustomLabel!
 
@@ -78,7 +97,7 @@ public final class GtkBackend: AppBackend {
         #endif
     }
 
-    // A separate initializer to satisfy ``AppBackend``'s requirements.
+    // A separate initializer to satisfy `BackendFeatures.Core`'s requirements.
     public convenience init() {
         self.init(appIdentifier: nil)
     }
@@ -136,7 +155,9 @@ public final class GtkBackend: AppBackend {
 
     private static func mainRunLoopTicklingLoop(nextDelayMilliseconds: Int? = nil) {
         Self.runInMainThread(afterMilliseconds: nextDelayMilliseconds ?? 50) {
+            // This performs one pass through the run loop
             let nextDate = RunLoop.main.limitDate(forMode: .default)
+
             // This isn't expected to be nil, but if it is we can just loop
             // again quickly with the default delay.
             let nextDelay = nextDate.map {
@@ -165,6 +186,10 @@ public final class GtkBackend: AppBackend {
         }
 
         window.setChild(Gtk.Box())
+
+        window.notifyIsActive = { _ in
+            self.rootEnvironmentChangeHandler?()
+        }
 
         return window
     }
@@ -294,7 +319,8 @@ public final class GtkBackend: AppBackend {
             )
             let process = Process()
             process.arguments = [
-                "dbus-send", "--print-reply",
+                "dbus-send",
+                "--print-reply",
                 "--dest=org.freedesktop.FileManager1",
                 "/org/freedesktop/FileManager1",
                 "org.freedesktop.FileManager1.ShowItems",
@@ -353,7 +379,15 @@ public final class GtkBackend: AppBackend {
                             actionName: "\(actionNamespace).\(actionName)"
                         )
                     case .toggle(let label, let value, let onChange):
+<<<<<<< HEAD
                         let gAction = GSimpleAction(name: actionName, state: value, action: onChange)
+=======
+                        let gAction = GSimpleAction(
+                            name: actionName,
+                            state: value,
+                            action: onChange
+                        )
+>>>>>>> main
                         gAction.enabled = environment.isEnabled
                         actionMap.addAction(gAction)
 
@@ -447,10 +481,11 @@ public final class GtkBackend: AppBackend {
                     fatalError("Gtk action callback called without context")
                 }
 
+                let action = Unmanaged<ThreadActionContext>.fromOpaque(context)
+                    .takeUnretainedValue()
+                let innerAction = action.action
                 MainActor.assumeIsolated {
-                    let action = Unmanaged<ThreadActionContext>.fromOpaque(context)
-                        .takeUnretainedValue()
-                    action.action()
+                    innerAction()
                 }
 
                 return 0
@@ -462,7 +497,7 @@ public final class GtkBackend: AppBackend {
 
     private static func runInMainThread(
         afterMilliseconds delay: Int,
-        action: @escaping () -> Void
+        action: @escaping @MainActor () -> Void
     ) {
         let action = ThreadActionContext(action: action)
         g_timeout_add_full(
@@ -473,10 +508,11 @@ public final class GtkBackend: AppBackend {
                     fatalError("Gtk action callback called without context")
                 }
 
+                let action = Unmanaged<ThreadActionContext>.fromOpaque(context)
+                    .takeUnretainedValue()
+                let innerAction = action.action
                 MainActor.assumeIsolated {
-                    let action = Unmanaged<ThreadActionContext>.fromOpaque(context)
-                        .takeUnretainedValue()
-                    action.action()
+                    innerAction()
                 }
 
                 // Cancel the recurring timeout after one iteration
@@ -489,10 +525,14 @@ public final class GtkBackend: AppBackend {
 
     public func computeRootEnvironment(defaultEnvironment: EnvironmentValues) -> EnvironmentValues {
         defaultEnvironment
+            .with(\.appPhase, windows.contains(where: \.isActive) ? .active : .inactive)
     }
 
-    public func setRootEnvironmentChangeHandler(to action: @escaping () -> Void) {
+    public func setRootEnvironmentChangeHandler(
+        to action: @escaping @Sendable @MainActor () -> Void
+    ) {
         // TODO: React to theme changes
+        self.rootEnvironmentChangeHandler = action
     }
 
     public func computeWindowEnvironment(
@@ -501,11 +541,12 @@ public final class GtkBackend: AppBackend {
     ) -> EnvironmentValues {
         // TODO: Record window scale factor in here
         rootEnvironment
+            .with(\.scenePhase, window.isActive ? .active : .inactive)
     }
 
     public func setWindowEnvironmentChangeHandler(
         of window: Window,
-        to action: @escaping () -> Void
+        to action: @escaping @Sendable @MainActor () -> Void
     ) {
         // TODO: Notify when window scale factor changes
     }
@@ -609,7 +650,7 @@ public final class GtkBackend: AppBackend {
         to action: @escaping () -> Void
     ) {
         let splitView = splitView as! Paned
-        splitView.notifyPosition = { splitView in
+        splitView.notifyPosition = { _ in
             action()
         }
     }
@@ -1323,7 +1364,8 @@ public final class GtkBackend: AppBackend {
                 contents modelbutton {
                     color: \(CSSProperty.rgba(foreground));
                 }
-                """)
+                """
+        )
     }
 
     public func showPopoverMenu(
@@ -1521,9 +1563,9 @@ public final class GtkBackend: AppBackend {
             case .secondary:
                 let gesture =
                     tapGestureTarget.eventControllers.first {
-                        $0 is GestureClick
-                            && gtk_gesture_single_get_button($0.opaquePointer)
-                                == GDK_BUTTON_SECONDARY
+                        $0 is GestureClick &&
+                            (gtk_gesture_single_get_button($0.opaquePointer) ==
+                                GDK_BUTTON_SECONDARY)
                     } as! GestureClick
                 gesture.pressed = { _, nPress, _, _ in
                     guard environment.isEnabled, nPress == 1 else {
@@ -1534,7 +1576,7 @@ public final class GtkBackend: AppBackend {
             case .longPress:
                 let gesture =
                     tapGestureTarget.eventControllers.lazy.compactMap { $0 as? GestureLongPress }
-                    .first!
+                        .first!
                 gesture.pressed = { _, _, _ in
                     guard environment.isEnabled else {
                         return
@@ -1556,7 +1598,7 @@ public final class GtkBackend: AppBackend {
     ) {
         let gesture =
             hoverTarget.eventControllers.first { $0 is EventControllerMotion }
-            as! EventControllerMotion
+                as! EventControllerMotion
         gesture.enter = { _, _, _ in
             guard environment.isEnabled else { return }
             action(true)
@@ -1705,9 +1747,12 @@ public final class GtkBackend: AppBackend {
                     let control2 = (end + 2 * control) / 3
                     cairo_curve_to(
                         cairo,
-                        control1.x, control1.y,
-                        control2.x, control2.y,
-                        end.x, end.y
+                        control1.x,
+                        control1.y,
+                        control2.x,
+                        control2.y,
+                        end.x,
+                        end.y
                     )
                 case .cubicCurve(let control1, let control2, let end):
                     if index == 0 {
@@ -1715,25 +1760,30 @@ public final class GtkBackend: AppBackend {
                     }
                     cairo_curve_to(
                         cairo,
-                        control1.x, control1.y,
-                        control2.x, control2.y,
-                        end.x, end.y
+                        control1.x,
+                        control1.y,
+                        control2.x,
+                        control2.y,
+                        end.x,
+                        end.y
                     )
                 case .rectangle(let rect):
                     cairo_rectangle(
                         cairo,
-                        rect.origin.x, rect.origin.y,
-                        rect.size.x, rect.size.y
+                        rect.origin.x,
+                        rect.origin.y,
+                        rect.size.x,
+                        rect.size.y
                     )
                 case .circle(let center, let radius):
                     cairo_arc(cairo, center.x, center.y, radius, 0, 2 * .pi)
                 case .arc(
-                    let center,
-                    let radius,
-                    let startAngle,
-                    let endAngle,
-                    let clockwise
-                ):
+                let center,
+                let radius,
+                let startAngle,
+                let endAngle,
+                let clockwise
+            ):
                     let arcFunc = clockwise ? cairo_arc : cairo_arc_negative
                     arcFunc(
                         cairo,
@@ -2008,7 +2058,8 @@ class CustomLabel: Label {
             layout,
             Int32(
                 (Double(height) * Double(PANGO_SCALE))
-                    .rounded(.towardZero))
+                    .rounded(.towardZero)
+            )
         )
     }
 }
@@ -2161,7 +2212,8 @@ final class TimePicker: Box {
         )
         minutePicker.text = "\(components.minute!)"
         minutePicker.valueChanged = { [unowned self] minutePicker in
-            guard let value = Int(exactly: minutePicker.value),
+            guard
+                let value = Int(exactly: minutePicker.value),
                 let newDate = calendar.date(bySetting: .minute, value: value, of: date)
             else {
                 return
@@ -2199,7 +2251,8 @@ final class TimePicker: Box {
         hourPicker.text =
             "\(TimePicker.transformToRange(components.hour!, hourCycle: self.hourCycle))"
         hourPicker.valueChanged = { [unowned self] hourPicker in
-            guard let value = Int(exactly: hourPicker.value),
+            guard
+                let value = Int(exactly: hourPicker.value),
                 let newDate = calendar.date(bySetting: .hour, value: value, of: date)
             else {
                 return

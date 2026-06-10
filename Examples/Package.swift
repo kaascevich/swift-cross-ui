@@ -14,7 +14,7 @@ var hotReloadingDependencies: [Package.Dependency] = []
     hotReloadingDependencies = [
         .package(
             url: "https://github.com/moreSwift/swift-bundler",
-            revision: "5d2ecbc11df78e56afeab0621c43d8e898dae98e"
+            revision: "496c0638dc2c6750c7873832a08c36c74631aed4"
         )
     ]
     exampleDependencies.append(
@@ -31,6 +31,10 @@ let package = Package(
     platforms: [.macOS(.v10_15), .iOS(.v13), .tvOS(.v13), .macCatalyst(.v13), .visionOS(.v1)],
     dependencies: [
         .package(name: "swift-cross-ui", path: ".."),
+        .package(
+            url: "https://github.com/stackotter/swift-miniaudio",
+            .upToNextMinor(from: "0.1.2")
+        ),
     ] + hotReloadingDependencies,
     targets: [
         .executableTarget(
@@ -98,6 +102,24 @@ let package = Package(
         .executableTarget(
             name: "ColorsExample",
             dependencies: exampleDependencies
-        )
+        ),
+        .executableTarget(
+            name: "GradientsExample",
+            dependencies: exampleDependencies
+        ),
+        .executableTarget(
+            name: "MusicPlayerExample",
+            dependencies: [
+                .product(name: "MiniAudio", package: "swift-miniaudio")
+            ] + exampleDependencies
+        ),
+        .executableTarget(
+            name: "FontsExample",
+            dependencies: exampleDependencies
+        ),
+        .executableTarget(
+            name: "TapGesturesExample",
+            dependencies: exampleDependencies
+        ),
     ]
 )

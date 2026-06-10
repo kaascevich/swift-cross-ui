@@ -26,11 +26,63 @@ public struct TextField: ElementaryView, View {
         self._text = value ?? Binding(get: { dummy }, set: { dummy = $0 })
     }
 
-    func asWidget<Backend: AppBackend>(backend: Backend) -> Backend.Widget {
+    /// Creates an editable text field bound to a binary integer value.
+    ///
+    /// The field's content is kept in sync with `value` via simple string
+    /// conversion. When the user enters text that cannot be parsed as the
+    /// target integer type, the binding is not updated (the previous value
+    /// is preserved), mirroring the behaviour of SwiftUI's
+    /// `TextField(_:value:formatter:)` when the formatter fails.
+    ///
+    /// - Parameters:
+    ///   - placeholder: The label to show when the field is empty.
+    ///   - value: A binding to the integer value to edit.
+    public init<V: BinaryInteger & LosslessStringConvertible>(
+        _ placeholder: String = "",
+        value: Binding<V>
+    ) {
+        self.placeholder = placeholder
+        self._text = Binding(
+            get: { String(value.wrappedValue) },
+            set: { newString in
+                if let parsed = V(newString), parsed != value.wrappedValue {
+                    value.wrappedValue = parsed
+                }
+            }
+        )
+    }
+
+    /// Creates an editable text field bound to a binary floating-point value.
+    ///
+    /// The field's content is kept in sync with `value` via simple string
+    /// conversion. When the user enters text that cannot be parsed as the
+    /// target floating-point type, the binding is not updated (the previous
+    /// value is preserved), mirroring the behaviour of SwiftUI's
+    /// `TextField(_:value:formatter:)` when the formatter fails.
+    ///
+    /// - Parameters:
+    ///   - placeholder: The label to show when the field is empty.
+    ///   - value: A binding to the floating-point value to edit.
+    public init<V: BinaryFloatingPoint & LosslessStringConvertible>(
+        _ placeholder: String = "",
+        value: Binding<V>
+    ) {
+        self.placeholder = placeholder
+        self._text = Binding(
+            get: { String(value.wrappedValue) },
+            set: { newString in
+                if let parsed = V(newString), parsed != value.wrappedValue {
+                    value.wrappedValue = parsed
+                }
+            }
+        )
+    }
+
+    func asWidget<Backend: BaseAppBackend>(backend: Backend) -> Backend.Widget {
         return backend.createTextField()
     }
 
-    func computeLayout<Backend: AppBackend>(
+    func computeLayout<Backend: BaseAppBackend>(
         _ widget: Backend.Widget,
         proposedSize: ProposedViewSize,
         environment: EnvironmentValues,
@@ -46,7 +98,7 @@ public struct TextField: ElementaryView, View {
         return ViewLayoutResult.leafView(size: size)
     }
 
-    func commit<Backend: AppBackend>(
+    func commit<Backend: BaseAppBackend>(
         _ widget: Backend.Widget,
         layout: ViewLayoutResult,
         environment: EnvironmentValues,

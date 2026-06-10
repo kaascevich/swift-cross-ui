@@ -1,6 +1,10 @@
 import Foundation
 
-package typealias DefaultAppStorageProvider = UserDefaultsAppStorageProvider
+/// The default app storage provider for apps which don't specify a
+/// custom one.
+///
+/// This uses `UserDefaults` on all platforms.
+public typealias DefaultAppStorageProvider = UserDefaultsAppStorageProvider
 
 /// A type that can be used to persist ``AppStorage`` values to disk.
 public protocol AppStorageProvider: Sendable {
@@ -39,7 +43,8 @@ public struct UserDefaultsAppStorageProvider: AppStorageProvider {
     }
 
     public func retrieveValue<Value: Codable>(ofType: Value.Type, forKey key: String) -> Value? {
-        guard let string = UserDefaults.standard.string(forKey: key),
+        guard
+            let string = UserDefaults.standard.string(forKey: key),
             let data = string.data(using: .utf8),
             let value = try? JSONDecoder().decode(Value.self, from: data)
         else {

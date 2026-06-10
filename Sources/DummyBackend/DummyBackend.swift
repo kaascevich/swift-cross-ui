@@ -1,7 +1,14 @@
 import Foundation
 import SwiftCrossUI
 
-public final class DummyBackend: AppBackend {
+public final class DummyBackend:
+    BaseAppBackend,
+    BackendFeatures.IncomingURLs,
+    BackendFeatures.CornerRadius,
+    BackendFeatures.Tables,
+    BackendFeatures.Colors,
+    BackendFeatures.Windowing
+{
     public class Window {
         static let defaultSize = SIMD2<Int>(400, 200)
 
@@ -15,6 +22,7 @@ public final class DummyBackend: AppBackend {
         public var content: Widget?
         public var resizeHandler: ((SIMD2<Int>) -> Void)?
         public var closeHandler: (() -> Void)?
+        public var phase = ScenePhase.inactive
         public var colorScheme = ColorScheme.light
 
         public init(defaultSize: SIMD2<Int>?) {
@@ -68,7 +76,6 @@ public final class DummyBackend: AppBackend {
         public var label = ""
         public var font: Font.Resolved?
         public var action: (() -> Void)?
-        public var menu: Menu?
     }
 
     public class ToggleButton: Widget {
@@ -242,29 +249,19 @@ public final class DummyBackend: AppBackend {
         }
     }
 
-    public class Menu {}
-
-    public class Alert {}
-
-    public class Path {}
-
-    public class Sheet {}
-
     public var defaultTableRowContentHeight = 10
     public var defaultTableCellVerticalPadding = 10
     public var defaultPaddingAmount = 10
     public var scrollBarWidth = 8
     public var requiresToggleSwitchSpacer = false
     public var requiresImageUpdateOnScaleFactorChange = false
-    public var menuImplementationStyle = MenuImplementationStyle.dynamicPopover
     public var deviceClass = DeviceClass.desktop
-    public var canRevealFiles = false
     public var supportsMultipleWindows = true
-    public var supportedDatePickerStyles: [DatePickerStyle] = []
     public var supportedPickerStyles: [BackendPickerStyle] = []
     public let canOverrideWindowColorScheme = true
 
     public var incomingURLHandler: ((URL) -> Void)?
+    public var appPhase = AppPhase.active
 
     public init() {}
 
@@ -325,9 +322,13 @@ public final class DummyBackend: AppBackend {
         window.resizeHandler = action
     }
 
-    public func show(window: Window) {}
+    public func show(window: Window) {
+        window.phase = .active
+    }
 
-    public func activate(window: Window) {}
+    public func activate(window: Window) {
+        window.phase = .active
+    }
 
     public func close(window: Window) {
         window.closeHandler?()
@@ -345,18 +346,23 @@ public final class DummyBackend: AppBackend {
 
     public func computeRootEnvironment(defaultEnvironment: EnvironmentValues) -> EnvironmentValues {
         defaultEnvironment
+            .with(\.appPhase, appPhase)
     }
 
-    public func setRootEnvironmentChangeHandler(to action: @escaping () -> Void) {}
+    public func setRootEnvironmentChangeHandler(
+        to action: @escaping @Sendable @MainActor () -> Void
+    ) {}
 
     public func computeWindowEnvironment(window: Window, rootEnvironment: EnvironmentValues)
         -> EnvironmentValues
     {
         rootEnvironment
+            .with(\.scenePhase, window.phase)
     }
 
     public func setWindowEnvironmentChangeHandler(
-        of window: Window, to action: @escaping () -> Void
+        of window: Window,
+        to action: @escaping @Sendable @MainActor () -> Void
     ) {}
 
     public func setIncomingURLHandler(to action: @escaping (URL) -> Void) {
@@ -451,7 +457,9 @@ public final class DummyBackend: AppBackend {
     }
 
     public func setItems(
-        ofSelectableListView listView: Widget, to items: [Widget], withRowHeights rowHeights: [Int]
+        ofSelectableListView listView: Widget,
+        to items: [Widget],
+        withRowHeights rowHeights: [Int]
     ) {
         let selectableListView = listView as! SelectableListView
         selectableListView.items = items
@@ -459,7 +467,8 @@ public final class DummyBackend: AppBackend {
     }
 
     public func setSelectionHandler(
-        forSelectableListView listView: Widget, to action: @escaping (Int) -> Void
+        forSelectableListView listView: Widget,
+        to action: @escaping (Int) -> Void
     ) {
         (listView as! SelectableListView).selectionHandler = action
     }
@@ -484,7 +493,9 @@ public final class DummyBackend: AppBackend {
     }
 
     public func setSidebarWidthBounds(
-        ofSplitView splitView: Widget, minimum minimumWidth: Int, maximum maximumWidth: Int
+        ofSplitView splitView: Widget,
+        minimum minimumWidth: Int,
+        maximum maximumWidth: Int
     ) {
         let splitView = splitView as! SplitView
         splitView.minimumSidebarWidth = minimumWidth
@@ -598,18 +609,6 @@ public final class DummyBackend: AppBackend {
         button.action = action
     }
 
-    public func updateButton(
-        _ button: Widget,
-        label: String,
-        menu: Menu,
-        environment: EnvironmentValues
-    ) {
-        let button = button as! Button
-        button.label = label
-        button.menu = menu
-        button.font = environment.resolvedFont
-    }
-
     public func createToggle() -> Widget {
         ToggleButton()
     }
@@ -651,7 +650,8 @@ public final class DummyBackend: AppBackend {
     }
 
     public func updateCheckbox(
-        _ checkboxWidget: Widget, environment: SwiftCrossUI.EnvironmentValues,
+        _ checkboxWidget: Widget,
+        environment: SwiftCrossUI.EnvironmentValues,
         onChange: @escaping (Bool) -> Void
     ) {
         (checkboxWidget as! Checkbox).toggleHandler = onChange
@@ -738,143 +738,62 @@ public final class DummyBackend: AppBackend {
         getContent(ofTextField: secureField)
     }
 
-    // public func createTextEditor() -> Widget {
-
-    // }
-
-    // public func updateTextEditor(_ textEditor: Widget, environment: SwiftCrossUI.EnvironmentValues, onChange: @escaping (String) -> Void) {
-
-    // }
-
-    // public func setContent(ofTextEditor textEditor: Widget, to content: String) {
-
-    // }
-
-    // public func getContent(ofTextEditor textEditor: Widget) -> String {
-
-    // }
-
-    // public func createPicker() -> Widget {
-
-    // }
-
-    // public func updatePicker(_ picker: Widget, options: [String], environment: SwiftCrossUI.EnvironmentValues, onChange: @escaping (Int?) -> Void) {
-
-    // }
-
-    // public func setSelectedOption(ofPicker picker: Widget, to selectedOption: Int?) {
-
-    // }
-
-    // public func createProgressSpinner() -> Widget {
-
-    // }
-
-    // public func createProgressBar() -> Widget {
-
-    // }
-
-    // public func updateProgressBar(_ widget: Widget, progressFraction: Double?, environment: SwiftCrossUI.EnvironmentValues) {
-
-    // }
-
-    // public func createPopoverMenu() -> Menu {
-
-    // }
-
-    // public func updatePopoverMenu(_ menu: Menu, content: SwiftCrossUI.ResolvedMenu, environment: SwiftCrossUI.EnvironmentValues) {
-
-    // }
-
-    // public func showPopoverMenu(_ menu: Menu, at position: SIMD2<Int>, relativeTo widget: Widget, closeHandler handleClose: @escaping () -> Void) {
-
-    // }
-
-    // public func createAlert() -> Alert {
-
-    // }
-
-    // public func updateAlert(_ alert: Alert, title: String, actionLabels: [String], environment: SwiftCrossUI.EnvironmentValues) {
-
-    // }
-
-    // public func showAlert(_ alert: Alert, window: Window?, responseHandler handleResponse: @escaping (Int) -> Void) {
-
-    // }
-
-    // public func dismissAlert(_ alert: Alert, window: Window?) {
-
-    // }
-
-    // public func createSheet(content: Widget) -> Sheet {
-
-    // }
-
-    // public func updateSheet(_ sheet: Sheet, window: Window, environment: SwiftCrossUI.EnvironmentValues, size: SIMD2<Int>, onDismiss: @escaping () -> Void, cornerRadius: Double?, detents: [SwiftCrossUI.PresentationDetent], dragIndicatorVisibility: SwiftCrossUI.Visibility, backgroundColor: SwiftCrossUI.Color.Resolved?, interactiveDismissDisabled: Bool) {
-
-    // }
-
-    // public func presentSheet(_ sheet: Sheet, window: Window, parentSheet: Sheet?) {
-
-    // }
-
-    // public func dismissSheet(_ sheet: Sheet, window: Window, parentSheet: Sheet?) {
-
-    // }
-
-    // public func size(ofSheet sheet: Sheet) -> SIMD2<Int> {
-
-    // }
-
-    // public func showOpenDialog(fileDialogOptions: SwiftCrossUI.FileDialogOptions, openDialogOptions: SwiftCrossUI.OpenDialogOptions, window: Window?, resultHandler handleResult: @escaping (SwiftCrossUI.DialogResult<[URL]>) -> Void) {
-
-    // }
-
-    // public func showSaveDialog(fileDialogOptions: SwiftCrossUI.FileDialogOptions, saveDialogOptions: SwiftCrossUI.SaveDialogOptions, window: Window?, resultHandler handleResult: @escaping (SwiftCrossUI.DialogResult<URL>) -> Void) {
-
-    // }
-
-    // public func createTapGestureTarget(wrapping child: Widget, gesture: SwiftCrossUI.TapGesture) -> Widget {
-
-    // }
-
-    // public func updateTapGestureTarget(_ tapGestureTarget: Widget, gesture: SwiftCrossUI.TapGesture, environment: SwiftCrossUI.EnvironmentValues, action: @escaping () -> Void) {
-
-    // }
-
-    // public func createHoverTarget(wrapping child: Widget) -> Widget {
-
-    // }
-
-    // public func updateHoverTarget(_ hoverTarget: Widget, environment: SwiftCrossUI.EnvironmentValues, action: @escaping (Bool) -> Void) {
-
-    // }
-
-    // public func createPathWidget() -> Widget {
-
-    // }
-
-    // public func createPath() -> Path {
-
-    // }
-
-    // public func updatePath(_ path: Path, _ source: SwiftCrossUI.Path, bounds: SwiftCrossUI.Path.Rect, pointsChanged: Bool, environment: SwiftCrossUI.EnvironmentValues) {
-
-    // }
-
-    // public func renderPath(_ path: Path, container: Widget, strokeColor: SwiftCrossUI.Color.Resolved, fillColor: SwiftCrossUI.Color.Resolved, overrideStrokeStyle: SwiftCrossUI.StrokeStyle?) {
-
-    // }
-
-    // public func createWebView() -> Widget {
-
-    // }
-
-    // public func updateWebView(_ webView: Widget, environment: SwiftCrossUI.EnvironmentValues, onNavigate: @escaping (URL) -> Void) {
-
-    // }
-
-    // public func navigateWebView(_ webView: Widget, to url: URL) {
-
-    // }
+    // MARK: - Unimplemented Features
+    // FIXME: Implement them so we can test them
+
+    public func createPicker(style: SwiftCrossUI.BackendPickerStyle) -> Widget {
+        fatalError("\(Self.self): \(#function) not implemented")
+    }
+
+    public func updatePicker(
+        _ picker: Widget,
+        options: [String],
+        environment: SwiftCrossUI.EnvironmentValues,
+        onChange: @escaping (Int?) -> Void
+    ) {
+        fatalError("\(Self.self): \(#function) not implemented")
+    }
+
+    public func setSelectedOption(
+        ofPicker picker: Widget,
+        to selectedOption: Int?
+    ) {
+        fatalError("\(Self.self): \(#function) not implemented")
+    }
+
+    public func createProgressBar() -> Widget {
+        fatalError("\(Self.self): \(#function) not implemented")
+    }
+
+    public func updateProgressBar(
+        _ widget: Widget,
+        progressFraction: Double?,
+        environment: SwiftCrossUI.EnvironmentValues
+    ) {
+        fatalError("\(Self.self): \(#function) not implemented")
+    }
+
+    public func createProgressSpinner() -> Widget {
+        fatalError("\(Self.self): \(#function) not implemented")
+    }
+
+    public func createTextEditor() -> Widget {
+        fatalError("\(Self.self): \(#function) not implemented")
+    }
+
+    public func updateTextEditor(
+        _ textEditor: Widget,
+        environment: SwiftCrossUI.EnvironmentValues,
+        onChange: @escaping (String) -> Void
+    ) {
+        fatalError("\(Self.self): \(#function) not implemented")
+    }
+
+    public func setContent(ofTextEditor textEditor: Widget, to content: String) {
+        fatalError("\(Self.self): \(#function) not implemented")
+    }
+
+    public func getContent(ofTextEditor textEditor: Widget) -> String {
+        fatalError("\(Self.self): \(#function) not implemented")
+    }
 }

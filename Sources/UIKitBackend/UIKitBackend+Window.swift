@@ -38,7 +38,8 @@ final class RootViewController: UIViewController {
     }
 
     override func viewWillTransition(
-        to size: CGSize, with coordinator: any UIViewControllerTransitionCoordinator
+        to size: CGSize,
+        with coordinator: any UIViewControllerTransitionCoordinator
     ) {
         resizeHandler?(size)
         super.viewWillTransition(to: size, with: coordinator)
@@ -63,7 +64,7 @@ final class RootViewController: UIViewController {
     }
 }
 
-extension UIKitBackend {
+extension UIKitBackend: BackendFeatures.WindowBehaviors {
     public typealias Window = UIWindow
 
     public func createWindow(withDefaultSize _: SIMD2<Int>?) -> Window {
@@ -134,17 +135,6 @@ extension UIKitBackend {
 
     public func activate(window: Window) {
         window.makeKeyAndVisible()
-    }
-
-    public func close(window: Window) {
-        logger.notice("UIKitBackend: ignoring \(#function) call")
-    }
-
-    public func setCloseHandler(
-        ofWindow window: Window,
-        to action: @escaping () -> Void
-    ) {
-        logger.notice("UIKitBackend: ignoring \(#function) call")
     }
 
     public func isWindowProgrammaticallyResizable(_ window: Window) -> Bool {

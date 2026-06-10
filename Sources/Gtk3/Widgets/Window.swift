@@ -16,6 +16,10 @@ open class Window: Bin {
     @GObjectProperty(named: "modal") public var isModal: Bool
     @GObjectProperty(named: "decorated") public var isDecorated: Bool
 
+    public var isActive: Bool {
+        gtk_window_is_active(castedPointer()).toBool()
+    }
+
     public func setTransient(for other: Window) {
         gtk_window_set_transient_for(castedPointer(), other.castedPointer())
     }
@@ -81,10 +85,11 @@ open class Window: Bin {
 
     public func registerDeleteEventSignal() {
         let handler:
-            @convention(c) (UnsafeMutableRawPointer, OpaquePointer, UnsafeMutableRawPointer) -> Void =
-                { _, value1, data in
-                    SignalBox1<OpaquePointer>.run(data, value1)
-                }
+            @convention(c) (UnsafeMutableRawPointer, OpaquePointer, UnsafeMutableRawPointer)
+            -> Void =
+            { _, value1, data in
+                SignalBox1<OpaquePointer>.run(data, value1)
+            }
 
         addSignal(name: "delete-event", handler: gCallback(handler)) {
             [weak self] (_: OpaquePointer) in

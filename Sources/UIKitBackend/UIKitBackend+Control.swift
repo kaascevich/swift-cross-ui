@@ -143,7 +143,9 @@ final class TappableWidget: ContainerWidget {
         didSet {
             if onTap != nil && tapGestureRecognizer == nil {
                 let gestureRecognizer = UITapGestureRecognizer(
-                    target: self, action: #selector(viewTouched))
+                    target: self,
+                    action: #selector(viewTouched)
+                )
                 child.view.addGestureRecognizer(gestureRecognizer)
                 self.tapGestureRecognizer = gestureRecognizer
             } else if onTap == nil, let tapGestureRecognizer {
@@ -157,7 +159,9 @@ final class TappableWidget: ContainerWidget {
         didSet {
             if onLongPress != nil && longPressGestureRecognizer == nil {
                 let gestureRecognizer = UILongPressGestureRecognizer(
-                    target: self, action: #selector(viewLongPressed(sender:)))
+                    target: self,
+                    action: #selector(viewLongPressed(sender:))
+                )
                 child.view.addGestureRecognizer(gestureRecognizer)
                 self.longPressGestureRecognizer = gestureRecognizer
             } else if onLongPress == nil, let longPressGestureRecognizer {
@@ -192,7 +196,8 @@ final class TappableWidget: ContainerWidget {
                 if hoverChangesHandler != nil && hoverGestureRecognizer == nil {
                     let gestureRecognizer = UIHoverGestureRecognizer(
                         target: self,
-                        action: #selector(hoveringChanged(_:)))
+                        action: #selector(hoveringChanged(_:))
+                    )
                     child.view.addGestureRecognizer(gestureRecognizer)
                     self.hoverGestureRecognizer = gestureRecognizer
                 } else if hoverChangesHandler == nil, let hoverGestureRecognizer {
@@ -324,7 +329,7 @@ extension UIKitBackend {
         textFieldWidget.child.font = environment.resolvedFont.uiFont
         textFieldWidget.child.textColor =
             environment.suggestedForegroundColor
-            .resolve(in: environment).uiColor
+                .resolve(in: environment).uiColor
         textFieldWidget.onChange = onChange
         textFieldWidget.onSubmit = onSubmit
 
@@ -336,7 +341,7 @@ extension UIKitBackend {
             if let updateToolbar = environment.updateToolbar {
                 let toolbar =
                     (textFieldWidget.child.inputAccessoryView as? KeyboardToolbar)
-                    ?? KeyboardToolbar()
+                        ?? KeyboardToolbar()
                 updateToolbar(toolbar, environment)
                 textFieldWidget.child.inputAccessoryView = toolbar
             } else {
@@ -402,7 +407,7 @@ extension UIKitBackend {
         textEditorWidget.child.font = environment.resolvedFont.uiFont
         textEditorWidget.child.textColor =
             environment.suggestedForegroundColor
-            .resolve(in: environment).uiColor
+                .resolve(in: environment).uiColor
         textEditorWidget.onChange = onChange
 
         let (keyboardType, contentType) = splitTextContentType(environment.textContentType)
@@ -413,7 +418,7 @@ extension UIKitBackend {
             if let updateToolbar = environment.updateToolbar {
                 let toolbar =
                     (textEditorWidget.child.inputAccessoryView as? KeyboardToolbar)
-                    ?? KeyboardToolbar()
+                        ?? KeyboardToolbar()
                 updateToolbar(toolbar, environment)
                 textEditorWidget.child.inputAccessoryView = toolbar
             } else {
@@ -495,41 +500,7 @@ extension UIKitBackend {
         wrapper.setOn(state)
     }
 
-    public func createTapGestureTarget(wrapping child: Widget, gesture _: TapGesture) -> Widget {
-        TappableWidget(child: child)
-    }
-
-    public func updateTapGestureTarget(
-        _ tapGestureTarget: Widget,
-        gesture: TapGesture,
-        environment: EnvironmentValues,
-        action: @escaping () -> Void
-    ) {
-        let wrapper = tapGestureTarget as! TappableWidget
-        switch gesture.kind {
-            case .primary:
-                wrapper.onTap = environment.isEnabled ? action : {}
-                wrapper.onLongPress = nil
-            case .secondary, .longPress:
-                wrapper.onTap = nil
-                wrapper.onLongPress = environment.isEnabled ? action : {}
-        }
-    }
-
     #if os(iOS) || os(visionOS) || targetEnvironment(macCatalyst)
-        public func createHoverTarget(wrapping child: Widget) -> Widget {
-            HoverableWidget(child: child)
-        }
-
-        public func updateHoverTarget(
-            _ hoverTarget: any WidgetProtocol,
-            environment: EnvironmentValues,
-            action: @escaping (Bool) -> Void
-        ) {
-            let wrapper = hoverTarget as! HoverableWidget
-            wrapper.hoverChangesHandler = action
-        }
-
         public func createSlider() -> Widget {
             SliderWidget()
         }
@@ -553,6 +524,77 @@ extension UIKitBackend {
         public func setValue(ofSlider slider: Widget, to value: Double) {
             let sliderWidget = slider as! SliderWidget
             sliderWidget.child.setValue(Float(value), animated: true)
+        }
+    #else
+        public func createSlider() -> Widget {
+            fatalError("\(Self.self): \(#function) not implemented")
+        }
+
+        public func updateSlider(
+            _ slider: Widget,
+            minimum: Double,
+            maximum: Double,
+            decimalPlaces: Int,
+            environment: EnvironmentValues,
+            onChange: @escaping (Double) -> Void
+        ) {
+            fatalError("\(Self.self): \(#function) not implemented")
+        }
+
+        public func setValue(ofSlider slider: Widget, to value: Double) {
+            fatalError("\(Self.self): \(#function) not implemented")
+        }
+    #endif
+}
+
+extension UIKitBackend: BackendFeatures.TapGestures {
+    public func createTapGestureTarget(wrapping child: Widget, gesture _: TapGesture) -> Widget {
+        TappableWidget(child: child)
+    }
+
+    public func updateTapGestureTarget(
+        _ tapGestureTarget: Widget,
+        gesture: TapGesture,
+        environment: EnvironmentValues,
+        action: @escaping () -> Void
+    ) {
+        let wrapper = tapGestureTarget as! TappableWidget
+        switch gesture.kind {
+            case .primary:
+                wrapper.onTap = environment.isEnabled ? action : {}
+                wrapper.onLongPress = nil
+            case .secondary, .longPress:
+                wrapper.onTap = nil
+                wrapper.onLongPress = environment.isEnabled ? action : {}
+        }
+    }
+}
+
+#if os(iOS) || os(visionOS) || targetEnvironment(macCatalyst)
+    extension UIKitBackend: BackendFeatures.HoverGestures {
+        public func createHoverTarget(wrapping child: Widget) -> Widget {
+            HoverableWidget(child: child)
+        }
+
+        public func updateHoverTarget(
+            _ hoverTarget: any WidgetProtocol,
+            environment: EnvironmentValues,
+            action: @escaping (Bool) -> Void
+        ) {
+            let wrapper = hoverTarget as! HoverableWidget
+            wrapper.hoverChangesHandler = action
+        }
+    }
+
+    extension UIKitBackend: BackendFeatures.DatePickers {
+        public nonisolated var supportedDatePickerStyles: [DatePickerStyle] {
+            if #available(iOS 14, macCatalyst 14, *) {
+                [.automatic, .graphical, .compact, .wheel]
+            } else if #available(iOS 13.4, macCatalyst 13.4, *) {
+                [.automatic, .compact, .wheel]
+            } else {
+                [.automatic]
+            }
         }
 
         public func createDatePicker() -> Widget {
@@ -600,7 +642,8 @@ extension UIKitBackend {
                     case .graphical:
                         guard #available(iOS 14, macCatalyst 14, *) else {
                             preconditionFailure(
-                                "DatePickerStyle.graphical is only available on iOS 14 or newer")
+                                "DatePickerStyle.graphical is only available on iOS 14 or newer"
+                            )
                         }
                         datePickerWidget.child.preferredDatePickerStyle = .inline
                     case .wheel:
@@ -608,5 +651,5 @@ extension UIKitBackend {
                 }
             }
         }
-    #endif
-}
+    }
+#endif

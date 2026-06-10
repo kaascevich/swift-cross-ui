@@ -25,7 +25,7 @@ public struct ZStack<Content: View>: View {
         body = content
     }
 
-    public func asWidget<Backend: AppBackend>(
+    public func asWidget<Backend: BaseAppBackend>(
         _ children: any ViewGraphNodeChildren,
         backend: Backend
     ) -> Backend.Widget {
@@ -36,7 +36,7 @@ public struct ZStack<Content: View>: View {
         return zStack
     }
 
-    public func computeLayout<Backend: AppBackend>(
+    public func computeLayout<Backend: BaseAppBackend>(
         _ widget: Backend.Widget,
         children: any ViewGraphNodeChildren,
         proposedSize: ProposedViewSize,
@@ -56,25 +56,55 @@ public struct ZStack<Content: View>: View {
             childResults.map(\.size.height).max() ?? 0
         )
 
+        if !(children is TupleViewChildren || children is EmptyViewChildren) {
+            logger.warning(
+                "ZStack will not function correctly with non-TupleView content",
+                metadata: [
+                    "childrenType": "\(type(of: children))",
+                    "contentType": "\(Content.self)",
+                ]
+            )
+        }
+
+        (children as? TupleViewChildren)?.stackLayoutCache = StackLayoutCache(
+            priorityGroups: [],
+            isHidden: [],
+            totalSpacing: 0,
+            totalReservedSpace: 0,
+            minimumLengths: [],
+            redistributeSpaceOnCommit: proposedSize.width == nil || proposedSize.height == nil
+        )
+
         return ViewLayoutResult(size: size, childResults: childResults)
     }
 
-    public func commit<Backend: AppBackend>(
+    public func commit<Backend: BaseAppBackend>(
         _ widget: Backend.Widget,
         children: any ViewGraphNodeChildren,
         layout: ViewLayoutResult,
         environment: EnvironmentValues,
         backend: Backend
     ) {
-        let size = layout.size
+        let cache = (children as? TupleViewChildren)?.stackLayoutCache ?? StackLayoutCache.initial
         let children = layoutableChildren(backend: backend, children: children)
-            .map { child in
-                child.commit()
-            }
 
-        for (i, child) in children.enumerated() {
+        if cache.redistributeSpaceOnCommit {
+            for child in children {
+                _ = child.computeLayout(
+                    proposedSize: ProposedViewSize(layout.size),
+                    environment: environment
+                )
+            }
+        }
+
+        let size = layout.size
+        let layoutResults = children.map { child in
+            child.commit()
+        }
+
+        for (i, layoutResult) in layoutResults.enumerated() {
             let position = alignment.position(
-                ofChild: child.size.vector,
+                ofChild: layoutResult.size.vector,
                 in: size.vector
             )
             backend.setPosition(ofChildAt: i, in: widget, to: position)

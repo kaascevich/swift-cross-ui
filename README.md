@@ -10,7 +10,7 @@
 
 A SwiftUI-like framework for creating cross-platform apps in Swift (5.10+).
 
-To get started with SwiftCrossUI, check out [the quick start guide](https://docs.swiftcrossui.dev/documentation/swiftcrossui/quick-start).
+To get started with SwiftCrossUI, check out [the quick start guide](https://docs.swiftcrossui.dev/tutorials/swiftcrossui/quick-start).
 
 > [!NOTE]
 > SwiftCrossUI does not attempt to replicate SwiftUI's API perfectly since that would be a constantly-moving target and SwiftUI has many entrenched Apple-centric concepts. That said, SwiftCrossUI's built-in views and scenes share much of their API surface with their SwiftUI cousins, and over time SwiftCrossUI will likely adopt many of SwiftUI's commonly-used APIs.
@@ -29,7 +29,7 @@ Discussion about SwiftCrossUI happens in the [moreSwift Discord server](https://
 
 ## Supporting SwiftCrossUI
 
-If you find SwiftCrossUI useful, please consider supporting its development by [becoming a sponsor](https://github.com/sponsors/stackotter). I spend most of my spare time working on open-source projects, and each sponsorship helps me focus more time on making high quality libraries and tools for the community.
+If you find SwiftCrossUI useful, please consider supporting its development by [becoming a sponsor](https://opencollective.com/moreswift). moreSwift's core contributors spend much of their spare time working on open-source projects, and each sponsorship helps us to focus more time on making high quality tools and libraries for the community.
 
 ## Documentation
 
@@ -37,7 +37,7 @@ Here's the [documentation site](https://docs.swiftcrossui.dev/documentation/swif
 
 ## Basic example
 
-Here's a simple example app demonstrating how easy it is to get started with SwiftCrossUI. For a more detailed walkthrough, check out our [quick start guide](https://docs.swiftcrossui.dev/documentation/swiftcrossui/quick-start)
+Here's a simple example app demonstrating how easy it is to get started with SwiftCrossUI. For a more detailed walkthrough, check out our [quick start guide](https://docs.swiftcrossui.dev/tutorials/swiftcrossui/quick-start)
 
 ```swift
 import PackageDescription

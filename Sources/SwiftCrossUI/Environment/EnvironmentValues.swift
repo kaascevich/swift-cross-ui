@@ -40,10 +40,7 @@ public struct EnvironmentValues {
     /// Each view graph node sets its own handler when passing the environment
     /// on to its children, setting up a bottom-up update chain up which resize
     /// events can propagate.
-    var onResize: @MainActor (_ newSize: ViewSize) -> Void
-
-    /// The app storage provider to use for `@AppStorage` property wrappers.
-    public let appStorageProvider: any AppStorageProvider
+    package var onResize: @MainActor (_ newSize: ViewSize) -> Void
 
     /// Backing storage for extensible subscript
     private var values: [ObjectIdentifier: Any]
@@ -96,17 +93,16 @@ public struct EnvironmentValues {
     /// to focus stealing prevention).
     @MainActor
     func bringWindowForward() {
-        func activate<Backend: AppBackend>(with backend: Backend) {
+        func activate<Backend: BaseAppBackend>(with backend: Backend) {
             backend.activate(window: window as! Backend.Window)
         }
         activate(with: backend)
-        logger.info("window activated")
     }
 
     /// The backend in use.
     ///
     /// Mustn't change throughout the app's lifecycle.
-    let backend: any AppBackend
+    let backend: any BaseAppBackend
 
     /// Presents an 'Open file' dialog fit for selecting a single file.
     ///
@@ -154,6 +150,9 @@ public struct EnvironmentValues {
     ///
     /// May present an application picker if multiple applications are registered
     /// for the given URL protocol.
+    ///
+    /// `nil` on platforms that don't support opening external URLS (none at the
+    /// moment).
     @MainActor
     public var openURL: OpenURLAction {
         OpenURLAction(backend: backend)
@@ -204,23 +203,17 @@ public struct EnvironmentValues {
     ///
     /// - Parameters:
     ///   - backend: The app's backend.
-    ///   - appStorageProvider: The app's app storage provider
-    package init<Backend: AppBackend>(
-        backend: Backend,
-        appStorageProvider: any AppStorageProvider = DefaultAppStorageProvider()
-    ) {
+    package init<Backend: BaseAppBackend>(backend: Backend) {
         self.backend = backend
-        self.appStorageProvider = appStorageProvider
 
         onResize = { _ in }
         values = [:]
         observableObjects = [:]
 
-        let supportedDatePickerStyles = backend.supportedDatePickerStyles
-        if supportedDatePickerStyles.isEmpty {
-            self.supportedDatePickerStyles = [.automatic]
+        if let backend = backend as? any BackendFeatures.DatePickers {
+            self.supportedDatePickerStyles = backend.supportedDatePickerStyles
         } else {
-            self.supportedDatePickerStyles = supportedDatePickerStyles
+            self.supportedDatePickerStyles = [.automatic]
         }
     }
 
@@ -240,6 +233,9 @@ public struct EnvironmentValues {
 }
 
 extension EnvironmentValues {
+    /// The app storage provider to use for `@AppStorage` property wrappers.
+    @Entry public var appStorageProvider: any AppStorageProvider = DefaultAppStorageProvider()
+
     /// The current stack orientation.
     ///
     /// Inherited by ``ForEach`` and ``Group`` so that they can be used without
@@ -336,7 +332,8 @@ extension EnvironmentValues {
     /// Backing store for ``EnvironmentValues/openWindowFunctionsByID``.
     /// Used to resolve "non-sendable type" warnings in Swift 5 and errors in Swift 6 language mode.
     @Entry private var openWindowFunctionsByIDStore = UncheckedSendable(
-        wrappedValue: Box<[String: @MainActor () -> Void]>([:]))
+        wrappedValue: Box<[String: @MainActor () -> Void]>([:])
+    )
 
     /// A mapping of window IDs to functions that open the corresponding windows.
     internal var openWindowFunctionsByID: Box<[String: @MainActor () -> Void]> {
@@ -346,6 +343,44 @@ extension EnvironmentValues {
         set {
             openWindowFunctionsByIDStore.wrappedValue = newValue
         }
+    }
+
+    /// The app's lifecycle phase.
+    ///
+    /// Unlike in SwiftUI, where the app's lifecycle phase can only be accessed
+    /// by using `@Environment(\.scenePhase)` directly on the ``App`` struct, this
+    /// environment value can be accessed from anywhere within the application.
+    @Entry public package(set) var appPhase: AppPhase = .active
+
+    /// The current scene's lifecycle phase.
+    ///
+    /// - Important: Unlike SwiftUI, this environment value cannot be accessed from
+    ///   outside a scene. If you need to access the phase of the entire application,
+    ///   use ``appPhase`` instead.
+    public package(set) var scenePhase: ScenePhase {
+        get {
+            guard let phase = self[__Key_scenePhase.self] else {
+                if window != nil {
+                    // If there's a window but no scenePhase, we assume that the
+                    // backend is actively trying to _set_ the scene phase; return
+                    // a dummy value to prevent a crash.
+                    return .inactive
+                }
+
+                fatalError(
+                    """
+                    'scenePhase' accessed from outside a scene (most likely \
+                    with an @Environment property on the App struct); you \
+                    probably meant to use 'appPhase' instead
+                    """
+                )
+            }
+            return phase
+        }
+        set { self[__Key_scenePhase.self] = newValue }
+    }
+    private struct __Key_scenePhase: EnvironmentKey {
+        static let defaultValue: ScenePhase? = nil
     }
 
     /// Backing store for ``EnvironmentValues/window``.
@@ -409,6 +444,9 @@ extension EnvironmentValues {
 
     /// The keyboard shortcut assigned with controls in this view.
     @Entry public internal(set) var keyboardShortcut: KeyboardShortcut?
+
+    /// Whether the current device has a circular screen. Primarily Android smart watches.
+    @Entry public var isCircularScreen: Bool = false
 }
 
 /// A key that can be used to extend the environment with new properties.

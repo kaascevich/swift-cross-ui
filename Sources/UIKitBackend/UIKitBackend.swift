@@ -2,7 +2,19 @@ import Logging
 import SwiftCrossUI
 import UIKit
 
-public final class UIKitBackend: AppBackend {
+public final class UIKitBackend:
+    BaseAppBackend,
+    BackendFeatures.ExternalURLs,
+    BackendFeatures.IncomingURLs,
+    BackendFeatures.Alerts,
+    BackendFeatures.Sheets,
+    BackendFeatures.CornerRadius,
+    BackendFeatures.Paths,
+    BackendFeatures.Tooltips,
+    BackendFeatures.Colors,
+    BackendFeatures.Gradients
+{
+    static var onWindowEnvironmentChange: (() -> Void)?
     static var onBecomeActive: (() -> Void)?
     static var onReceiveURL: ((URL) -> Void)?
     static var queuedURLs: [URL] = []
@@ -16,7 +28,6 @@ public final class UIKitBackend: AppBackend {
     public let scrollBarWidth = 0
     public let defaultPaddingAmount = 15
     public let requiresToggleSwitchSpacer = true
-    public let menuImplementationStyle = MenuImplementationStyle.menuButton
 
     // TODO: When tables are supported, update these
     public let defaultTableRowContentHeight = -1
@@ -24,7 +35,6 @@ public final class UIKitBackend: AppBackend {
 
     public let requiresImageUpdateOnScaleFactorChange = false
 
-    public let canRevealFiles = false
     public let supportsMultipleWindows = false
     public let canOverrideWindowColorScheme = true
 
@@ -45,20 +55,6 @@ public final class UIKitBackend: AppBackend {
             @unknown default:
                 .tablet
         }
-    }
-
-    public nonisolated var supportedDatePickerStyles: [DatePickerStyle] {
-        #if os(tvOS)
-            []
-        #else
-            if #available(iOS 14, macCatalyst 14, *) {
-                [.automatic, .graphical, .compact, .wheel]
-            } else if #available(iOS 13.4, macCatalyst 13.4, *) {
-                [.automatic, .compact, .wheel]
-            } else {
-                [.automatic]
-            }
-        #endif
     }
 
     public var defaultPickerStyle: BackendPickerStyle {
@@ -175,10 +171,27 @@ public final class UIKitBackend: AppBackend {
                 break
         }
 
+        switch UIApplication.shared.applicationState {
+            case .active: environment.appPhase = .active
+            case .inactive: environment.appPhase = .inactive
+            case .background: environment.appPhase = .background
+            @unknown default:
+                logger.warning(
+                    """
+                    UIApplication.applicationState returned unknown state
+                    '\(UIApplication.shared.applicationState)'; ignoring and returning
+                    'active' instead
+                    """
+                )
+                environment.appPhase = .active
+        }
+
         return environment
     }
 
-    public func setRootEnvironmentChangeHandler(to action: @escaping () -> Void) {
+    public func setRootEnvironmentChangeHandler(
+        to action: @escaping @Sendable @MainActor () -> Void
+    ) {
         onTraitCollectionChange = action
         if timeZoneObserver == nil {
             timeZoneObserver = NotificationCenter.default.addObserver(
@@ -191,6 +204,22 @@ public final class UIKitBackend: AppBackend {
                 }
             }
         }
+
+        let notifications = [
+            UIApplication.willEnterForegroundNotification,
+            UIApplication.didBecomeActiveNotification,
+            UIApplication.willResignActiveNotification,
+            UIApplication.didEnterBackgroundNotification,
+        ]
+        for notification in notifications {
+            NotificationCenter.default.addObserver(
+                forName: notification,
+                object: nil,
+                queue: .main
+            ) { _ in
+                action()
+            }
+        }
     }
 
     public func computeWindowEnvironment(
@@ -199,13 +228,16 @@ public final class UIKitBackend: AppBackend {
     ) -> EnvironmentValues {
         // TODO: Record window scale factor in here
         rootEnvironment
+            .with(\.scenePhase, window.isKeyWindow ? .active : .inactive)
     }
 
     public func setWindowEnvironmentChangeHandler(
         of window: Window,
-        to action: @escaping () -> Void
+        to action: @escaping @Sendable @MainActor () -> Void
     ) {
         // TODO: Notify when window scale factor changes
+
+        Self.onWindowEnvironmentChange = action
     }
 
     public func runInMainThread(action: @escaping @MainActor () -> Void) {
@@ -217,6 +249,25 @@ public final class UIKitBackend: AppBackend {
 
     public func openExternalURL(_ url: URL) throws {
         UIApplication.shared.open(url)
+    }
+
+    // MARK: - Unimplemented Features
+
+    public func createToggle() -> Widget {
+        fatalError("\(Self.self): \(#function) not implemented")
+    }
+
+    public func updateToggle(
+        _ toggle: Widget,
+        label: String,
+        environment: EnvironmentValues,
+        onChange: @escaping (Bool) -> Void
+    ) {
+        fatalError("\(Self.self): \(#function) not implemented")
+    }
+
+    public func setState(ofToggle toggle: Widget, to state: Bool) {
+        fatalError("\(Self.self): \(#function) not implemented")
     }
 }
 
@@ -278,7 +329,7 @@ open class ApplicationDelegate: UIResponder, UIApplicationDelegate {
     open func applicationDidBecomeActive(_ application: UIApplication) {
         UIKitBackend.onBecomeActive?()
 
-        // We only want to notify the first time. Otherwise the app's view
+        // We only want to notify the first time. Otherwise the app's scene
         // graph gets regenerated every time the app gets foregrounded,
         // causing very strange results.
         UIKitBackend.onBecomeActive = nil
@@ -296,7 +347,7 @@ open class ApplicationDelegate: UIResponder, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
         if let onReceiveURL = UIKitBackend.onReceiveURL,
-            let url = launchOptions?[.url] as? URL
+           let url = launchOptions?[.url] as? URL
         {
             onReceiveURL(url)
         }
@@ -350,9 +401,12 @@ open class ApplicationDelegate: UIResponder, UIApplicationDelegate {
     /// point in your implementation. If you do not, then calls to
     /// ``SwiftCrossUI/Scene/commands(_:)`` will have no effect.
     open override func buildMenu(with builder: any UIMenuBuilder) {
-        guard #available(tvOS 14, *),
+        guard
+            #available(tvOS 14, *),
             builder.system == .main
-        else { return }
+        else {
+            return
+        }
 
         for submenu in menu {
             let menuIdentifier = mapMenuIdentifier(submenu.label)
@@ -399,13 +453,13 @@ open class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         UIKitBackend.onBecomeActive?()
 
-        // We only want to notify the first time. Otherwise the app's view
+        // We only want to notify the first time. Otherwise the app's scene
         // graph gets regenerated every time the app gets foregrounded,
         // causing very strange results.
         UIKitBackend.onBecomeActive = nil
 
         if let onReceiveURL = UIKitBackend.onReceiveURL,
-            let url = connectionOptions.userActivities.first?.webpageURL
+           let url = connectionOptions.userActivities.first?.webpageURL
         {
             onReceiveURL(url)
         }
@@ -413,9 +467,25 @@ open class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     open func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
         if let onReceiveURL = UIKitBackend.onReceiveURL,
-            let url = userActivity.webpageURL
+           let url = userActivity.webpageURL
         {
             onReceiveURL(url)
         }
+    }
+
+    open func sceneDidBecomeActive(_ scene: UIScene) {
+        UIKitBackend.onWindowEnvironmentChange?()
+    }
+
+    open func sceneWillResignActive(_ scene: UIScene) {
+        UIKitBackend.onWindowEnvironmentChange?()
+    }
+
+    open func sceneWillEnterForeground(_ scene: UIScene) {
+        UIKitBackend.onWindowEnvironmentChange?()
+    }
+
+    open func sceneDidEnterBackground(_ scene: UIScene) {
+        UIKitBackend.onWindowEnvironmentChange?()
     }
 }

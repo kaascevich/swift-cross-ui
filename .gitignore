@@ -13,3 +13,6 @@ DerivedData/
 vcpkg_installed/
 *.trace
 notes.json
+/Tools
+.docc-build/
+.idea

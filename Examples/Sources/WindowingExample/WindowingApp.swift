@@ -194,10 +194,13 @@ struct TertiaryWindowView: View {
 
 struct SingletonWindowView: View {
     @Environment(\.dismissWindow) private var dismissWindow
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         VStack {
             Text("This a singleton window!")
+
+            Text("Window scene phase: \(scenePhase)")
 
             Button("Close window") {
                 dismissWindow()
@@ -218,19 +221,23 @@ struct WindowingApp: App {
     @State var closable = true
     @State var minimizable = true
 
-    var bannerImage: URL {
-        // TODO(stackotter): Update SwiftBundlerRuntime to support fetching
-        //   resources in a cross platform manner.
-        #if os(macOS)
-            return Bundle.main.bundleURL.appendingPathComponent(
-                "Contents/Resources/Banner.png"
-            )
-        #elseif os(iOS) || os(Linux) || os(Windows)
-            return Bundle.main.bundleURL.appendingPathComponent(
-                "Examples_WindowingExample.bundle/Banner.png"
-            )
-        #endif
-    }
+    @Environment(\.appPhase) var appPhase
+
+    #if !os(Android)
+        var bannerImage: URL {
+            // TODO(stackotter): Update SwiftBundlerRuntime to support fetching
+            //   resources in a cross platform manner.
+            #if os(macOS)
+                return Bundle.main.bundleURL.appendingPathComponent(
+                    "Contents/Resources/Banner.png"
+                )
+            #elseif os(iOS) || os(Linux) || os(Windows)
+                return Bundle.main.bundleURL.appendingPathComponent(
+                    "Examples_WindowingExample.bundle/Banner.png"
+                )
+            #endif
+        }
+    #endif
 
     var body: some Scene {
         WindowGroup(title) {
@@ -238,8 +245,11 @@ struct WindowingApp: App {
                 VStack {
                     HStack {
                         Text("Window title:")
+
                         TextField("My window", text: $title)
                     }
+
+                    Text("App phase: \(appPhase)")
 
                     Toggle("Enable resizing", isOn: $resizable)
                         .windowResizeBehavior(resizable ? .enabled : .disabled)
@@ -248,11 +258,13 @@ struct WindowingApp: App {
                     Toggle("Enable minimizing", isOn: $minimizable)
                         .preferredWindowMinimizeBehavior(minimizable ? .enabled : .disabled)
 
-                    Image(bannerImage)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
+                    #if !os(Android)
+                        Image(bannerImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
 
-                    Divider()
+                        Divider()
+                    #endif
 
                     #if !os(tvOS)
                         FileDialogDemo()
@@ -269,10 +281,12 @@ struct WindowingApp: App {
 
                     SheetDemo()
 
-                    Divider()
+                    #if !os(Android)
+                        Divider()
 
-                    OpenWindowDemo()
-                        .padding(.bottom, 20)
+                        OpenWindowDemo()
+                            .padding(.bottom, 20)
+                    #endif
                 }
                 .padding(20)
             }
@@ -293,12 +307,18 @@ struct WindowingApp: App {
                     Button("Disabled item") {}
                         .disabled()
                 }
+
+                Divider()
+
+                ForEach([1, 2, 3, 4, 5], id: \.self) { num in
+                    Text("ForEach \(num)")
+                }
             }
         }
 
         AlertScene("Alert scene", isPresented: $isAlertSceneShown) {}
 
-        #if !(os(iOS) || os(tvOS))
+        #if !(os(iOS) || os(tvOS) || os(Android))
             WindowGroup("Secondary window", id: "secondary-window") {
                 #hotReloadable {
                     VStack {

@@ -12,7 +12,7 @@ public enum LayoutSystem {
             logger.warning("LayoutSystem.roundSize(_:) called with infinite size")
         }
 
-        let size = size.rounded(.towardZero)
+        let size = size.rounded(.up)
         return if size >= Double(Int.max) {
             Int.max
         } else if size <= Double(Int.min) {
@@ -59,9 +59,8 @@ public enum LayoutSystem {
         var tag: String?
 
         public init(
-            computeLayout:
-                @escaping @MainActor (ProposedViewSize, EnvironmentValues) ->
-                ViewLayoutResult,
+            computeLayout: @escaping @MainActor (ProposedViewSize, EnvironmentValues)
+                -> ViewLayoutResult,
             commit: @escaping @MainActor () -> ViewLayoutResult,
             tag: String? = nil
         ) {
@@ -108,7 +107,7 @@ public enum LayoutSystem {
     ///   ``Group`` to avoid changing stack layout participation (since ``Group``
     ///   is meant to appear completely invisible to the layout system).
     @MainActor
-    static func computeStackLayout<Backend: AppBackend>(
+    static func computeStackLayout<Backend: BaseAppBackend>(
         container: Backend.Widget,
         children: [LayoutableChild],
         cache: inout StackLayoutCache,
@@ -164,18 +163,17 @@ public enum LayoutSystem {
                 totalSpacing: totalSpacing,
                 totalReservedSpace: totalSpacing,
                 minimumLengths: [Double](repeating: 0, count: children.count),
-                redistributeSpaceOnCommit:
-                    shouldRedistributeSpaceOnCommit(
-                        proposedSize: proposedSize,
-                        orientation: orientation
-                    )
+                redistributeSpaceOnCommit: shouldRedistributeSpaceOnCommit(
+                    proposedSize: proposedSize,
+                    orientation: orientation
+                )
             )
 
             return ViewLayoutResult(
                 size: size,
                 childResults: results,
-                participateInStackLayoutsWhenEmpty:
-                    results.contains(where: \.participateInStackLayoutsWhenEmpty),
+                participateInStackLayoutsWhenEmpty: results
+                    .contains(where: \.participateInStackLayoutsWhenEmpty),
                 preferencesOverlay: nil
             )
         }
@@ -208,8 +206,8 @@ public enum LayoutSystem {
         return ViewLayoutResult(
             size: size,
             childResults: renderedChildren,
-            participateInStackLayoutsWhenEmpty:
-                renderedChildren.contains(where: \.participateInStackLayoutsWhenEmpty)
+            participateInStackLayoutsWhenEmpty: renderedChildren
+                .contains(where: \.participateInStackLayoutsWhenEmpty)
         )
     }
 
@@ -324,7 +322,7 @@ public enum LayoutSystem {
     }
 
     @MainActor
-    static func commitStackLayout<Backend: AppBackend>(
+    static func commitStackLayout<Backend: BaseAppBackend>(
         container: Backend.Widget,
         children: [LayoutableChild],
         cache: inout StackLayoutCache,

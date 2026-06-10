@@ -41,7 +41,7 @@ public struct VStack<Content: View>: View {
         self.alignment = alignment
     }
 
-    public func asWidget<Backend: AppBackend>(
+    public func asWidget<Backend: BaseAppBackend>(
         _ children: any ViewGraphNodeChildren,
         backend: Backend
     ) -> Backend.Widget {
@@ -52,7 +52,7 @@ public struct VStack<Content: View>: View {
         return vStack
     }
 
-    public func computeLayout<Backend: AppBackend>(
+    public func computeLayout<Backend: BaseAppBackend>(
         _ widget: Backend.Widget,
         children: any ViewGraphNodeChildren,
         proposedSize: ProposedViewSize,
@@ -77,8 +77,7 @@ public struct VStack<Content: View>: View {
             children: layoutableChildren(backend: backend, children: children),
             cache: &cache,
             proposedSize: proposedSize,
-            environment:
-                environment
+            environment: environment
                 .with(\.layoutOrientation, .vertical)
                 .with(\.layoutAlignment, alignment.asStackAlignment)
                 .with(\.layoutSpacing, spacing),
@@ -88,7 +87,7 @@ public struct VStack<Content: View>: View {
         return result
     }
 
-    public func commit<Backend: AppBackend>(
+    public func commit<Backend: BaseAppBackend>(
         _ widget: Backend.Widget,
         children: any ViewGraphNodeChildren,
         layout: ViewLayoutResult,
@@ -101,8 +100,7 @@ public struct VStack<Content: View>: View {
             children: layoutableChildren(backend: backend, children: children),
             cache: &cache,
             layout: layout,
-            environment:
-                environment
+            environment: environment
                 .with(\.layoutOrientation, .vertical)
                 .with(\.layoutAlignment, alignment.asStackAlignment)
                 .with(\.layoutSpacing, spacing),
