@@ -379,15 +379,11 @@ public final class GtkBackend:
                             actionName: "\(actionNamespace).\(actionName)"
                         )
                     case .toggle(let label, let value, let onChange):
-<<<<<<< HEAD
-                        let gAction = GSimpleAction(name: actionName, state: value, action: onChange)
-=======
                         let gAction = GSimpleAction(
                             name: actionName,
                             state: value,
                             action: onChange
                         )
->>>>>>> main
                         gAction.enabled = environment.isEnabled
                         actionMap.addAction(gAction)
 
