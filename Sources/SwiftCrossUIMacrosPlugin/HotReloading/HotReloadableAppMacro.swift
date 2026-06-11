@@ -128,19 +128,13 @@ extension HotReloadableAppMacro: MemberMacro {
                                 try await client.handlePackets { @Sendable dylib in
                                     Task { @MainActor in
                                         guard let symbol = dylib.symbol(
-<<<<<<< HEAD
-                                            named: "body",
+                                            named: "hotReloadingExportedEntryPoint",
                                             ofType: (
-                                                @convention(c) (UnsafeRawPointer, Int) -> Any
+                                                @convention(c) (UnsafeRawPointer, Int)
+                                                    -> UnsafeMutableRawPointer
                                             ).self
                                         ) else {
-                                            print("Hot reloading: Missing 'body' symbol")
-=======
-                                            named: "hotReloadingExportedEntryPoint",
-                                            ofType: (@convention(c) (UnsafeRawPointer, Int) -> UnsafeMutableRawPointer).self
-                                        ) else {
                                             print("Hot reloading: Missing 'hotReloadingExportedEntryPoint' symbol")
->>>>>>> main
                                             return
                                         }
                                         hotReloadingImportedEntryPoint = symbol
