@@ -22,13 +22,11 @@ struct DynamicPropertyUpdater<Base> {
     /// all dynamic properties on any value of type `Base` without creating
     /// any mirrors.
     @MainActor
-    init(for _: Base.Type) {
+    init(for value: Base) {
         self.propertyOffsets = []
 
         // Unlikely shortcut, but worthwhile when we can.
-        if MemoryLayout<Base>.size == 0 {
-            return
-        }
+        guard MemoryLayout<Base>.size > 0 else { return }
 
         if let cachedUpdater = updaterCache[ObjectIdentifier(Base.self)],
            let cachedUpdater = cachedUpdater as? Self
@@ -37,8 +35,8 @@ struct DynamicPropertyUpdater<Base> {
             return
         }
 
-        forEachField(of: Base.self) { _, offset, type in
-            if let type = type as? any DynamicProperty.Type {
+        forEachField(of: value) { _, offset, field in
+            if let type = type(of: field) as? any DynamicProperty.Type {
                 propertyOffsets.append((offset, type))
             }
         }
