@@ -6,24 +6,47 @@ import SwiftCrossUI
     import SwiftBundlerRuntime
 #endif
 
+enum BuiltInPickerStyle: CaseIterable, Equatable {
+    case automatic
+    case inline
+    case menu
+    case radioGroup
+    case segmented
+    case wheel
+
+    var asPickerStyle: any PickerStyle {
+        switch self {
+            case .automatic: .automatic
+            case .inline: .inline
+            case .menu: .menu
+            case .radioGroup: .radioGroup
+            case .segmented: .segmented
+            case .wheel: .wheel
+        }
+    }
+}
+
 @main
 @HotReloadable
 struct ControlsApp: App {
-    @AppStorage("count") var count = 0
+    @AppStorage(\.count) var count
     @State var exampleButtonState = false
     @State var exampleSwitchState = false
     @State var exampleCheckboxState = false
     @State var sliderValue = 5.0
     @State var text = ""
+    @State var secureText = ""
     @State var flavor: String? = nil
     @State var enabled = true
     @State var date = Date()
     @State var datePickerStyle: DatePickerStyle? = .automatic
     @State var menuToggleState = false
-    @State var progressViewSize: Int = 10
+    @State var progressViewSize: Double = 10
     @State var isProgressViewResizable = true
+    @State var pickerStyle: BuiltInPickerStyle? = .automatic
 
     @Environment(\.supportedDatePickerStyles) var supportedDatePickerStyles
+    @Environment(\.isPickerStyleSupported) var isPickerStyleSupported
 
     var body: some Scene {
         WindowGroup("ControlsApp") {
@@ -38,19 +61,21 @@ struct ControlsApp: App {
                             Text("Count: \(count)")
                         }
 
-                        VStack {
-                            Text("Menu button")
-                            Menu("Menu") {
-                                Button("Button item") {
-                                    print("Button item clicked")
-                                }
-                                Toggle("Toggle item", isOn: $menuToggleState)
-                                Menu("Submenu") {
-                                    Text("Text item 1")
-                                    Text("Text item 2")
+                        #if !canImport(AndroidBackend)
+                            VStack {
+                                Text("Menu button")
+                                Menu("Menu") {
+                                    Button("Button item") {
+                                        print("Button item clicked")
+                                    }
+                                    Toggle("Toggle item", isOn: $menuToggleState)
+                                    Menu("Submenu") {
+                                        Text("Text item 1")
+                                        Text("Text item 2")
+                                    }
                                 }
                             }
-                        }
+                        #endif
 
                         #if !canImport(UIKitBackend)
                             VStack {
@@ -68,21 +93,23 @@ struct ControlsApp: App {
                             Text("Currently enabled: \(exampleSwitchState)")
                         }
 
-                        #if !canImport(UIKitBackend)
-                            VStack {
-                                Text("Checkbox")
-                                Toggle("Toggle me:", isOn: $exampleCheckboxState)
-                                    .toggleStyle(.checkbox)
-                                Text("Currently enabled: \(exampleCheckboxState)")
-                            }
-                        #endif
-
                         VStack {
-                            Text("Slider")
-                            Slider(value: $sliderValue, in: 0...10)
-                                .frame(maxWidth: 200)
-                            Text("Value: \(String(format: "%.02f", sliderValue))")
+                            Text("Checkbox")
+                            Toggle("Toggle me:", isOn: $exampleCheckboxState)
+                                .toggleStyle(.checkbox)
+                            Text("Currently enabled: \(exampleCheckboxState)")
                         }
+
+                        #if !canImport(AndroidBackend)
+                            #if !os(tvOS)
+                                VStack {
+                                    Text("Slider")
+                                    Slider(value: $sliderValue, in: 0...10)
+                                        .frame(maxWidth: 200)
+                                    Text("Value: \(String(format: "%.02f", sliderValue))")
+                                }
+                            #endif
+                        #endif
 
                         VStack {
                             Text("Text field")
@@ -91,28 +118,55 @@ struct ControlsApp: App {
                         }
 
                         VStack {
-                            Toggle(
-                                "Enable ProgressView resizability", isOn: $isProgressViewResizable)
-                            Slider(value: $progressViewSize, in: 10...100)
-                            ProgressView()
-                                .resizable(isProgressViewResizable)
-                                .frame(width: progressViewSize, height: progressViewSize)
+                            Text("Secure text field")
+                            SecureField("Secure text field", text: $secureText)
+                            Text("Value: \(secureText)")
                         }
+
+                        #if !os(tvOS)
+                            VStack {
+                                Toggle(
+                                    "Enable ProgressView resizability",
+                                    isOn: $isProgressViewResizable
+                                )
+                                #if !canImport(AndroidBackend)
+                                    Slider(value: $progressViewSize, in: 10...100)
+                                #endif
+                                ProgressView()
+                                    .resizable(isProgressViewResizable)
+                                    .frame(width: progressViewSize, height: progressViewSize)
+                            }
+                        #endif
 
                         #if !canImport(Gtk3Backend)
                             VStack {
-                                Text("Drop down")
+                                Text("Picker")
+
+                                HStack {
+                                    Text("Picker Style:")
+                                    Picker(
+                                        of: BuiltInPickerStyle.allCases.filter {
+                                            isPickerStyleSupported($0.asPickerStyle)
+                                        },
+                                        selection: $pickerStyle
+                                    )
+                                }
+
                                 HStack {
                                     Text("Flavor: ")
+
                                     Picker(
                                         of: ["Vanilla", "Chocolate", "Strawberry"],
                                         selection: $flavor
+                                    )
+                                    .pickerStyle(
+                                        pickerStyle?.asPickerStyle ?? DefaultPickerStyle()
                                     )
                                 }
                                 Text("You chose: \(flavor ?? "Nothing yet!")")
                             }
 
-                            #if !os(tvOS)
+                            #if !os(tvOS) && !canImport(AndroidBackend)
                                 VStack {
                                     Text("Selected date: \(date)")
 
@@ -141,4 +195,8 @@ struct ControlsApp: App {
             }
         }.defaultSize(width: 400, height: 600)
     }
+}
+
+extension AppStorageValues {
+    @Entry var count: Int = 0
 }

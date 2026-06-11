@@ -70,9 +70,21 @@ extension UIKitBackend {
             options: [.usesLineFragmentOrigin, .truncatesLastVisibleLine],
             context: nil
         )
+
+        var height = size.height
+
+        if let lineLimitSettings = environment.lineLimitSettings {
+            let limitedHeight =
+                Double(max(lineLimitSettings.limit, 1)) * environment.resolvedFont.lineHeight
+
+            if limitedHeight < height || lineLimitSettings.reservesSpace {
+                height = limitedHeight
+            }
+        }
+
         return SIMD2(
             Int(size.width.rounded(.awayFromZero)),
-            Int(size.height.rounded(.awayFromZero))
+            Int(height.rounded(.awayFromZero))
         )
     }
 
@@ -144,7 +156,9 @@ extension UIKitBackend {
             // Thank you to Sam Dods for the base idea
             #if !os(tvOS)
                 let longPress = UILongPressGestureRecognizer(
-                    target: self, action: #selector(didLongPress))
+                    target: self,
+                    action: #selector(didLongPress)
+                )
                 addGestureRecognizer(longPress)
                 isUserInteractionEnabled = true
             #endif

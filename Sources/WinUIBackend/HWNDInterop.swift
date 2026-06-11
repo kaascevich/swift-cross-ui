@@ -2,7 +2,7 @@ import CWinRT
 import WinAppSDK
 import WinSDK
 import WinUI
-import WindowsFoundation
+@preconcurrency import WindowsFoundation
 
 public func getWindowIDFromWindow(_ hWnd: HWND?) -> WinAppSDK.WindowId {
     HWNDInterop.shared.getWindowIDFromWindow(hWnd)
@@ -34,14 +34,19 @@ extension WinUI.Window {
     }
 }
 
-private struct HWNDInterop {
+/// - Safety: This is sendable because all of the pointers have static lifetimes
+///   and can be shared across threads. The pointers aren't used for internal
+///   mutability.
+private struct HWNDInterop: @unchecked Sendable {
     private typealias pfnGetWindowIdFromWindow =
         @convention(c) (
-            HWND?, UnsafeMutablePointer<__x_ABI_CMicrosoft_CUI_CWindowId>?
+            HWND?,
+            UnsafeMutablePointer<__x_ABI_CMicrosoft_CUI_CWindowId>?
         ) -> HRESULT
     private typealias pfnGetWindowFromWindowId =
         @convention(c) (
-            __x_ABI_CMicrosoft_CUI_CWindowId, UnsafeMutablePointer<HWND?>?
+            __x_ABI_CMicrosoft_CUI_CWindowId,
+            UnsafeMutablePointer<HWND?>?
         ) -> HRESULT
     private var hModule: HMODULE!
     private var getWindowIDFromWindow_impl: pfnGetWindowIdFromWindow!

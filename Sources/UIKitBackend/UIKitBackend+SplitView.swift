@@ -1,19 +1,70 @@
 import UIKit
 
-#if os(iOS)
+#if os(iOS) || targetEnvironment(macCatalyst)
     final class SplitWidget: WrapperControllerWidget<UISplitViewController>,
         UISplitViewControllerDelegate
     {
-        var resizeHandler: (() -> Void)?
-        private let sidebarContainer: ContainerWidget
-        private let mainContainer: ContainerWidget
+        private final class ColumnView: UIView {
+            unowned var splitWidget: SplitWidget!
+
+            @available(*, unavailable)
+            required init?(coder: NSCoder) {
+                fatalError("init(coder:) is not used for this view")
+            }
+
+            init() {
+                super.init(frame: .zero)
+            }
+
+            override func layoutSubviews() {
+                super.layoutSubviews()
+                if !splitWidget.hasCalledResizeHandler {
+                    splitWidget.resizeHandler?()
+                    splitWidget.hasCalledResizeHandler = true
+                }
+            }
+        }
+
+        private final class ColumnWidget: ContainerWidget {
+            let columnView = ColumnView()
+
+            override func loadView() {
+                view = columnView
+            }
+        }
+
+        var resizeHandler: (() -> Void)? {
+            didSet {
+                hasCalledResizeHandler = false
+            }
+        }
+
+        // This is just a flag so that we don't call resizeHandler twice in one pass through the run loop.
+        var hasCalledResizeHandler = false {
+            willSet {
+                if newValue {
+                    DispatchQueue.main.async { [weak self] in
+                        self?.hasCalledResizeHandler = false
+                    }
+                }
+            }
+        }
+
+        private let sidebarContainer: ColumnWidget
+        private let mainContainer: ColumnWidget
 
         init(sidebarWidget: some WidgetProtocol, mainWidget: some WidgetProtocol) {
             // UISplitViewController requires its children to be controllers, not views
-            sidebarContainer = ContainerWidget(child: sidebarWidget)
-            mainContainer = ContainerWidget(child: mainWidget)
+            sidebarContainer = ColumnWidget(child: sidebarWidget)
+            mainContainer = ColumnWidget(child: mainWidget)
 
             super.init(child: UISplitViewController())
+
+            sidebarContainer.parentWidget = self
+            mainContainer.parentWidget = self
+            childWidgets = [sidebarContainer, mainContainer]
+            sidebarContainer.columnView.splitWidget = self
+            mainContainer.columnView.splitWidget = self
 
             child.delegate = self
 
@@ -26,29 +77,32 @@ import UIKit
         override func viewDidLoad() {
             NSLayoutConstraint.activate([
                 sidebarContainer.view.leadingAnchor.constraint(
-                    equalTo: sidebarContainer.child.view.leadingAnchor),
+                    equalTo: sidebarContainer.child.view.leadingAnchor
+                ),
                 sidebarContainer.view.trailingAnchor.constraint(
-                    equalTo: sidebarContainer.child.view.trailingAnchor),
+                    equalTo: sidebarContainer.child.view.trailingAnchor
+                ),
                 sidebarContainer.view.topAnchor.constraint(
-                    equalTo: sidebarContainer.child.view.topAnchor),
+                    equalTo: sidebarContainer.child.view.topAnchor
+                ),
                 sidebarContainer.view.bottomAnchor.constraint(
-                    equalTo: sidebarContainer.child.view.bottomAnchor),
+                    equalTo: sidebarContainer.child.view.bottomAnchor
+                ),
                 mainContainer.view.leadingAnchor.constraint(
-                    equalTo: mainContainer.child.view.leadingAnchor),
+                    equalTo: mainContainer.child.view.leadingAnchor
+                ),
                 mainContainer.view.trailingAnchor.constraint(
-                    equalTo: mainContainer.child.view.trailingAnchor),
+                    equalTo: mainContainer.child.view.trailingAnchor
+                ),
                 mainContainer.view.topAnchor.constraint(
-                    equalTo: mainContainer.child.view.topAnchor),
+                    equalTo: mainContainer.child.view.topAnchor
+                ),
                 mainContainer.view.bottomAnchor.constraint(
-                    equalTo: mainContainer.child.view.bottomAnchor),
+                    equalTo: mainContainer.child.view.bottomAnchor
+                ),
             ])
 
             super.viewDidLoad()
-        }
-
-        override func viewDidLayoutSubviews() {
-            super.viewDidLayoutSubviews()
-            resizeHandler?()
         }
     }
 
@@ -59,7 +113,8 @@ import UIKit
         ) -> any WidgetProtocol {
             precondition(
                 UIDevice.current.userInterfaceIdiom != .phone,
-                "NavigationSplitView is currently unsupported on iPhone and iPod touch.")
+                "NavigationSplitView is currently unsupported on iPhone and iPod touch."
+            )
 
             return SplitWidget(sidebarWidget: leadingChild, mainWidget: trailingChild)
         }
@@ -85,6 +140,34 @@ import UIKit
             let splitWidget = splitView as! SplitWidget
             splitWidget.child.minimumPrimaryColumnWidth = CGFloat(minimumWidth)
             splitWidget.child.maximumPrimaryColumnWidth = CGFloat(maximumWidth)
+        }
+    }
+#else
+    extension UIKitBackend {
+        public func createSplitView(
+            leadingChild: Widget,
+            trailingChild: Widget
+        ) -> Widget {
+            fatalError("\(Self.self): \(#function) not implemented")
+        }
+
+        public func setResizeHandler(
+            ofSplitView splitView: Widget,
+            to action: @escaping () -> Void
+        ) {
+            fatalError("\(Self.self): \(#function) not implemented")
+        }
+
+        public func sidebarWidth(ofSplitView splitView: Widget) -> Int {
+            fatalError("\(Self.self): \(#function) not implemented")
+        }
+
+        public func setSidebarWidthBounds(
+            ofSplitView splitView: Widget,
+            minimum minimumWidth: Int,
+            maximum maximumWidth: Int
+        ) {
+            fatalError("\(Self.self): \(#function) not implemented")
         }
     }
 #endif

@@ -1,7 +1,8 @@
-/// A cache for dynamic property updaters. The keys are the `ObjectIdentifier`s of
-/// various `Base` types that we have already computed dynamic property updaters
-/// for, and the elements are corresponding cached instances of
-/// `DynamicPropertyUpdater<Base>`.
+/// A cache for dynamic property updaters.
+///
+/// The keys are the `ObjectIdentifier`s of various `Base` types that we have
+/// already computed dynamic property updaters for, and the elements are
+/// corresponding cached instances of `DynamicPropertyUpdater<Base>`.
 ///
 /// From some basic testing, this caching seems to reduce layout times by 5-10%
 /// (at the time of implementation).
@@ -9,8 +10,7 @@
 private var updaterCache: [ObjectIdentifier: Any] = [:]
 
 /// A helper for updating the dynamic properties of a stateful struct (e.g.
-/// a View or App conforming struct). Dynamic properties are those that conform
-/// to ``DynamicProperty``, e.g. properties annotated with `@State`.
+/// a struct conforming to ``View`` or ``App``).
 ///
 /// At initialisation the updater will determine the byte offset of each
 /// stateful property in the struct.
@@ -30,8 +30,10 @@ struct DynamicPropertyUpdater<Base> {
             return
         }
 
-        if let cachedUpdater = updaterCache[ObjectIdentifier(Base.self)] {
-            self = cachedUpdater as! Self
+        if let cachedUpdater = updaterCache[ObjectIdentifier(Base.self)],
+           let cachedUpdater = cachedUpdater as? Self
+        {
+            self = cachedUpdater
             return
         }
 

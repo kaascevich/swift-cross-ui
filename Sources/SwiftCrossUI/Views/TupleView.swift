@@ -1,6 +1,8 @@
 // This file was generated using gyb. Do not edit it directly. Edit
 // TupleView.swift.gyb instead.
 
+// swiftformat:options --allow-partial-wrapping true
+
 @MainActor
 private func layoutableChild<V: View>(
     node: AnyViewGraphNode<V>,
@@ -27,7 +29,7 @@ protocol TupleView: TypeSafeView {}
 
 extension TupleView {
     @MainActor
-    func asWidget<Backend: AppBackend>(
+    func asWidget<Backend: BaseAppBackend>(
         _ children: Children,
         backend: Backend
     ) -> Backend.Widget {
@@ -36,7 +38,7 @@ extension TupleView {
     }
 
     @MainActor
-    func computeLayout<Backend: AppBackend>(
+    func computeLayout<Backend: BaseAppBackend>(
         _ widget: Backend.Widget,
         children: Children,
         proposedSize: ProposedViewSize,
@@ -54,7 +56,7 @@ extension TupleView {
     }
 
     @MainActor
-    func commit<Backend: AppBackend>(
+    func commit<Backend: BaseAppBackend>(
         _ widget: Backend.Widget,
         children: Children,
         layout: ViewLayoutResult,
@@ -76,25 +78,34 @@ extension TupleView {
 /// production ready variadic generics.
 ///
 /// Has the same behaviour as ``Group`` when rendered directly.
-public struct TupleView1<View0: View> {
+public struct TupleView1<
+    View0: View
+> {
     public var view0: View0
 
     public var body = EmptyView()
 
     /// Wraps 1 child views in a single container view.
-    public init(_ view0: View0) {
+    public init(
+        _ view0: View0
+    ) {
         self.view0 = view0
     }
 }
 
 extension TupleView1: View {
     public typealias Content = EmptyView
+    public var _asMenuItems: [MenuItem] {
+        var result: [MenuItem] = []
+        result += view0._asMenuItems
+        return result
+    }
 }
 
 extension TupleView1: TupleView {
     typealias Children = TupleViewChildren1<View0>
 
-    func children<Backend: AppBackend>(
+    func children<Backend: BaseAppBackend>(
         backend: Backend,
         snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
         environment: EnvironmentValues
@@ -105,12 +116,12 @@ extension TupleView1: TupleView {
         )
     }
 
-    func layoutableChildren<Backend: AppBackend>(
+    func layoutableChildren<Backend: BaseAppBackend>(
         backend: Backend,
         children: Children
     ) -> [LayoutSystem.LayoutableChild] {
         [
-            layoutableChild(node: children.child0, view: view0)
+            layoutableChild(node: children.child0, view: view0),
         ]
     }
 }
@@ -119,14 +130,18 @@ extension TupleView1: TupleView {
 /// production ready variadic generics.
 ///
 /// Has the same behaviour as ``Group`` when rendered directly.
-public struct TupleView2<View0: View, View1: View> {
+public struct TupleView2<
+    View0: View, View1: View
+> {
     public var view0: View0
     public var view1: View1
 
     public var body = EmptyView()
 
     /// Wraps 2 child views in a single container view.
-    public init(_ view0: View0, _ view1: View1) {
+    public init(
+        _ view0: View0, _ view1: View1
+    ) {
         self.view0 = view0
         self.view1 = view1
     }
@@ -134,12 +149,18 @@ public struct TupleView2<View0: View, View1: View> {
 
 extension TupleView2: View {
     public typealias Content = EmptyView
+    public var _asMenuItems: [MenuItem] {
+        var result: [MenuItem] = []
+        result += view0._asMenuItems
+        result += view1._asMenuItems
+        return result
+    }
 }
 
 extension TupleView2: TupleView {
     typealias Children = TupleViewChildren2<View0, View1>
 
-    func children<Backend: AppBackend>(
+    func children<Backend: BaseAppBackend>(
         backend: Backend,
         snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
         environment: EnvironmentValues
@@ -150,7 +171,7 @@ extension TupleView2: TupleView {
         )
     }
 
-    func layoutableChildren<Backend: AppBackend>(
+    func layoutableChildren<Backend: BaseAppBackend>(
         backend: Backend,
         children: Children
     ) -> [LayoutSystem.LayoutableChild] {
@@ -165,7 +186,9 @@ extension TupleView2: TupleView {
 /// production ready variadic generics.
 ///
 /// Has the same behaviour as ``Group`` when rendered directly.
-public struct TupleView3<View0: View, View1: View, View2: View> {
+public struct TupleView3<
+    View0: View, View1: View, View2: View
+> {
     public var view0: View0
     public var view1: View1
     public var view2: View2
@@ -173,7 +196,9 @@ public struct TupleView3<View0: View, View1: View, View2: View> {
     public var body = EmptyView()
 
     /// Wraps 3 child views in a single container view.
-    public init(_ view0: View0, _ view1: View1, _ view2: View2) {
+    public init(
+        _ view0: View0, _ view1: View1, _ view2: View2
+    ) {
         self.view0 = view0
         self.view1 = view1
         self.view2 = view2
@@ -182,12 +207,19 @@ public struct TupleView3<View0: View, View1: View, View2: View> {
 
 extension TupleView3: View {
     public typealias Content = EmptyView
+    public var _asMenuItems: [MenuItem] {
+        var result: [MenuItem] = []
+        result += view0._asMenuItems
+        result += view1._asMenuItems
+        result += view2._asMenuItems
+        return result
+    }
 }
 
 extension TupleView3: TupleView {
     typealias Children = TupleViewChildren3<View0, View1, View2>
 
-    func children<Backend: AppBackend>(
+    func children<Backend: BaseAppBackend>(
         backend: Backend,
         snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
         environment: EnvironmentValues
@@ -198,7 +230,7 @@ extension TupleView3: TupleView {
         )
     }
 
-    func layoutableChildren<Backend: AppBackend>(
+    func layoutableChildren<Backend: BaseAppBackend>(
         backend: Backend,
         children: Children
     ) -> [LayoutSystem.LayoutableChild] {
@@ -214,7 +246,9 @@ extension TupleView3: TupleView {
 /// production ready variadic generics.
 ///
 /// Has the same behaviour as ``Group`` when rendered directly.
-public struct TupleView4<View0: View, View1: View, View2: View, View3: View> {
+public struct TupleView4<
+    View0: View, View1: View, View2: View, View3: View
+> {
     public var view0: View0
     public var view1: View1
     public var view2: View2
@@ -223,7 +257,9 @@ public struct TupleView4<View0: View, View1: View, View2: View, View3: View> {
     public var body = EmptyView()
 
     /// Wraps 4 child views in a single container view.
-    public init(_ view0: View0, _ view1: View1, _ view2: View2, _ view3: View3) {
+    public init(
+        _ view0: View0, _ view1: View1, _ view2: View2, _ view3: View3
+    ) {
         self.view0 = view0
         self.view1 = view1
         self.view2 = view2
@@ -233,12 +269,20 @@ public struct TupleView4<View0: View, View1: View, View2: View, View3: View> {
 
 extension TupleView4: View {
     public typealias Content = EmptyView
+    public var _asMenuItems: [MenuItem] {
+        var result: [MenuItem] = []
+        result += view0._asMenuItems
+        result += view1._asMenuItems
+        result += view2._asMenuItems
+        result += view3._asMenuItems
+        return result
+    }
 }
 
 extension TupleView4: TupleView {
     typealias Children = TupleViewChildren4<View0, View1, View2, View3>
 
-    func children<Backend: AppBackend>(
+    func children<Backend: BaseAppBackend>(
         backend: Backend,
         snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
         environment: EnvironmentValues
@@ -249,7 +293,7 @@ extension TupleView4: TupleView {
         )
     }
 
-    func layoutableChildren<Backend: AppBackend>(
+    func layoutableChildren<Backend: BaseAppBackend>(
         backend: Backend,
         children: Children
     ) -> [LayoutSystem.LayoutableChild] {
@@ -266,7 +310,9 @@ extension TupleView4: TupleView {
 /// production ready variadic generics.
 ///
 /// Has the same behaviour as ``Group`` when rendered directly.
-public struct TupleView5<View0: View, View1: View, View2: View, View3: View, View4: View> {
+public struct TupleView5<
+    View0: View, View1: View, View2: View, View3: View, View4: View
+> {
     public var view0: View0
     public var view1: View1
     public var view2: View2
@@ -276,7 +322,9 @@ public struct TupleView5<View0: View, View1: View, View2: View, View3: View, Vie
     public var body = EmptyView()
 
     /// Wraps 5 child views in a single container view.
-    public init(_ view0: View0, _ view1: View1, _ view2: View2, _ view3: View3, _ view4: View4) {
+    public init(
+        _ view0: View0, _ view1: View1, _ view2: View2, _ view3: View3, _ view4: View4
+    ) {
         self.view0 = view0
         self.view1 = view1
         self.view2 = view2
@@ -287,12 +335,21 @@ public struct TupleView5<View0: View, View1: View, View2: View, View3: View, Vie
 
 extension TupleView5: View {
     public typealias Content = EmptyView
+    public var _asMenuItems: [MenuItem] {
+        var result: [MenuItem] = []
+        result += view0._asMenuItems
+        result += view1._asMenuItems
+        result += view2._asMenuItems
+        result += view3._asMenuItems
+        result += view4._asMenuItems
+        return result
+    }
 }
 
 extension TupleView5: TupleView {
     typealias Children = TupleViewChildren5<View0, View1, View2, View3, View4>
 
-    func children<Backend: AppBackend>(
+    func children<Backend: BaseAppBackend>(
         backend: Backend,
         snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
         environment: EnvironmentValues
@@ -303,7 +360,7 @@ extension TupleView5: TupleView {
         )
     }
 
-    func layoutableChildren<Backend: AppBackend>(
+    func layoutableChildren<Backend: BaseAppBackend>(
         backend: Backend,
         children: Children
     ) -> [LayoutSystem.LayoutableChild] {
@@ -349,12 +406,22 @@ public struct TupleView6<
 
 extension TupleView6: View {
     public typealias Content = EmptyView
+    public var _asMenuItems: [MenuItem] {
+        var result: [MenuItem] = []
+        result += view0._asMenuItems
+        result += view1._asMenuItems
+        result += view2._asMenuItems
+        result += view3._asMenuItems
+        result += view4._asMenuItems
+        result += view5._asMenuItems
+        return result
+    }
 }
 
 extension TupleView6: TupleView {
     typealias Children = TupleViewChildren6<View0, View1, View2, View3, View4, View5>
 
-    func children<Backend: AppBackend>(
+    func children<Backend: BaseAppBackend>(
         backend: Backend,
         snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
         environment: EnvironmentValues
@@ -365,7 +432,7 @@ extension TupleView6: TupleView {
         )
     }
 
-    func layoutableChildren<Backend: AppBackend>(
+    func layoutableChildren<Backend: BaseAppBackend>(
         backend: Backend,
         children: Children
     ) -> [LayoutSystem.LayoutableChild] {
@@ -414,12 +481,23 @@ public struct TupleView7<
 
 extension TupleView7: View {
     public typealias Content = EmptyView
+    public var _asMenuItems: [MenuItem] {
+        var result: [MenuItem] = []
+        result += view0._asMenuItems
+        result += view1._asMenuItems
+        result += view2._asMenuItems
+        result += view3._asMenuItems
+        result += view4._asMenuItems
+        result += view5._asMenuItems
+        result += view6._asMenuItems
+        return result
+    }
 }
 
 extension TupleView7: TupleView {
     typealias Children = TupleViewChildren7<View0, View1, View2, View3, View4, View5, View6>
 
-    func children<Backend: AppBackend>(
+    func children<Backend: BaseAppBackend>(
         backend: Backend,
         snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
         environment: EnvironmentValues
@@ -430,7 +508,7 @@ extension TupleView7: TupleView {
         )
     }
 
-    func layoutableChildren<Backend: AppBackend>(
+    func layoutableChildren<Backend: BaseAppBackend>(
         backend: Backend,
         children: Children
     ) -> [LayoutSystem.LayoutableChild] {
@@ -483,12 +561,24 @@ public struct TupleView8<
 
 extension TupleView8: View {
     public typealias Content = EmptyView
+    public var _asMenuItems: [MenuItem] {
+        var result: [MenuItem] = []
+        result += view0._asMenuItems
+        result += view1._asMenuItems
+        result += view2._asMenuItems
+        result += view3._asMenuItems
+        result += view4._asMenuItems
+        result += view5._asMenuItems
+        result += view6._asMenuItems
+        result += view7._asMenuItems
+        return result
+    }
 }
 
 extension TupleView8: TupleView {
     typealias Children = TupleViewChildren8<View0, View1, View2, View3, View4, View5, View6, View7>
 
-    func children<Backend: AppBackend>(
+    func children<Backend: BaseAppBackend>(
         backend: Backend,
         snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
         environment: EnvironmentValues
@@ -499,7 +589,7 @@ extension TupleView8: TupleView {
         )
     }
 
-    func layoutableChildren<Backend: AppBackend>(
+    func layoutableChildren<Backend: BaseAppBackend>(
         backend: Backend,
         children: Children
     ) -> [LayoutSystem.LayoutableChild] {
@@ -555,14 +645,35 @@ public struct TupleView9<
 
 extension TupleView9: View {
     public typealias Content = EmptyView
+    public var _asMenuItems: [MenuItem] {
+        var result: [MenuItem] = []
+        result += view0._asMenuItems
+        result += view1._asMenuItems
+        result += view2._asMenuItems
+        result += view3._asMenuItems
+        result += view4._asMenuItems
+        result += view5._asMenuItems
+        result += view6._asMenuItems
+        result += view7._asMenuItems
+        result += view8._asMenuItems
+        return result
+    }
 }
 
 extension TupleView9: TupleView {
     typealias Children = TupleViewChildren9<
-        View0, View1, View2, View3, View4, View5, View6, View7, View8
+        View0,
+        View1,
+        View2,
+        View3,
+        View4,
+        View5,
+        View6,
+        View7,
+        View8
     >
 
-    func children<Backend: AppBackend>(
+    func children<Backend: BaseAppBackend>(
         backend: Backend,
         snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
         environment: EnvironmentValues
@@ -573,7 +684,7 @@ extension TupleView9: TupleView {
         )
     }
 
-    func layoutableChildren<Backend: AppBackend>(
+    func layoutableChildren<Backend: BaseAppBackend>(
         backend: Backend,
         children: Children
     ) -> [LayoutSystem.LayoutableChild] {
@@ -632,14 +743,37 @@ public struct TupleView10<
 
 extension TupleView10: View {
     public typealias Content = EmptyView
+    public var _asMenuItems: [MenuItem] {
+        var result: [MenuItem] = []
+        result += view0._asMenuItems
+        result += view1._asMenuItems
+        result += view2._asMenuItems
+        result += view3._asMenuItems
+        result += view4._asMenuItems
+        result += view5._asMenuItems
+        result += view6._asMenuItems
+        result += view7._asMenuItems
+        result += view8._asMenuItems
+        result += view9._asMenuItems
+        return result
+    }
 }
 
 extension TupleView10: TupleView {
     typealias Children = TupleViewChildren10<
-        View0, View1, View2, View3, View4, View5, View6, View7, View8, View9
+        View0,
+        View1,
+        View2,
+        View3,
+        View4,
+        View5,
+        View6,
+        View7,
+        View8,
+        View9
     >
 
-    func children<Backend: AppBackend>(
+    func children<Backend: BaseAppBackend>(
         backend: Backend,
         snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
         environment: EnvironmentValues
@@ -650,7 +784,7 @@ extension TupleView10: TupleView {
         )
     }
 
-    func layoutableChildren<Backend: AppBackend>(
+    func layoutableChildren<Backend: BaseAppBackend>(
         backend: Backend,
         children: Children
     ) -> [LayoutSystem.LayoutableChild] {
@@ -713,14 +847,39 @@ public struct TupleView11<
 
 extension TupleView11: View {
     public typealias Content = EmptyView
+    public var _asMenuItems: [MenuItem] {
+        var result: [MenuItem] = []
+        result += view0._asMenuItems
+        result += view1._asMenuItems
+        result += view2._asMenuItems
+        result += view3._asMenuItems
+        result += view4._asMenuItems
+        result += view5._asMenuItems
+        result += view6._asMenuItems
+        result += view7._asMenuItems
+        result += view8._asMenuItems
+        result += view9._asMenuItems
+        result += view10._asMenuItems
+        return result
+    }
 }
 
 extension TupleView11: TupleView {
     typealias Children = TupleViewChildren11<
-        View0, View1, View2, View3, View4, View5, View6, View7, View8, View9, View10
+        View0,
+        View1,
+        View2,
+        View3,
+        View4,
+        View5,
+        View6,
+        View7,
+        View8,
+        View9,
+        View10
     >
 
-    func children<Backend: AppBackend>(
+    func children<Backend: BaseAppBackend>(
         backend: Backend,
         snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
         environment: EnvironmentValues
@@ -731,7 +890,7 @@ extension TupleView11: TupleView {
         )
     }
 
-    func layoutableChildren<Backend: AppBackend>(
+    func layoutableChildren<Backend: BaseAppBackend>(
         backend: Backend,
         children: Children
     ) -> [LayoutSystem.LayoutableChild] {
@@ -797,14 +956,41 @@ public struct TupleView12<
 
 extension TupleView12: View {
     public typealias Content = EmptyView
+    public var _asMenuItems: [MenuItem] {
+        var result: [MenuItem] = []
+        result += view0._asMenuItems
+        result += view1._asMenuItems
+        result += view2._asMenuItems
+        result += view3._asMenuItems
+        result += view4._asMenuItems
+        result += view5._asMenuItems
+        result += view6._asMenuItems
+        result += view7._asMenuItems
+        result += view8._asMenuItems
+        result += view9._asMenuItems
+        result += view10._asMenuItems
+        result += view11._asMenuItems
+        return result
+    }
 }
 
 extension TupleView12: TupleView {
     typealias Children = TupleViewChildren12<
-        View0, View1, View2, View3, View4, View5, View6, View7, View8, View9, View10, View11
+        View0,
+        View1,
+        View2,
+        View3,
+        View4,
+        View5,
+        View6,
+        View7,
+        View8,
+        View9,
+        View10,
+        View11
     >
 
-    func children<Backend: AppBackend>(
+    func children<Backend: BaseAppBackend>(
         backend: Backend,
         snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
         environment: EnvironmentValues
@@ -815,7 +1001,7 @@ extension TupleView12: TupleView {
         )
     }
 
-    func layoutableChildren<Backend: AppBackend>(
+    func layoutableChildren<Backend: BaseAppBackend>(
         backend: Backend,
         children: Children
     ) -> [LayoutSystem.LayoutableChild] {
@@ -884,14 +1070,43 @@ public struct TupleView13<
 
 extension TupleView13: View {
     public typealias Content = EmptyView
+    public var _asMenuItems: [MenuItem] {
+        var result: [MenuItem] = []
+        result += view0._asMenuItems
+        result += view1._asMenuItems
+        result += view2._asMenuItems
+        result += view3._asMenuItems
+        result += view4._asMenuItems
+        result += view5._asMenuItems
+        result += view6._asMenuItems
+        result += view7._asMenuItems
+        result += view8._asMenuItems
+        result += view9._asMenuItems
+        result += view10._asMenuItems
+        result += view11._asMenuItems
+        result += view12._asMenuItems
+        return result
+    }
 }
 
 extension TupleView13: TupleView {
     typealias Children = TupleViewChildren13<
-        View0, View1, View2, View3, View4, View5, View6, View7, View8, View9, View10, View11, View12
+        View0,
+        View1,
+        View2,
+        View3,
+        View4,
+        View5,
+        View6,
+        View7,
+        View8,
+        View9,
+        View10,
+        View11,
+        View12
     >
 
-    func children<Backend: AppBackend>(
+    func children<Backend: BaseAppBackend>(
         backend: Backend,
         snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
         environment: EnvironmentValues
@@ -903,7 +1118,7 @@ extension TupleView13: TupleView {
         )
     }
 
-    func layoutableChildren<Backend: AppBackend>(
+    func layoutableChildren<Backend: BaseAppBackend>(
         backend: Backend,
         children: Children
     ) -> [LayoutSystem.LayoutableChild] {
@@ -931,7 +1146,8 @@ extension TupleView13: TupleView {
 /// Has the same behaviour as ``Group`` when rendered directly.
 public struct TupleView14<
     View0: View, View1: View, View2: View, View3: View, View4: View, View5: View, View6: View,
-    View7: View, View8: View, View9: View, View10: View, View11: View, View12: View, View13: View
+    View7: View, View8: View, View9: View, View10: View, View11: View, View12: View,
+    View13: View
 > {
     public var view0: View0
     public var view1: View1
@@ -975,15 +1191,45 @@ public struct TupleView14<
 
 extension TupleView14: View {
     public typealias Content = EmptyView
+    public var _asMenuItems: [MenuItem] {
+        var result: [MenuItem] = []
+        result += view0._asMenuItems
+        result += view1._asMenuItems
+        result += view2._asMenuItems
+        result += view3._asMenuItems
+        result += view4._asMenuItems
+        result += view5._asMenuItems
+        result += view6._asMenuItems
+        result += view7._asMenuItems
+        result += view8._asMenuItems
+        result += view9._asMenuItems
+        result += view10._asMenuItems
+        result += view11._asMenuItems
+        result += view12._asMenuItems
+        result += view13._asMenuItems
+        return result
+    }
 }
 
 extension TupleView14: TupleView {
     typealias Children = TupleViewChildren14<
-        View0, View1, View2, View3, View4, View5, View6, View7, View8, View9, View10, View11,
-        View12, View13
+        View0,
+        View1,
+        View2,
+        View3,
+        View4,
+        View5,
+        View6,
+        View7,
+        View8,
+        View9,
+        View10,
+        View11,
+        View12,
+        View13
     >
 
-    func children<Backend: AppBackend>(
+    func children<Backend: BaseAppBackend>(
         backend: Backend,
         snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
         environment: EnvironmentValues
@@ -995,7 +1241,7 @@ extension TupleView14: TupleView {
         )
     }
 
-    func layoutableChildren<Backend: AppBackend>(
+    func layoutableChildren<Backend: BaseAppBackend>(
         backend: Backend,
         children: Children
     ) -> [LayoutSystem.LayoutableChild] {
@@ -1024,8 +1270,8 @@ extension TupleView14: TupleView {
 /// Has the same behaviour as ``Group`` when rendered directly.
 public struct TupleView15<
     View0: View, View1: View, View2: View, View3: View, View4: View, View5: View, View6: View,
-    View7: View, View8: View, View9: View, View10: View, View11: View, View12: View, View13: View,
-    View14: View
+    View7: View, View8: View, View9: View, View10: View, View11: View, View12: View,
+    View13: View, View14: View
 > {
     public var view0: View0
     public var view1: View1
@@ -1071,15 +1317,47 @@ public struct TupleView15<
 
 extension TupleView15: View {
     public typealias Content = EmptyView
+    public var _asMenuItems: [MenuItem] {
+        var result: [MenuItem] = []
+        result += view0._asMenuItems
+        result += view1._asMenuItems
+        result += view2._asMenuItems
+        result += view3._asMenuItems
+        result += view4._asMenuItems
+        result += view5._asMenuItems
+        result += view6._asMenuItems
+        result += view7._asMenuItems
+        result += view8._asMenuItems
+        result += view9._asMenuItems
+        result += view10._asMenuItems
+        result += view11._asMenuItems
+        result += view12._asMenuItems
+        result += view13._asMenuItems
+        result += view14._asMenuItems
+        return result
+    }
 }
 
 extension TupleView15: TupleView {
     typealias Children = TupleViewChildren15<
-        View0, View1, View2, View3, View4, View5, View6, View7, View8, View9, View10, View11,
-        View12, View13, View14
+        View0,
+        View1,
+        View2,
+        View3,
+        View4,
+        View5,
+        View6,
+        View7,
+        View8,
+        View9,
+        View10,
+        View11,
+        View12,
+        View13,
+        View14
     >
 
-    func children<Backend: AppBackend>(
+    func children<Backend: BaseAppBackend>(
         backend: Backend,
         snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
         environment: EnvironmentValues
@@ -1091,7 +1369,7 @@ extension TupleView15: TupleView {
         )
     }
 
-    func layoutableChildren<Backend: AppBackend>(
+    func layoutableChildren<Backend: BaseAppBackend>(
         backend: Backend,
         children: Children
     ) -> [LayoutSystem.LayoutableChild] {
@@ -1121,8 +1399,8 @@ extension TupleView15: TupleView {
 /// Has the same behaviour as ``Group`` when rendered directly.
 public struct TupleView16<
     View0: View, View1: View, View2: View, View3: View, View4: View, View5: View, View6: View,
-    View7: View, View8: View, View9: View, View10: View, View11: View, View12: View, View13: View,
-    View14: View, View15: View
+    View7: View, View8: View, View9: View, View10: View, View11: View, View12: View,
+    View13: View, View14: View, View15: View
 > {
     public var view0: View0
     public var view1: View1
@@ -1147,7 +1425,8 @@ public struct TupleView16<
     public init(
         _ view0: View0, _ view1: View1, _ view2: View2, _ view3: View3, _ view4: View4,
         _ view5: View5, _ view6: View6, _ view7: View7, _ view8: View8, _ view9: View9,
-        _ view10: View10, _ view11: View11, _ view12: View12, _ view13: View13, _ view14: View14,
+        _ view10: View10, _ view11: View11, _ view12: View12, _ view13: View13,
+        _ view14: View14,
         _ view15: View15
     ) {
         self.view0 = view0
@@ -1171,15 +1450,49 @@ public struct TupleView16<
 
 extension TupleView16: View {
     public typealias Content = EmptyView
+    public var _asMenuItems: [MenuItem] {
+        var result: [MenuItem] = []
+        result += view0._asMenuItems
+        result += view1._asMenuItems
+        result += view2._asMenuItems
+        result += view3._asMenuItems
+        result += view4._asMenuItems
+        result += view5._asMenuItems
+        result += view6._asMenuItems
+        result += view7._asMenuItems
+        result += view8._asMenuItems
+        result += view9._asMenuItems
+        result += view10._asMenuItems
+        result += view11._asMenuItems
+        result += view12._asMenuItems
+        result += view13._asMenuItems
+        result += view14._asMenuItems
+        result += view15._asMenuItems
+        return result
+    }
 }
 
 extension TupleView16: TupleView {
     typealias Children = TupleViewChildren16<
-        View0, View1, View2, View3, View4, View5, View6, View7, View8, View9, View10, View11,
-        View12, View13, View14, View15
+        View0,
+        View1,
+        View2,
+        View3,
+        View4,
+        View5,
+        View6,
+        View7,
+        View8,
+        View9,
+        View10,
+        View11,
+        View12,
+        View13,
+        View14,
+        View15
     >
 
-    func children<Backend: AppBackend>(
+    func children<Backend: BaseAppBackend>(
         backend: Backend,
         snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
         environment: EnvironmentValues
@@ -1191,7 +1504,7 @@ extension TupleView16: TupleView {
         )
     }
 
-    func layoutableChildren<Backend: AppBackend>(
+    func layoutableChildren<Backend: BaseAppBackend>(
         backend: Backend,
         children: Children
     ) -> [LayoutSystem.LayoutableChild] {
@@ -1222,8 +1535,8 @@ extension TupleView16: TupleView {
 /// Has the same behaviour as ``Group`` when rendered directly.
 public struct TupleView17<
     View0: View, View1: View, View2: View, View3: View, View4: View, View5: View, View6: View,
-    View7: View, View8: View, View9: View, View10: View, View11: View, View12: View, View13: View,
-    View14: View, View15: View, View16: View
+    View7: View, View8: View, View9: View, View10: View, View11: View, View12: View,
+    View13: View, View14: View, View15: View, View16: View
 > {
     public var view0: View0
     public var view1: View1
@@ -1249,7 +1562,8 @@ public struct TupleView17<
     public init(
         _ view0: View0, _ view1: View1, _ view2: View2, _ view3: View3, _ view4: View4,
         _ view5: View5, _ view6: View6, _ view7: View7, _ view8: View8, _ view9: View9,
-        _ view10: View10, _ view11: View11, _ view12: View12, _ view13: View13, _ view14: View14,
+        _ view10: View10, _ view11: View11, _ view12: View12, _ view13: View13,
+        _ view14: View14,
         _ view15: View15, _ view16: View16
     ) {
         self.view0 = view0
@@ -1274,15 +1588,51 @@ public struct TupleView17<
 
 extension TupleView17: View {
     public typealias Content = EmptyView
+    public var _asMenuItems: [MenuItem] {
+        var result: [MenuItem] = []
+        result += view0._asMenuItems
+        result += view1._asMenuItems
+        result += view2._asMenuItems
+        result += view3._asMenuItems
+        result += view4._asMenuItems
+        result += view5._asMenuItems
+        result += view6._asMenuItems
+        result += view7._asMenuItems
+        result += view8._asMenuItems
+        result += view9._asMenuItems
+        result += view10._asMenuItems
+        result += view11._asMenuItems
+        result += view12._asMenuItems
+        result += view13._asMenuItems
+        result += view14._asMenuItems
+        result += view15._asMenuItems
+        result += view16._asMenuItems
+        return result
+    }
 }
 
 extension TupleView17: TupleView {
     typealias Children = TupleViewChildren17<
-        View0, View1, View2, View3, View4, View5, View6, View7, View8, View9, View10, View11,
-        View12, View13, View14, View15, View16
+        View0,
+        View1,
+        View2,
+        View3,
+        View4,
+        View5,
+        View6,
+        View7,
+        View8,
+        View9,
+        View10,
+        View11,
+        View12,
+        View13,
+        View14,
+        View15,
+        View16
     >
 
-    func children<Backend: AppBackend>(
+    func children<Backend: BaseAppBackend>(
         backend: Backend,
         snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
         environment: EnvironmentValues
@@ -1294,7 +1644,7 @@ extension TupleView17: TupleView {
         )
     }
 
-    func layoutableChildren<Backend: AppBackend>(
+    func layoutableChildren<Backend: BaseAppBackend>(
         backend: Backend,
         children: Children
     ) -> [LayoutSystem.LayoutableChild] {
@@ -1326,8 +1676,8 @@ extension TupleView17: TupleView {
 /// Has the same behaviour as ``Group`` when rendered directly.
 public struct TupleView18<
     View0: View, View1: View, View2: View, View3: View, View4: View, View5: View, View6: View,
-    View7: View, View8: View, View9: View, View10: View, View11: View, View12: View, View13: View,
-    View14: View, View15: View, View16: View, View17: View
+    View7: View, View8: View, View9: View, View10: View, View11: View, View12: View,
+    View13: View, View14: View, View15: View, View16: View, View17: View
 > {
     public var view0: View0
     public var view1: View1
@@ -1354,7 +1704,8 @@ public struct TupleView18<
     public init(
         _ view0: View0, _ view1: View1, _ view2: View2, _ view3: View3, _ view4: View4,
         _ view5: View5, _ view6: View6, _ view7: View7, _ view8: View8, _ view9: View9,
-        _ view10: View10, _ view11: View11, _ view12: View12, _ view13: View13, _ view14: View14,
+        _ view10: View10, _ view11: View11, _ view12: View12, _ view13: View13,
+        _ view14: View14,
         _ view15: View15, _ view16: View16, _ view17: View17
     ) {
         self.view0 = view0
@@ -1380,15 +1731,53 @@ public struct TupleView18<
 
 extension TupleView18: View {
     public typealias Content = EmptyView
+    public var _asMenuItems: [MenuItem] {
+        var result: [MenuItem] = []
+        result += view0._asMenuItems
+        result += view1._asMenuItems
+        result += view2._asMenuItems
+        result += view3._asMenuItems
+        result += view4._asMenuItems
+        result += view5._asMenuItems
+        result += view6._asMenuItems
+        result += view7._asMenuItems
+        result += view8._asMenuItems
+        result += view9._asMenuItems
+        result += view10._asMenuItems
+        result += view11._asMenuItems
+        result += view12._asMenuItems
+        result += view13._asMenuItems
+        result += view14._asMenuItems
+        result += view15._asMenuItems
+        result += view16._asMenuItems
+        result += view17._asMenuItems
+        return result
+    }
 }
 
 extension TupleView18: TupleView {
     typealias Children = TupleViewChildren18<
-        View0, View1, View2, View3, View4, View5, View6, View7, View8, View9, View10, View11,
-        View12, View13, View14, View15, View16, View17
+        View0,
+        View1,
+        View2,
+        View3,
+        View4,
+        View5,
+        View6,
+        View7,
+        View8,
+        View9,
+        View10,
+        View11,
+        View12,
+        View13,
+        View14,
+        View15,
+        View16,
+        View17
     >
 
-    func children<Backend: AppBackend>(
+    func children<Backend: BaseAppBackend>(
         backend: Backend,
         snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
         environment: EnvironmentValues
@@ -1400,7 +1789,7 @@ extension TupleView18: TupleView {
         )
     }
 
-    func layoutableChildren<Backend: AppBackend>(
+    func layoutableChildren<Backend: BaseAppBackend>(
         backend: Backend,
         children: Children
     ) -> [LayoutSystem.LayoutableChild] {
@@ -1433,8 +1822,8 @@ extension TupleView18: TupleView {
 /// Has the same behaviour as ``Group`` when rendered directly.
 public struct TupleView19<
     View0: View, View1: View, View2: View, View3: View, View4: View, View5: View, View6: View,
-    View7: View, View8: View, View9: View, View10: View, View11: View, View12: View, View13: View,
-    View14: View, View15: View, View16: View, View17: View, View18: View
+    View7: View, View8: View, View9: View, View10: View, View11: View, View12: View,
+    View13: View, View14: View, View15: View, View16: View, View17: View, View18: View
 > {
     public var view0: View0
     public var view1: View1
@@ -1462,7 +1851,8 @@ public struct TupleView19<
     public init(
         _ view0: View0, _ view1: View1, _ view2: View2, _ view3: View3, _ view4: View4,
         _ view5: View5, _ view6: View6, _ view7: View7, _ view8: View8, _ view9: View9,
-        _ view10: View10, _ view11: View11, _ view12: View12, _ view13: View13, _ view14: View14,
+        _ view10: View10, _ view11: View11, _ view12: View12, _ view13: View13,
+        _ view14: View14,
         _ view15: View15, _ view16: View16, _ view17: View17, _ view18: View18
     ) {
         self.view0 = view0
@@ -1489,15 +1879,55 @@ public struct TupleView19<
 
 extension TupleView19: View {
     public typealias Content = EmptyView
+    public var _asMenuItems: [MenuItem] {
+        var result: [MenuItem] = []
+        result += view0._asMenuItems
+        result += view1._asMenuItems
+        result += view2._asMenuItems
+        result += view3._asMenuItems
+        result += view4._asMenuItems
+        result += view5._asMenuItems
+        result += view6._asMenuItems
+        result += view7._asMenuItems
+        result += view8._asMenuItems
+        result += view9._asMenuItems
+        result += view10._asMenuItems
+        result += view11._asMenuItems
+        result += view12._asMenuItems
+        result += view13._asMenuItems
+        result += view14._asMenuItems
+        result += view15._asMenuItems
+        result += view16._asMenuItems
+        result += view17._asMenuItems
+        result += view18._asMenuItems
+        return result
+    }
 }
 
 extension TupleView19: TupleView {
     typealias Children = TupleViewChildren19<
-        View0, View1, View2, View3, View4, View5, View6, View7, View8, View9, View10, View11,
-        View12, View13, View14, View15, View16, View17, View18
+        View0,
+        View1,
+        View2,
+        View3,
+        View4,
+        View5,
+        View6,
+        View7,
+        View8,
+        View9,
+        View10,
+        View11,
+        View12,
+        View13,
+        View14,
+        View15,
+        View16,
+        View17,
+        View18
     >
 
-    func children<Backend: AppBackend>(
+    func children<Backend: BaseAppBackend>(
         backend: Backend,
         snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
         environment: EnvironmentValues
@@ -1509,7 +1939,7 @@ extension TupleView19: TupleView {
         )
     }
 
-    func layoutableChildren<Backend: AppBackend>(
+    func layoutableChildren<Backend: BaseAppBackend>(
         backend: Backend,
         children: Children
     ) -> [LayoutSystem.LayoutableChild] {
@@ -1543,8 +1973,9 @@ extension TupleView19: TupleView {
 /// Has the same behaviour as ``Group`` when rendered directly.
 public struct TupleView20<
     View0: View, View1: View, View2: View, View3: View, View4: View, View5: View, View6: View,
-    View7: View, View8: View, View9: View, View10: View, View11: View, View12: View, View13: View,
-    View14: View, View15: View, View16: View, View17: View, View18: View, View19: View
+    View7: View, View8: View, View9: View, View10: View, View11: View, View12: View,
+    View13: View, View14: View, View15: View, View16: View, View17: View, View18: View,
+    View19: View
 > {
     public var view0: View0
     public var view1: View1
@@ -1573,7 +2004,8 @@ public struct TupleView20<
     public init(
         _ view0: View0, _ view1: View1, _ view2: View2, _ view3: View3, _ view4: View4,
         _ view5: View5, _ view6: View6, _ view7: View7, _ view8: View8, _ view9: View9,
-        _ view10: View10, _ view11: View11, _ view12: View12, _ view13: View13, _ view14: View14,
+        _ view10: View10, _ view11: View11, _ view12: View12, _ view13: View13,
+        _ view14: View14,
         _ view15: View15, _ view16: View16, _ view17: View17, _ view18: View18, _ view19: View19
     ) {
         self.view0 = view0
@@ -1601,15 +2033,57 @@ public struct TupleView20<
 
 extension TupleView20: View {
     public typealias Content = EmptyView
+    public var _asMenuItems: [MenuItem] {
+        var result: [MenuItem] = []
+        result += view0._asMenuItems
+        result += view1._asMenuItems
+        result += view2._asMenuItems
+        result += view3._asMenuItems
+        result += view4._asMenuItems
+        result += view5._asMenuItems
+        result += view6._asMenuItems
+        result += view7._asMenuItems
+        result += view8._asMenuItems
+        result += view9._asMenuItems
+        result += view10._asMenuItems
+        result += view11._asMenuItems
+        result += view12._asMenuItems
+        result += view13._asMenuItems
+        result += view14._asMenuItems
+        result += view15._asMenuItems
+        result += view16._asMenuItems
+        result += view17._asMenuItems
+        result += view18._asMenuItems
+        result += view19._asMenuItems
+        return result
+    }
 }
 
 extension TupleView20: TupleView {
     typealias Children = TupleViewChildren20<
-        View0, View1, View2, View3, View4, View5, View6, View7, View8, View9, View10, View11,
-        View12, View13, View14, View15, View16, View17, View18, View19
+        View0,
+        View1,
+        View2,
+        View3,
+        View4,
+        View5,
+        View6,
+        View7,
+        View8,
+        View9,
+        View10,
+        View11,
+        View12,
+        View13,
+        View14,
+        View15,
+        View16,
+        View17,
+        View18,
+        View19
     >
 
-    func children<Backend: AppBackend>(
+    func children<Backend: BaseAppBackend>(
         backend: Backend,
         snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
         environment: EnvironmentValues
@@ -1621,7 +2095,7 @@ extension TupleView20: TupleView {
         )
     }
 
-    func layoutableChildren<Backend: AppBackend>(
+    func layoutableChildren<Backend: BaseAppBackend>(
         backend: Backend,
         children: Children
     ) -> [LayoutSystem.LayoutableChild] {

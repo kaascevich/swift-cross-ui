@@ -4,24 +4,76 @@ import CompilerPluginSupport
 import Foundation
 import PackageDescription
 
-// In Gtk 4.10 some breaking changes were made, so the GtkBackend code needs to know
-// which version is in use.
-var gtkSwiftSettings: [SwiftSetting] = []
-if let version = getGtk4MinorVersion(), version >= 10 {
-    gtkSwiftSettings.append(.define("GTK_4_10_PLUS"))
-}
+// ## Compile-time environment options
+//
+// - SCUI_DEFAULT_BACKEND : Sets the backend used by DefaultBackend
+// - SCUI_LIBRARY_TYPE : Can be set to `static`, `dynamic` or `auto`, and defaults
+//     to `auto`. Use this to control the linking mode of all library products
+//     exposed by this package.
+// - SCUI_HOT_RELOADING/SWIFT_BUNDLER_HOT_RELOADING : Enables hot reloading
+//     support code if `1`. If not present then the output of the #hotReloadable and
+//     @HotReloadable gets compiled out.
+// - SCUI_TEST_GTK3BACKEND : If `1`, enables the Gtk3Backend-specific tests (in the
+//     Tests/Gtk3BackendTests directory). Without this they're entirely skipped
+// - SCUI_BENCHMARK_VIZ : If `1`, LayoutPerformanceBenchmark gets compiled in
+//     visualization mode instead of benchmarking mode. It will use DefaultBackend
+//     to visualize a benchmark layout of your choosing (chosen at runtime via stdin).
 
-let defaultBackend: String
-if let backend = ProcessInfo.processInfo.environment["SCUI_DEFAULT_BACKEND"] {
-    defaultBackend = backend
+let invokedByXcode: Bool
+#if os(macOS)
+    import Darwin
+
+    let ppid = getppid()
+    let PROC_PIDPATHINFO_MAXSIZE = 4096
+    let pathBuffer = UnsafeMutablePointer<UInt8>.allocate(capacity: PROC_PIDPATHINFO_MAXSIZE)
+    proc_pidpath(ppid, UnsafeMutableRawPointer(pathBuffer), UInt32(PROC_PIDPATHINFO_MAXSIZE))
+    let parentProcessPath = String(cString: pathBuffer)
+    let parentProcessName = URL(fileURLWithPath: parentProcessPath).lastPathComponent
+    invokedByXcode = parentProcessName == "xcodebuild" || parentProcessName == "Xcode"
+#else
+    invokedByXcode = false
+#endif
+
+let env = ProcessInfo.processInfo.environment
+let androidBackendSupported: Bool
+#if compiler(>=6.2)
+    // xcodebuild can't handle non-Apple platform conditional dependencies for some weird
+    // reason, so we have to remove AndroidBackend when we detect that we're being built
+    // by xcodebuild.
+    androidBackendSupported = !invokedByXcode
+#else
+    androidBackendSupported = false
+#endif
+
+var defaultBackendDependencies: [Target.Dependency]
+if let backend = env["SCUI_DEFAULT_BACKEND"] {
+    defaultBackendDependencies = [.target(name: backend)]
 } else {
+    // With no #if here, Windows and Linux dependencies are also compiled when building for
+    // UIKit platforms.
     #if os(macOS)
-        defaultBackend = "AppKitBackend"
-    #elseif os(Windows)
-        defaultBackend = "WinUIBackend"
+        defaultBackendDependencies = [
+            .target(name: "AppKitBackend", condition: .when(platforms: [.macOS])),
+            .target(
+                name: "UIKitBackend",
+                condition: .when(platforms: [.iOS, .tvOS, .macCatalyst, .visionOS])
+            ),
+        ]
     #else
-        defaultBackend = "GtkBackend"
+        defaultBackendDependencies = [
+            .target(name: "WinUIBackend", condition: .when(platforms: [.windows])),
+            .target(name: "GtkBackend", condition: .when(platforms: [.linux])),
+        ]
     #endif
+
+    if androidBackendSupported {
+        defaultBackendDependencies += [
+            .target(
+                name: "AndroidBackend",
+                condition: .when(platforms: [.android])
+            ),
+        ]
+    }
 }
 
 let hotReloadingEnabled: Bool
@@ -29,9 +81,11 @@ let hotReloadingEnabled: Bool
     hotReloadingEnabled = false
 #else
     hotReloadingEnabled =
-        ProcessInfo.processInfo.environment["SWIFT_BUNDLER_HOT_RELOADING"] != nil
-        || ProcessInfo.processInfo.environment["SCUI_HOT_RELOADING"] != nil
+        env["SWIFT_BUNDLER_HOT_RELOADING"] == "1"
+            || env["SCUI_HOT_RELOADING"] == "1"
 #endif
+
+let testGtk3Backend = env["SCUI_TEST_GTK3BACKEND"] == "1"
 
 var swiftSettings: [SwiftSetting] = []
 if hotReloadingEnabled {
@@ -41,7 +95,7 @@ if hotReloadingEnabled {
 }
 
 var libraryType: Product.Library.LibraryType?
-switch ProcessInfo.processInfo.environment["SCUI_LIBRARY_TYPE"] {
+switch env["SCUI_LIBRARY_TYPE"] {
     case "static":
         libraryType = .static
     case "dynamic":
@@ -63,7 +117,7 @@ switch ProcessInfo.processInfo.environment["SCUI_LIBRARY_TYPE"] {
 // viewing of each benchmark test case with an actual backend.
 let additionalLayoutPerformanceBenchmarkDependencies: [Target.Dependency]
 let layoutPerformanceSwiftSettings: [SwiftSetting]
-if ProcessInfo.processInfo.environment["SCUI_BENCHMARK_VIZ"] == "1" {
+if env["SCUI_BENCHMARK_VIZ"] == "1" {
     additionalLayoutPerformanceBenchmarkDependencies = ["DefaultBackend"]
     layoutPerformanceSwiftSettings = [.define("BENCHMARK_VIZ")]
 } else {
@@ -100,35 +154,23 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/swiftlang/swift-syntax.git",
-            from: "601.0.0"
+            "601.0.0"..<"604.0.0"
         ),
         .package(
             url: "https://github.com/stackotter/swift-macro-toolkit",
-            .upToNextMinor(from: "0.7.0")
+            .upToNextMinor(from: "0.9.0")
         ),
         .package(
             url: "https://github.com/stackotter/swift-image-formats",
-            .upToNextMinor(from: "0.3.3")
+            .upToNextMinor(from: "0.5.0")
         ),
         .package(
-            url: "https://github.com/stackotter/swift-windowsappsdk",
-            revision: "f1c50892f10c0f7f635d3c7a3d728fd634ad001a"
-        ),
-        .package(
-            url: "https://github.com/stackotter/swift-windowsfoundation",
-            revision: "4ad57d20553514bcb23724bdae9121569b19f172"
-        ),
-        .package(
-            url: "https://github.com/stackotter/swift-winui",
-            revision: "42c47f4e4129c8b5a5d9912f05e1168c924ac180"
+            url: "https://github.com/moreSwift/swift-winui",
+            .upToNextMinor(from: "0.2.0")
         ),
         .package(
             url: "https://github.com/stackotter/swift-benchmark",
             .upToNextMinor(from: "0.2.0")
-        ),
-        .package(
-            url: "https://github.com/apple/swift-log.git",
-            exact: "1.6.4"
         ),
         .package(
             url: "https://github.com/swhitty/swift-mutex",
@@ -151,11 +193,19 @@ let package = Package(
         .target(
             name: "SwiftCrossUI",
             dependencies: [
+                "SwiftCrossUIMacrosPlugin",
                 "SwiftCrossUIMetadataSupport",
-                "HotReloadingMacrosPlugin",
                 .product(name: "ImageFormats", package: "swift-image-formats"),
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "Mutex", package: "swift-mutex"),
+
+                // This import is purely required to fix a linker issue and a plugin build
+                // error that occur on macOS when building for non-Android platforms now that
+                // we've added the AndroidBackend. Providing the '--disable-experimental-prebuilts'
+                // flag when building SwiftCrossUI apps doesn't seem to be sufficient to fix
+                // the issues, even though I would've thought that was the effect that adding
+                // this dependency has.
+                .product(name: "SwiftSyntax", package: "swift-syntax"),
             ],
             exclude: [
                 "Builders/ViewBuilder.swift.gyb",
@@ -173,25 +223,16 @@ let package = Package(
             dependencies: [
                 "SwiftCrossUI",
                 "DummyBackend",
+                "SwiftCrossUIMacrosPlugin",
+                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
+                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
                 .target(name: "AppKitBackend", condition: .when(platforms: [.macOS])),
             ]
         ),
         .target(name: "SwiftCrossUIMetadataSupport"),
         .target(
             name: "DefaultBackend",
-            dependencies: [
-                .target(
-                    name: defaultBackend,
-                    condition: .when(platforms: [.linux, .macOS, .windows])
-                ),
-                // Non-desktop platforms need to be handled separately:
-                // Only one backend is supported, and `#if` won't work because it's evaluated
-                // on the compiling desktop, not the target.
-                .target(
-                    name: "UIKitBackend",
-                    condition: .when(platforms: [.iOS, .tvOS, .macCatalyst, .visionOS])
-                ),
-            ]
+            dependencies: defaultBackendDependencies
         ),
         .target(name: "AppKitBackend", dependencies: ["SwiftCrossUI"]),
         .target(
@@ -212,23 +253,25 @@ let package = Package(
         ),
         .target(
             name: "Gtk",
-            dependencies: ["CGtk", "GtkCustomWidgets"],
-            exclude: ["LICENSE.md"],
-            swiftSettings: gtkSwiftSettings
+            dependencies: ["CGtk", "GtkCHelpers"],
+            exclude: ["LICENSE.md"]
         ),
         .executableTarget(
             name: "GtkExample",
             dependencies: ["Gtk"],
             resources: [.copy("GTK.png")]
         ),
+        // Gtk helpers that we've implemented in C because they'd be difficult
+        // or impossible to recreate in Swift
         .target(
-            name: "GtkCustomWidgets",
+            name: "GtkCHelpers",
             dependencies: ["CGtk"]
         ),
         .executableTarget(
             name: "GtkCodeGen",
             dependencies: [
-                "XMLCoder", .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
+                "XMLCoder",
+                .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
             ],
             exclude: ["GirFiles"]
         ),
@@ -242,28 +285,19 @@ let package = Package(
         ),
         .target(
             name: "Gtk3",
-            dependencies: ["CGtk3", "Gtk3CustomWidgets"],
-            exclude: ["LICENSE.md"],
-            swiftSettings: gtkSwiftSettings
+            dependencies: ["CGtk3", "Gtk3CHelpers"],
+            exclude: ["LICENSE.md"]
         ),
         .executableTarget(
             name: "Gtk3Example",
             dependencies: ["Gtk3"],
             resources: [.copy("GTK.png")]
         ),
+        // Gtk3 helpers that we've implemented in C because they'd be difficult
+        // or impossible to recreate in Swift
         .target(
-            name: "Gtk3CustomWidgets",
+            name: "Gtk3CHelpers",
             dependencies: ["CGtk3"]
-        ),
-        .macro(
-            name: "HotReloadingMacrosPlugin",
-            dependencies: [
-                .product(name: "SwiftSyntax", package: "swift-syntax"),
-                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
-                .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
-                .product(name: "MacroToolkit", package: "swift-macro-toolkit"),
-            ],
-            swiftSettings: swiftSettings
         ),
         .target(name: "UIKitBackend", dependencies: ["SwiftCrossUI"]),
         .target(
@@ -272,8 +306,9 @@ let package = Package(
                 "SwiftCrossUI",
                 "WinUIInterop",
                 .product(name: "WinUI", package: "swift-winui"),
-                .product(name: "WinAppSDK", package: "swift-windowsappsdk"),
-                .product(name: "WindowsFoundation", package: "swift-windowsfoundation"),
+                .product(name: "WinAppSDK", package: "swift-winui"),
+                .product(name: "WindowsFoundation", package: "swift-winui"),
+                .product(name: "Mutex", package: "swift-mutex"),
             ]
         ),
         .target(
@@ -291,6 +326,16 @@ let package = Package(
             ] + additionalLayoutPerformanceBenchmarkDependencies,
             path: "Benchmarks/LayoutPerformanceBenchmark",
             swiftSettings: layoutPerformanceSwiftSettings
+        ),
+        .macro(
+            name: "SwiftCrossUIMacrosPlugin",
+            dependencies: [
+                .product(name: "SwiftSyntax", package: "swift-syntax"),
+                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
+                .product(name: "MacroToolkit", package: "swift-macro-toolkit"),
+            ],
+            swiftSettings: swiftSettings
         ),
 
         // .target(
@@ -312,45 +357,80 @@ let package = Package(
     ]
 )
 
-func getGtk4MinorVersion() -> Int? {
-    #if os(Windows)
-        guard let pkgConfigPath = ProcessInfo.processInfo.environment["PKG_CONFIG_PATH"],
-            case let tripletRoot = URL(fileURLWithPath: pkgConfigPath, isDirectory: true)
-                .deletingLastPathComponent().deletingLastPathComponent(),
-            case let vcpkgInfoDirectory = tripletRoot.deletingLastPathComponent()
-                .appendingPathComponent("vcpkg").appendingPathComponent("info"),
-            let installedList = try? FileManager.default.contentsOfDirectory(
-                at: vcpkgInfoDirectory, includingPropertiesForKeys: nil
-            )
-            .map({ $0.deletingPathExtension().lastPathComponent }),
-            let packageName = installedList.first(where: {
-                $0.hasPrefix("gtk_") && $0.hasSuffix("_\(tripletRoot.lastPathComponent)")
-            })
-        else {
-            print("We only support installing gtk through vcpkg on Windows.")
-            return nil
-        }
+// Newer versions of swift-log only support Swift >=6.1, and SwiftPM doesn't
+// seem to want to use the tools-version of the package during resolution
+// (even though I could swear it has in the past), so we have to change the
+// version requirement based on compiler version.
+#if compiler(<6.1)
+    package.dependencies.append(
+        .package(
+            url: "https://github.com/apple/swift-log.git",
+            .upToNextMinor(from: "1.6.4")
+        )
+    )
+#else
+    package.dependencies.append(
+        .package(
+            url: "https://github.com/apple/swift-log.git",
+            from: "1.6.4"
+        )
+    )
+#endif
 
-        let version = packageName.split(separator: "_")[1].split(separator: ".")
-    #else
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/bin/bash")
-        process.arguments = ["-c", "gtk4-launch --version"]
-        let pipe = Pipe()
-        process.standardOutput = pipe
+// Add AndroidBackend if the Swift version is new enough and we're not using xcodebuild
+if androidBackendSupported {
+    package.dependencies += [
+        .package(
+            url: "https://github.com/moreSwift/AndroidKit",
+            .upToNextMinor(from: "0.8.0")
+        ),
+        .package(
+            url: "https://github.com/stackotter/swift-java",
+            .upToNextMinor(from: "0.5.1")
+        ),
+    ]
 
-        guard (try? process.run()) != nil,
-            let data = try? pipe.fileHandleForReading.readToEnd(),
-            case _ = process.waitUntilExit(),
-            let version = String(data: data, encoding: .utf8)?.split(separator: ".")
-        else {
-            print("Failed to get gtk version")
-            return nil
-        }
-    #endif
-    guard version.count >= 2, let minor = Int(version[1]) else {
-        print("Failed to get gtk version")
-        return nil
-    }
-    return minor
+    package.products.append(
+        .library(name: "AndroidBackend", type: libraryType, targets: ["AndroidBackend"])
+    )
+
+    package.targets += [
+        .target(
+            name: "AndroidBackend",
+            dependencies: [
+                "SwiftCrossUI",
+                "AndroidBackendShim",
+
+                // These two dependencies have to be marked as only included on Android
+                // (even though this target is only used on Android) because SwiftPM requires
+                // every library product to only include dependencies matching the package's
+                // minimum platform requirements (even when not compiling said product)
+                .product(
+                    name: "AndroidKit",
+                    package: "AndroidKit",
+                    condition: .when(platforms: [.android])
+                ),
+                .product(
+                    name: "SwiftJava",
+                    package: "swift-java",
+                    condition: .when(platforms: [.android])
+                ),
+            ],
+            exclude: ["Kotlin"]
+        ),
+        .target(name: "AndroidBackendShim"),
+    ]
+}
+
+if testGtk3Backend {
+    package.targets.append(
+        .testTarget(
+            name: "Gtk3BackendTests",
+            dependencies: [
+                "SwiftCrossUI",
+                "Gtk3Backend",
+                "CGtk3",
+            ]
+        )
+    )
 }

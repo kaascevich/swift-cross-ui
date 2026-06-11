@@ -29,27 +29,49 @@ extension Font {
 extension Font.TextStyle {
     /// A text style's resolved properties.
     public struct Resolved: Sendable {
+        /// The point size.
         public var pointSize: Double
+        /// The weight.
         public var weight: Font.Weight = .regular
+        /// The emphasized weight.
         public var emphasizedWeight: Font.Weight
+        /// The line height, in points.
         public var lineHeight: Double
 
-        /// Fallback to macOS's body text style. This isn't expected to ever
-        /// get used because it's only reachable if we forgot to supply text
-        /// styles for a new device class or miss a text style in a device
-        /// class' text style lookup table.
+        /// Fallback to macOS's body text style.
+        ///
+        /// This isn't expected to ever get used because it's only reachable if
+        /// we forgot to supply text styles for a new device class or missed a
+        /// text style in a device class' text style lookup table.
         static let fallback = Self(
             pointSize: 13,
             weight: .regular,
             emphasizedWeight: .semibold,
             lineHeight: 16
         )
+
+        /// Creates a resolved text style.
+        public init(
+            pointSize: Double,
+            weight: Font.Weight = .regular,
+            emphasizedWeight: Font.Weight,
+            lineHeight: Double
+        ) {
+            self.pointSize = pointSize
+            self.weight = weight
+            self.emphasizedWeight = emphasizedWeight
+            self.lineHeight = lineHeight
+        }
     }
 
-    /// Resolves the text style's concrete text properties for the given
-    /// device class. Generally follows [Apple's typography guidelines](https://developer.apple.com/design/human-interface-guidelines/typography).
-    /// Our styles only differ from Apple's where Apple decided not to
-    /// specify a text style for a specific platform.
+    /// Resolves the text style's concrete text properties for the given device
+    /// class.
+    ///
+    /// Generally follows [Apple's typography guidelines][typography]. Our
+    /// styles only differ from Apple's where Apple decided not to specify a
+    /// text style for a specific platform.
+    ///
+    /// [typography]: https://developer.apple.com/design/human-interface-guidelines/typography
     public func resolve(for deviceClass: DeviceClass) -> Resolved {
         guard let textStyles = Self.resolvedTextStyles[deviceClass] else {
             logger.warning("missing text styles for device class \(deviceClass)")
@@ -69,6 +91,7 @@ extension Font.TextStyle {
         .phone: mobileTextStyles,
         .tablet: mobileTextStyles,
         .tv: tvTextStyles,
+        .watch: watchTextStyles,
     ]
 
     private static let desktopTextStyles: [Self: Resolved] = [
@@ -260,6 +283,67 @@ extension Font.TextStyle {
             weight: .medium,
             emphasizedWeight: .bold,
             lineHeight: 30
+        ),
+    ]
+
+    // Like largeTitle and footnote on TV, callout and subheadline here are inferred from other
+    // device classes.
+    private static let watchTextStyles: [Self: Resolved] = [
+        .largeTitle: Resolved(
+            pointSize: 36,
+            emphasizedWeight: .bold,
+            lineHeight: 38.5
+        ),
+        .title: Resolved(
+            pointSize: 34,
+            emphasizedWeight: .semibold,
+            lineHeight: 36.5
+        ),
+        .title2: Resolved(
+            pointSize: 28,
+            emphasizedWeight: .semibold,
+            lineHeight: 30.5
+        ),
+        .title3: Resolved(
+            pointSize: 19,
+            emphasizedWeight: .semibold,
+            lineHeight: 21.5
+        ),
+        .headline: Resolved(
+            pointSize: 21,
+            weight: .semibold,
+            emphasizedWeight: .semibold,
+            lineHeight: 23.5
+        ),
+        .body: Resolved(
+            pointSize: 21,
+            emphasizedWeight: .semibold,
+            lineHeight: 23.5
+        ),
+        .callout: Resolved(
+            pointSize: 20,
+            emphasizedWeight: .semibold,
+            lineHeight: 22.5
+        ),
+        .subheadline: Resolved(
+            pointSize: 19,
+            emphasizedWeight: .semibold,
+            lineHeight: 21.5
+        ),
+        .caption: Resolved(
+            pointSize: 18,
+            emphasizedWeight: .semibold,
+            lineHeight: 20.5
+        ),
+        .caption2: Resolved(
+            pointSize: 17,
+            emphasizedWeight: .semibold,
+            lineHeight: 19.5
+        ),
+        .footnote: Resolved(
+            pointSize: 16,
+            emphasizedWeight: .semibold,
+            lineHeight: 18.5
         ),
     ]
 }

@@ -27,6 +27,7 @@ struct WebViewApp: App {
                 VStack {
                     HStack {
                         TextField("URL", text: $urlInput)
+                            .textContentType(.url)
                             .onSubmit {
                                 go(urlInput)
                             }

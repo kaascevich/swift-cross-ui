@@ -1,5 +1,5 @@
 {
-  "originHash" : "0ea53698b7dc4e8cc46115d64ee04a03df171a8ff6618a90efae65bf2ed74175",
+  "originHash" : "c8d47b833ed13bcd80c0959e98b2495c4638c8f78642a6c80eda9fe78e286dda",
   "pins" : [
     {
       "identity" : "jpeg",
@@ -31,10 +31,10 @@
     {
       "identity" : "swift-argument-parser",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-argument-parser.git",
+      "location" : "https://github.com/apple/swift-argument-parser",
       "state" : {
-        "revision" : "cdd0ef3755280949551dc26dee5de9ddeda89f54",
-        "version" : "1.6.2"
+        "revision" : "ca37474853a4b5f59a22c74bfdd449b1f6bc4cc2",
+        "version" : "1.8.1"
       }
     },
     {
@@ -47,20 +47,12 @@
       }
     },
     {
-      "identity" : "swift-cwinrt",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/thebrowsercompany/swift-cwinrt",
-      "state" : {
-        "revision" : "eb46cdb66f770a1e006f9fcfebbf9e99a0fba811"
-      }
-    },
-    {
       "identity" : "swift-docc-plugin",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/swiftlang/swift-docc-plugin",
       "state" : {
-        "revision" : "3e4f133a77e644a5812911a0513aeb7288b07d06",
-        "version" : "1.4.5"
+        "revision" : "647c708be89f834fa6a6d4945442793a77ddf5b6",
+        "version" : "1.5.0"
       }
     },
     {
@@ -77,8 +69,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/stackotter/swift-image-formats",
       "state" : {
-        "revision" : "2e5dc1ead747afab9fd517d81316d961969e3610",
-        "version" : "0.3.3"
+        "revision" : "d735e0ed3d4a4aed50f4042494e7c769b5b70229",
+        "version" : "0.5.0"
       }
     },
     {
@@ -86,8 +78,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-log.git",
       "state" : {
-        "revision" : "ce592ae52f982c847a4efc0dd881cc9eb32d29f2",
-        "version" : "1.6.4"
+        "revision" : "5073617dac96330a486245e4c0179cb0a6fd2256",
+        "version" : "1.12.0"
       }
     },
     {
@@ -95,8 +87,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/stackotter/swift-macro-toolkit",
       "state" : {
-        "revision" : "d319bcc2586f7dbc6a09c05792105078263f1ed3",
-        "version" : "0.7.2"
+        "revision" : "d6ed555bb83c9f21a292e9769952e8f52610a6e2",
+        "version" : "0.9.0"
       }
     },
     {
@@ -113,48 +105,17 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/swiftlang/swift-syntax.git",
       "state" : {
-        "revision" : "f99ae8aa18f0cf0d53481901f88a0991dc3bd4a2",
-        "version" : "601.0.1"
-      }
-    },
-    {
-      "identity" : "swift-uwp",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/stackotter/swift-uwp",
-      "state" : {
-        "revision" : "8128f6615b7c5b46ada289ab6d49d871ca1e13a5"
-      }
-    },
-    {
-      "identity" : "swift-webview2core",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/stackotter/swift-webview2core",
-      "state" : {
-        "revision" : "4396f5d94d6dfd1f95ab25e79de98141b7f4f183"
-      }
-    },
-    {
-      "identity" : "swift-windowsappsdk",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/stackotter/swift-windowsappsdk",
-      "state" : {
-        "revision" : "f1c50892f10c0f7f635d3c7a3d728fd634ad001a"
-      }
-    },
-    {
-      "identity" : "swift-windowsfoundation",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/stackotter/swift-windowsfoundation",
-      "state" : {
-        "revision" : "4ad57d20553514bcb23724bdae9121569b19f172"
+        "revision" : "9de99a78f099e59caf2b2beec65a4c45d54b2081",
+        "version" : "603.0.1"
       }
     },
     {
       "identity" : "swift-winui",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/stackotter/swift-winui",
+      "location" : "https://github.com/moreSwift/swift-winui",
       "state" : {
-        "revision" : "42c47f4e4129c8b5a5d9912f05e1168c924ac180"
+        "revision" : "7cce3fcd0b55c48e6d8993fd2c7c392e8bc945c4",
+        "version" : "0.2.0"
       }
     },
     {
@@ -162,8 +123,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/CoreOffice/XMLCoder",
       "state" : {
-        "revision" : "b1e944cbd0ef33787b13f639a5418d55b3bed501",
-        "version" : "0.17.1"
+        "revision" : "b2b5d72345bab9e1938a483cf862b498aeed3796",
+        "version" : "0.18.1"
       }
     },
     {

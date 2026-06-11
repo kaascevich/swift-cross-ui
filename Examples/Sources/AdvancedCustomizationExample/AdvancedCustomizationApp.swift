@@ -4,10 +4,32 @@ import SwiftCrossUI
 
 #if canImport(WinUIBackend)
     import WinUI
+    import UWP
 #endif
 
 #if canImport(SwiftBundlerRuntime)
     import SwiftBundlerRuntime
+#endif
+
+#if canImport(AndroidBackend)
+    // Workaround so that things compile
+    extension View {
+        public func inspect(
+            _ inspectionPoints: InspectionPoints = .onCreate,
+            _ action: @escaping @MainActor @Sendable (Never) -> Void
+        ) -> some View {
+            self
+        }
+
+        public func inspectWindow(
+            _ action: @escaping @MainActor @Sendable (Never) -> Void
+        ) -> some View {
+            self
+        }
+    }
+
+    // TODO(bbrk24): Remove this when Android supports scroll views
+    typealias ScrollView = VStack
 #endif
 
 @main
@@ -71,7 +93,7 @@ struct CounterApp: App {
                         }
                     }
 
-                    #if !os(tvOS)
+                    #if !os(tvOS) && !canImport(AndroidBackend)
                         Slider(value: $value, in: 0...10)
                             .inspect { slider in
                                 #if canImport(AppKitBackend)
@@ -88,29 +110,31 @@ struct CounterApp: App {
                             }
                     #endif
 
-                    #if !canImport(Gtk3Backend)
-                        Picker(of: ["Red", "Green", "Blue"], selection: $color)
-                            .inspect(.afterUpdate) { picker in
-                                #if canImport(AppKitBackend)
-                                    picker.preferredEdge = .maxX
-                                #elseif canImport(UIKitBackend) && os(iOS)
-                                    // Can't think of something to do to the
-                                    // UIPickerView, but the point is that you
-                                    // could do something if you needed to!
-                                    // This would be a UITableView on tvOS.
-                                    // And could be either a UITableView or a
-                                    // UIPickerView on Mac Catalyst depending
-                                    // on Mac Catalyst version and interface
-                                    // idiom.
-                                #elseif canImport(WinUIBackend)
-                                    let brush = WinUI.SolidColorBrush()
-                                    brush.color = .init(a: 255, r: 255, g: 0, b: 0)
-                                    picker.background = brush
-                                #elseif canImport(GtkBackend)
-                                    picker.enableSearch = true
-                                #endif
-                            }
-                    #endif
+                    // TODO(stackotter): Repair Picker.inspect implementations post
+                    //   PickerStyle refactor
+                    // #if !canImport(Gtk3Backend)
+                    //     Picker(of: ["Red", "Green", "Blue"], selection: $color)
+                    //         .inspect(.afterUpdate) { picker in
+                    //             #if canImport(AppKitBackend)
+                    //                 picker.preferredEdge = .maxX
+                    //             #elseif canImport(UIKitBackend) && os(iOS)
+                    //                 // Can't think of something to do to the
+                    //                 // UIPickerView, but the point is that you
+                    //                 // could do something if you needed to!
+                    //                 // This would be a UITableView on tvOS.
+                    //                 // And could be either a UITableView or a
+                    //                 // UIPickerView on Mac Catalyst depending
+                    //                 // on Mac Catalyst version and interface
+                    //                 // idiom.
+                    //             #elseif canImport(WinUIBackend)
+                    //                 let brush = WinUI.SolidColorBrush()
+                    //                 brush.color = .init(a: 255, r: 255, g: 0, b: 0)
+                    //                 picker.background = brush
+                    //             #elseif canImport(GtkBackend)
+                    //                 picker.enableSearch = true
+                    //             #endif
+                    //         }
+                    // #endif
 
                     TextField("Name", text: $name)
                         .inspect(.afterUpdate) { textField in
@@ -120,7 +144,11 @@ struct CounterApp: App {
                                 textField.borderStyle = .bezel
                             #elseif canImport(WinUIBackend)
                                 textField.selectionHighlightColor.color = .init(
-                                    a: 255, r: 0, g: 255, b: 0)
+                                    a: 255,
+                                    r: 0,
+                                    g: 255,
+                                    b: 0
+                                )
                                 let brush = WinUI.SolidColorBrush()
                                 brush.color = .init(a: 255, r: 0, g: 0, b: 255)
                                 textField.background = brush
@@ -147,7 +175,10 @@ struct CounterApp: App {
                             brush.color = .init(a: 255, r: 0, g: 255, b: 0)
                             scrollView.borderBrush = brush
                             scrollView.borderThickness = .init(
-                                left: 1, top: 1, right: 1, bottom: 1
+                                left: 1,
+                                top: 1,
+                                right: 1,
+                                bottom: 1
                             )
                         #elseif canImport(GtkBackend)
                             scrollView.css.set(property: .border(color: .init(1, 0, 0), width: 2))
@@ -156,47 +187,81 @@ struct CounterApp: App {
                         #endif
                     }.frame(height: 200)
 
-                    List(["Red", "Green", "Blue"], id: \.self, selection: $color) { color in
-                        Text(color)
-                    }.inspect(.afterUpdate) { table in
-                        #if canImport(AppKitBackend)
-                            table.usesAlternatingRowBackgroundColors = true
-                        #elseif canImport(UIKitBackend)
-                            table.isEditing = true
-                        #elseif canImport(WinUIBackend)
-                            let brush = WinUI.SolidColorBrush()
-                            brush.color = .init(a: 255, r: 255, g: 0, b: 255)
-                            table.borderBrush = brush
-                            table.borderThickness = .init(
-                                left: 1, top: 1, right: 1, bottom: 1
-                            )
-                        #elseif canImport(GtkBackend)
-                            table.showSeparators = true
-                        #elseif canImport(Gtk3Backend)
-                            table.selectionMode = .multiple
-                        #endif
-                    }
-
-                    Image(Bundle.module.bundleURL.appendingPathComponent("Banner.png"))
-                        .resizable()
-                        .inspect(.afterUpdate) { image in
+                    #if !canImport(AndroidBackend)
+                        List(["Red", "Green", "Blue"], id: \.self, selection: $color) { color in
+                            Text(color)
+                        }.inspect(.afterUpdate) { table in
                             #if canImport(AppKitBackend)
-                                image.isEditable = true
+                                table.usesAlternatingRowBackgroundColors = true
                             #elseif canImport(UIKitBackend)
-                                image.layer.borderWidth = 1
-                                image.layer.borderColor = .init(red: 0, green: 1, blue: 0, alpha: 1)
+                                table.isEditing = true
                             #elseif canImport(WinUIBackend)
+                                let brush = WinUI.SolidColorBrush()
+                                brush.color = .init(a: 255, r: 255, g: 0, b: 255)
+                                table.borderBrush = brush
+                                table.borderThickness = .init(
+                                    left: 1,
+                                    top: 1,
+                                    right: 1,
+                                    bottom: 1
+                                )
+                            #elseif canImport(GtkBackend)
+                                table.showSeparators = true
+                            #elseif canImport(Gtk3Backend)
+                                table.selectionMode = .multiple
+                            #endif
+                        }
+
+                        Image(Bundle.module.bundleURL.appendingPathComponent("Banner.png"))
+                            .resizable()
+                            .inspect(.afterUpdate) { image in
+                                #if canImport(AppKitBackend)
+                                    image.isEditable = true
+                                #elseif canImport(UIKitBackend)
+                                    image.layer.borderWidth = 1
+                                    image.layer.borderColor = .init(
+                                        red: 0,
+                                        green: 1,
+                                        blue: 0,
+                                        alpha: 1
+                                    )
+                                #elseif canImport(WinUIBackend)
                                 // Couldn't find anything visually interesting
                                 // to do to the WinUI.Image, but the point is
                                 // that you could do something if you wanted to.
-                            #elseif canImport(GtkBackend)
-                                image.css.set(property: .border(color: .init(0, 1, 0), width: 2))
-                            #elseif canImport(Gtk3Backend)
-                                image.css.set(property: .border(color: .init(0, 1, 0), width: 2))
-                            #endif
-                        }
-                        .aspectRatio(contentMode: .fit)
-                }.padding()
+                                #elseif canImport(GtkBackend)
+                                    image.css.set(property: .border(
+                                        color: .init(0, 1, 0),
+                                        width: 2
+                                    ))
+                                #elseif canImport(Gtk3Backend)
+                                    image.css.set(property: .border(
+                                        color: .init(0, 1, 0),
+                                        width: 2
+                                    ))
+                                #endif
+                            }
+                            .aspectRatio(contentMode: .fit)
+                    #endif
+                }
+                .padding()
+                .inspectWindow { window in
+                    #if canImport(AppKitBackend)
+                        window.backgroundColor = .black
+                    #elseif canImport(GtkBackend) || canImport(Gtk3Backend)
+                        window.title = "Overridden title"
+                    #elseif canImport(WinUIBackend)
+                        // Only works on Windows 11+
+                        window.appWindow.titleBar.backgroundColor = UWP.Color(
+                            a: 255,
+                            r: 0,
+                            g: 255,
+                            b: 255
+                        )
+                    #elseif canImport(UIKitBackend)
+                        window.backgroundColor = .darkGray
+                    #endif
+                }
             }
         }
         .defaultSize(width: 400, height: 200)

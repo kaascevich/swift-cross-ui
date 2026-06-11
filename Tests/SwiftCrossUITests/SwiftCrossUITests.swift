@@ -41,14 +41,20 @@ struct SwiftCrossUITests {
         path.append(5.0)
 
         let components = path.path(destinationTypes: [
-            String.self, Int.self, [Int].self, Double.self,
+            String.self,
+            Int.self,
+            [Int].self,
+            Double.self,
         ])
 
         let encoded = try JSONEncoder().encode(path)
         let decodedPath = try JSONDecoder().decode(NavigationPath.self, from: encoded)
 
         let decodedComponents = decodedPath.path(destinationTypes: [
-            String.self, Int.self, [Int].self, Double.self,
+            String.self,
+            Int.self,
+            [Int].self,
+            Double.self,
         ])
 
         #expect(Self.compareComponents(ofType: String.self, components[0], decodedComponents[0]))
@@ -59,7 +65,9 @@ struct SwiftCrossUITests {
 
     /// Helper function for `testCodableNavigationPath`.
     static func compareComponents<T: Equatable>(
-        ofType type: T.Type, _ original: Any, _ decoded: Any
+        ofType type: T.Type,
+        _ original: Any,
+        _ decoded: Any
     ) -> Bool {
         guard
             let original = original as? T,
@@ -81,7 +89,7 @@ struct SwiftCrossUITests {
 
         let blueRectangleHeight = Double(100)
         let view = ScrollView {
-            Color.blue.frame(height: Int(blueRectangleHeight))
+            Color.blue.frame(height: blueRectangleHeight)
         }
 
         let viewGraph = ViewGraph(
@@ -99,7 +107,9 @@ struct SwiftCrossUITests {
         #expect(result.size == ViewSize(80, 80))
 
         let rootWidget: DummyBackend.Widget = viewGraph.rootNode.widget.into()
-        let scrollView = try #require(rootWidget.firstWidget(ofType: DummyBackend.ScrollContainer.self))
+        let scrollView = try #require(
+            rootWidget.firstWidget(ofType: DummyBackend.ScrollContainer.self)
+        )
 
         #expect(scrollView.hasVerticalScrollBar)
         #expect(!scrollView.hasHorizontalScrollBar)
@@ -109,7 +119,50 @@ struct SwiftCrossUITests {
             proposedSize.width - Double(backend.scrollBarWidth),
             blueRectangleHeight
         )
-        #expect(scrollView.child.size == expectedSize.vector)
+
+        // Direct child of ScrollView is container used to position actual child
+        // (for alignment purposes)
+        let child = scrollView.child.getChildren()[0]
+        #expect(child.size == expectedSize.vector)
+    }
+
+    @Test("Ensure that preferredColorScheme modifier works")
+    @MainActor
+    func testPreferredColorScheme() async throws {
+        let backend = DummyBackend()
+        let environment = EnvironmentValues(backend: backend)
+            .with(\.defaultLaunchBehavior, .presented)
+
+        #expect(environment.colorScheme == .light)
+
+        let ambientColorScheme = Box<ColorScheme?>(nil)
+
+        struct TestView: View {
+            @Environment(\.colorScheme) var colorScheme
+            var ambientColorScheme: Box<ColorScheme?>
+
+            var body: some View {
+                VStack {
+                    Text("Button")
+                    Button("Button") {}
+                        .preferredColorScheme(.dark)
+                }
+                .onChange(of: colorScheme) {
+                    ambientColorScheme.value = colorScheme
+                }
+            }
+        }
+
+        let scene = Window("Test", id: "test") {
+            TestView(ambientColorScheme: ambientColorScheme)
+        }
+
+        let node = type(of: scene).Node(from: scene, backend: backend, environment: environment)
+        node.update(backend: backend, environment: environment)
+
+        let window = node.windowReference!.window as! DummyBackend.Window
+        #expect(window.colorScheme == .dark)
+        #expect(ambientColorScheme.value == .dark)
     }
 
     #if canImport(AppKitBackend)

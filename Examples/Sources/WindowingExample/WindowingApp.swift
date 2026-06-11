@@ -157,6 +157,59 @@ struct SheetDemo: View {
     }
 }
 
+struct OpenWindowDemo: View {
+    @Environment(\.openWindow) private var openWindow
+    @Environment(\.supportsMultipleWindows) private var supportsMultipleWindows
+
+    var body: some View {
+        Text("Backend supports multi-window: \(supportsMultipleWindows)")
+
+        Button("Open singleton window") {
+            openWindow(id: "singleton-window")
+        }
+        Button("Open new tertiary window instance") {
+            openWindow(id: "tertiary-window")
+        }
+    }
+}
+
+struct TertiaryWindowView: View {
+    @Environment(\.dismissWindow) private var dismissWindow
+    @Environment(\.openWindow) private var openWindow
+
+    var body: some View {
+        VStack {
+            Text("This a tertiary window!")
+
+            Button("Close window") {
+                dismissWindow()
+            }
+            Button("Open new instance") {
+                openWindow(id: "tertiary-window")
+            }
+        }
+        .padding()
+    }
+}
+
+struct SingletonWindowView: View {
+    @Environment(\.dismissWindow) private var dismissWindow
+    @Environment(\.scenePhase) private var scenePhase
+
+    var body: some View {
+        VStack {
+            Text("This a singleton window!")
+
+            Text("Window scene phase: \(scenePhase)")
+
+            Button("Close window") {
+                dismissWindow()
+            }
+        }
+        .padding()
+    }
+}
+
 @main
 @HotReloadable
 struct WindowingApp: App {
@@ -168,14 +221,35 @@ struct WindowingApp: App {
     @State var closable = true
     @State var minimizable = true
 
+    @Environment(\.appPhase) var appPhase
+
+    #if !os(Android)
+        var bannerImage: URL {
+            // TODO(stackotter): Update SwiftBundlerRuntime to support fetching
+            //   resources in a cross platform manner.
+            #if os(macOS)
+                return Bundle.main.bundleURL.appendingPathComponent(
+                    "Contents/Resources/Banner.png"
+                )
+            #elseif os(iOS) || os(Linux) || os(Windows)
+                return Bundle.main.bundleURL.appendingPathComponent(
+                    "Examples_WindowingExample.bundle/Banner.png"
+                )
+            #endif
+        }
+    #endif
+
     var body: some Scene {
         WindowGroup(title) {
             #hotReloadable {
                 VStack {
                     HStack {
                         Text("Window title:")
+
                         TextField("My window", text: $title)
                     }
+
+                    Text("App phase: \(appPhase)")
 
                     Toggle("Enable resizing", isOn: $resizable)
                         .windowResizeBehavior(resizable ? .enabled : .disabled)
@@ -184,11 +258,13 @@ struct WindowingApp: App {
                     Toggle("Enable minimizing", isOn: $minimizable)
                         .preferredWindowMinimizeBehavior(minimizable ? .enabled : .disabled)
 
-                    Image(Bundle.module.bundleURL.appendingPathComponent("Banner.png"))
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
+                    #if !os(Android)
+                        Image(bannerImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
 
-                    Divider()
+                        Divider()
+                    #endif
 
                     #if !os(tvOS)
                         FileDialogDemo()
@@ -204,7 +280,13 @@ struct WindowingApp: App {
                     Divider()
 
                     SheetDemo()
-                        .padding(.bottom, 20)
+
+                    #if !os(Android)
+                        Divider()
+
+                        OpenWindowDemo()
+                            .padding(.bottom, 20)
+                    #endif
                 }
                 .padding(20)
             }
@@ -213,21 +295,29 @@ struct WindowingApp: App {
         .commands {
             CommandMenu("Demo menu") {
                 Button("Menu item") {}
-                Toggle("Toggle", active: $toggle)
+                Toggle("Toggle", isOn: $toggle)
 
                 Divider()
 
                 Menu("Submenu") {
                     Button("Item 1") {}
                     Button("Item 2") {}
+                    Button("Disabled item") {}
+                        .disabled()
+                }
+
+                Divider()
+
+                ForEach([1, 2, 3, 4, 5], id: \.self) { num in
+                    Text("ForEach \(num)")
                 }
             }
         }
 
         AlertScene("Alert scene", isPresented: $isAlertSceneShown) {}
 
-        #if !(os(iOS) || os(tvOS) || os(Windows))
-            WindowGroup("Secondary window") {
+        #if !(os(iOS) || os(tvOS) || os(Android))
+            WindowGroup("Secondary window", id: "secondary-window") {
                 #hotReloadable {
                     VStack {
                         Text("This a secondary window!")
@@ -240,14 +330,28 @@ struct WindowingApp: App {
             }
             .defaultSize(width: 200, height: 200)
             .windowResizability(enforceMaxSize ? .contentSize : .contentMinSize)
+            #if os(Windows)
+                .defaultLaunchBehavior(.suppressed)
+            #endif
 
-            WindowGroup("Tertiary window") {
+            WindowGroup("Tertiary window (hidden)", id: "tertiary-window") {
                 #hotReloadable {
-                    Text("This a tertiary window!")
-                        .padding(10)
+                    TertiaryWindowView()
                 }
             }
             .defaultSize(width: 200, height: 200)
+            .defaultLaunchBehavior(.suppressed)
+            .windowResizability(.contentMinSize)
+
+            Window("Singleton window", id: "singleton-window") {
+                #hotReloadable {
+                    SingletonWindowView()
+                }
+            }
+            .defaultSize(width: 200, height: 200)
+            #if os(Windows)
+                .defaultLaunchBehavior(.suppressed)
+            #endif
         #endif
     }
 }

@@ -1,4 +1,5 @@
 import CGtk
+import GtkCHelpers
 
 public class GSimpleAction: GAction, GObjectRepresentable {
     public var actionPointer: OpaquePointer
@@ -7,7 +8,7 @@ public class GSimpleAction: GAction, GObjectRepresentable {
         UnsafeMutablePointer<CGtk.GObject>(actionPointer)
     }
 
-    @GObjectProperty(named: "enabled") var enabled: Bool
+    @GObjectProperty(named: "enabled") public var enabled: Bool
 
     private class Box<T> {
         var value: T
@@ -51,11 +52,11 @@ public class GSimpleAction: GAction, GObjectRepresentable {
     private func connectActionSignal(
         _ value: some AnyObject,
         handler:
-            @convention(c) (
-                UnsafeMutableRawPointer,
-                OpaquePointer,
-                UnsafeMutableRawPointer
-            ) -> Void
+        @convention(c) (
+            UnsafeMutableRawPointer,
+            OpaquePointer,
+            UnsafeMutableRawPointer
+        ) -> Void
     ) {
         g_signal_connect_data(
             UnsafeMutableRawPointer(actionPointer),
@@ -65,7 +66,7 @@ public class GSimpleAction: GAction, GObjectRepresentable {
             { data, _ in
                 Unmanaged<AnyObject>.fromOpaque(data!).release()
             },
-            G_CONNECT_AFTER
+            SHIM_G_CONNECT_AFTER
         )
     }
 }

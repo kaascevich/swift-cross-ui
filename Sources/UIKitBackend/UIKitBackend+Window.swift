@@ -38,7 +38,8 @@ final class RootViewController: UIViewController {
     }
 
     override func viewWillTransition(
-        to size: CGSize, with coordinator: any UIViewControllerTransitionCoordinator
+        to size: CGSize,
+        with coordinator: any UIViewControllerTransitionCoordinator
     ) {
         resizeHandler?(size)
         super.viewWillTransition(to: size, with: coordinator)
@@ -63,7 +64,7 @@ final class RootViewController: UIViewController {
     }
 }
 
-extension UIKitBackend {
+extension UIKitBackend: BackendFeatures.WindowBehaviors {
     public typealias Window = UIWindow
 
     public func createWindow(withDefaultSize _: SIMD2<Int>?) -> Window {
@@ -82,11 +83,19 @@ extension UIKitBackend {
         }
 
         #if !os(tvOS)
-        window.backgroundColor = .systemBackground
+            window.backgroundColor = .systemBackground
         #endif
 
         window.rootViewController = RootViewController(backend: self)
         return window
+    }
+
+    public func updateWindow(_ window: Window, environment: EnvironmentValues) {
+        // TODO(stackotter): Support preferredColorScheme
+        window.backgroundColor = switch environment.colorScheme {
+            case .light: .white
+            case .dark: .black
+        }
     }
 
     public func setTitle(ofWindow window: Window, to title: String) {
@@ -177,7 +186,7 @@ extension UIKitBackend {
             if let maximumSize {
                 CGSize(width: maximumSize.x, height: maximumSize.y)
             } else {
-                CGSize(width: Double.infinity, height: .infinity)
+                CGSize(width: Double.greatestFiniteMagnitude, height: .greatestFiniteMagnitude)
             }
     }
 }

@@ -7,7 +7,7 @@ package struct EnvironmentModifier<Child: View>: View {
         self.modification = modification
     }
 
-    package func children<Backend: AppBackend>(
+    package func children<Backend: BaseAppBackend>(
         backend: Backend,
         snapshots: [ViewGraphSnapshotter.NodeSnapshot]?,
         environment: EnvironmentValues
@@ -19,7 +19,7 @@ package struct EnvironmentModifier<Child: View>: View {
         )
     }
 
-    package func computeLayout<Backend: AppBackend>(
+    package func computeLayout<Backend: BaseAppBackend>(
         _ widget: Backend.Widget,
         children: any ViewGraphNodeChildren,
         proposedSize: ProposedViewSize,
@@ -35,7 +35,7 @@ package struct EnvironmentModifier<Child: View>: View {
         )
     }
 
-    package func commit<Backend: AppBackend>(
+    package func commit<Backend: BaseAppBackend>(
         _ widget: Backend.Widget,
         children: any ViewGraphNodeChildren,
         layout: ViewLayoutResult,
@@ -50,6 +50,12 @@ package struct EnvironmentModifier<Child: View>: View {
             backend: backend
         )
     }
+
+    public var _asMenuItems: [MenuItem] {
+        self.body._asMenuItems.map { menuItem in
+            .modifiedEnvironment({ menuItem }, { self.modification })
+        }
+    }
 }
 
 extension View {
@@ -59,6 +65,17 @@ extension View {
     {
         EnvironmentModifier(self) { environment in
             environment.with(keyPath, newValue)
+        }
+    }
+
+    /// Adds an observable object to the environment of the enclosed View.
+    /// You are responsible for ensuring that the object is being observed
+    /// by a parent view, as this modifier does not perform any observation.
+    public func environment<T: ObservableObject>(_ object: T) -> some View {
+        EnvironmentModifier(self) { environment in
+            var environment = environment
+            environment[observable: T.self] = object
+            return environment
         }
     }
 }

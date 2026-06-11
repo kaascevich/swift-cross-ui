@@ -4,14 +4,15 @@ import Foundation
     peer,
     names: named(hotReloadingExportedEntryPoint),
     named(hotReloadingImportedEntryPoint),
-    named(hotReloadingHasConnectedToServer))
+    named(hotReloadingHasConnectedToServer)
+)
 @attached(member, names: named(entryPoint), named(hotReloadingExprIds))
 public macro HotReloadable() =
-    #externalMacro(module: "HotReloadingMacrosPlugin", type: "HotReloadableAppMacro")
+    #externalMacro(module: "SwiftCrossUIMacrosPlugin", type: "HotReloadableAppMacro")
 
 @freestanding(expression)
 public macro hotReloadable<T: View>(@ViewBuilder _ expr: () -> T) -> HotReloadableView =
-    #externalMacro(module: "HotReloadingMacrosPlugin", type: "HotReloadableExprMacro")
+    #externalMacro(module: "SwiftCrossUIMacrosPlugin", type: "HotReloadableExprMacro")
 
 @_documentation(visibility: internal)
 public struct ExprLocation: Hashable {

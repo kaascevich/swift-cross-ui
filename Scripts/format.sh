@@ -3,7 +3,15 @@
 cd "$(dirname "$0")"/../
 
 if [ -z "$1" ]; then
-  swift format format --in-place --recursive --configuration .swift-format Sources Examples/Sources
+  swiftformat .
 else
-  swift format format --in-place --recursive --configuration .swift-format $1
+  swiftformat $1
+fi
+
+if which java &>/dev/null; then
+  ./Scripts/ensure_ktfmt.sh
+
+  java -jar Tools/ktfmt.jar --kotlinlang-style --quiet Sources/AndroidBackend/Kotlin/
+else
+  echo 'Skipping ktfmt, as Java was not found. To format Kotlin files, install Java 17.' >&2
 fi

@@ -1,25 +1,32 @@
 /// A rounded rectangle.
 ///
-/// This is not necessarily four line segments and four circular arcs. If possible, this shape
-/// uses smoother curves to make the transition between the edges and corners less abrupt.
+/// This is not necessarily four line segments and four circular arcs. If
+/// possible, this shape uses smoother curves to make the transition between the
+/// edges and corners less abrupt.
 public struct RoundedRectangle {
     public var cornerRadius: Double
 
+    /// Creates a ``RoundedRectangle`` instance.
+    ///
+    /// - Precondition: `cornerRadius` must be finite and positive.
+    ///
+    /// - Parameter cornerRadius: The corner radius for this rounded rectangle.
     public init(cornerRadius: Double) {
         assert(
             cornerRadius >= 0.0 && cornerRadius.isFinite,
-            "Corner radius must be a positive finite value")
+            "Corner radius must be a positive finite value"
+        )
         self.cornerRadius = cornerRadius
     }
 
-    // This shape tries to mimic an order 5 superellipse, extending the sides with line segments.
-    // Since paths don't support quintic curves, I'm using an approximation consisting of
-    // two cubic curves and a line segment. This constant is the list of control points for
-    // the cubic curves. See https://www.desmos.com/calculator/chwx3ddx6u .
-    //
-    // Preconditions:
-    //   - points.0 is the same as if a line segment and a circular arc were used
-    //   - points.6.y == 0.0
+    /// This shape tries to mimic an order 5 superellipse, extending the sides with line segments.
+    /// Since paths don't support quintic curves, I'm using an approximation consisting of
+    /// two cubic curves and a line segment. This constant is the list of control points for
+    /// the cubic curves. See https://www.desmos.com/calculator/chwx3ddx6u .
+    ///
+    /// Preconditions:
+    ///   - points.0 is the same as if a line segment and a circular arc were used
+    ///   - points.6.y == 0.0
     fileprivate static let points = (
         SIMD2(0.292893218813, 0.292893218813),
         SIMD2(0.517, 0.0687864376269),
@@ -30,9 +37,9 @@ public struct RoundedRectangle {
         SIMD2(1.7, 0.0)
     )
 
-    // This corresponds to r_{min} in the above Desmos link. This is the minimum ratio of
-    // cornerRadius to half the side length at which the superellipse is not applicable. Above this,
-    // line segments and circular arcs are used.
+    /// This corresponds to r_{min} in the above Desmos link. This is the minimum ratio of
+    /// cornerRadius to half the side length at which the superellipse is not applicable. Above this,
+    /// line segments and circular arcs are used.
     fileprivate static let rMin = 0.441968022436
 }
 
@@ -74,7 +81,9 @@ extension RoundedRectangle: Shape {
                 .addLine(to: SIMD2(x: bounds.maxX, y: bounds.maxY - effectiveRadius))
                 .addArc(
                     center: SIMD2(
-                        x: bounds.maxX - effectiveRadius, y: bounds.maxY - effectiveRadius),
+                        x: bounds.maxX - effectiveRadius,
+                        y: bounds.maxY - effectiveRadius
+                    ),
                     radius: effectiveRadius,
                     startAngle: 0.0,
                     endAngle: .pi * 0.5,
@@ -106,7 +115,9 @@ extension RoundedRectangle: Shape {
                     .addLine(to: SIMD2(x: bounds.maxX - effectiveRadius, y: bounds.y))
                     .addArc(
                         center: SIMD2(
-                            x: bounds.maxX - effectiveRadius, y: bounds.y + effectiveRadius),
+                            x: bounds.maxX - effectiveRadius,
+                            y: bounds.y + effectiveRadius
+                        ),
                         radius: effectiveRadius,
                         startAngle: .pi * 1.5,
                         endAngle: .pi * 1.75,
@@ -154,7 +165,9 @@ extension RoundedRectangle: Shape {
                 $0
                     .addArc(
                         center: SIMD2(
-                            x: bounds.maxX - effectiveRadius, y: bounds.y + effectiveRadius),
+                            x: bounds.maxX - effectiveRadius,
+                            y: bounds.y + effectiveRadius
+                        ),
                         radius: effectiveRadius,
                         startAngle: .pi * 1.75,
                         endAngle: 0.0,
@@ -163,7 +176,9 @@ extension RoundedRectangle: Shape {
                     .addLine(to: SIMD2(x: bounds.maxX, y: bounds.maxY - effectiveRadius))
                     .addArc(
                         center: SIMD2(
-                            x: bounds.maxX - effectiveRadius, y: bounds.maxY - effectiveRadius),
+                            x: bounds.maxX - effectiveRadius,
+                            y: bounds.maxY - effectiveRadius
+                        ),
                         radius: effectiveRadius,
                         startAngle: 0.0,
                         endAngle: .pi * 0.25,
@@ -239,7 +254,9 @@ extension RoundedRectangle: Shape {
                 $0
                     .addArc(
                         center: SIMD2(
-                            x: bounds.maxX - effectiveRadius, y: bounds.maxY - effectiveRadius),
+                            x: bounds.maxX - effectiveRadius,
+                            y: bounds.maxY - effectiveRadius
+                        ),
                         radius: effectiveRadius,
                         startAngle: .pi * 0.25,
                         endAngle: .pi * 0.5,
@@ -248,7 +265,9 @@ extension RoundedRectangle: Shape {
                     .addLine(to: SIMD2(x: bounds.x + effectiveRadius, y: bounds.maxY))
                     .addArc(
                         center: SIMD2(
-                            x: bounds.x + effectiveRadius, y: bounds.maxY - effectiveRadius),
+                            x: bounds.x + effectiveRadius,
+                            y: bounds.maxY - effectiveRadius
+                        ),
                         radius: effectiveRadius,
                         startAngle: .pi * 0.5,
                         endAngle: .pi * 0.75,
@@ -324,7 +343,9 @@ extension RoundedRectangle: Shape {
                 $0
                     .addArc(
                         center: SIMD2(
-                            x: bounds.x + effectiveRadius, y: bounds.maxY - effectiveRadius),
+                            x: bounds.x + effectiveRadius,
+                            y: bounds.maxY - effectiveRadius
+                        ),
                         radius: effectiveRadius,
                         startAngle: .pi * 0.75,
                         endAngle: .pi,
@@ -445,5 +466,44 @@ extension RoundedRectangle: Shape {
                     )
             }
             .addLine(to: SIMD2(x: bounds.center.x, y: bounds.y))
+    }
+}
+
+// MARK: InsettableShape
+extension RoundedRectangle: InsettableShape {
+    public func inset(by amount: Double) -> some InsettableShape {
+        InsetShapeImpl(initialCornerRadius: cornerRadius, insetAmount: amount)
+    }
+
+    struct InsetShapeImpl {
+        var initialCornerRadius: Double
+        var insetAmount: Double
+    }
+}
+
+extension RoundedRectangle.InsetShapeImpl: InsettableShape {
+    private var actualCornerRadius: Double { max(0, initialCornerRadius - insetAmount) }
+
+    func path(in bounds: Path.Rect) -> Path {
+        RoundedRectangle(cornerRadius: actualCornerRadius)
+            .path(
+                in: .init(
+                    x: bounds.x + insetAmount,
+                    y: bounds.y + insetAmount,
+                    width: bounds.width - 2 * insetAmount,
+                    height: bounds.height - 2 * insetAmount
+                )
+            )
+    }
+
+    func size(fitting proposal: ProposedViewSize) -> ViewSize {
+        let proposedWidth = proposal.width ?? 10
+        let proposedHeight = proposal.height ?? 10
+
+        return ViewSize(max(proposedWidth, insetAmount * 2), max(proposedHeight, insetAmount * 2))
+    }
+
+    func inset(by amount: Double) -> Self {
+        Self(initialCornerRadius: initialCornerRadius, insetAmount: insetAmount + amount)
     }
 }
