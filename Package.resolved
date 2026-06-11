@@ -1,13 +1,13 @@
 {
-  "originHash" : "d08255d9daf41fc3a1b906b414763e1e9adbb3c3f2a6bad095355beeb12c0e9f",
+  "originHash" : "89559caa77ab2e6884fe8448f5a864bffa06c87d3250478a907d860967da63a8",
   "pins" : [
     {
       "identity" : "androidkit",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/moreSwift/AndroidKit",
       "state" : {
-        "revision" : "937a0643efb2f0820dc62a9249729f12987bf340",
-        "version" : "0.7.2"
+        "revision" : "d5142b5a9b90fa940be54a2a41d7fd5842f21111",
+        "version" : "0.8.1"
       }
     },
     {
@@ -51,8 +51,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-argument-parser",
       "state" : {
-        "revision" : "626b5b7b2f45e1b0b1c6f4a309296d1d21d7311b",
-        "version" : "1.7.1"
+        "revision" : "6a52f3251125d74daf04fcbd5e6f08a75d074382",
+        "version" : "1.8.2"
       }
     },
     {
@@ -69,17 +69,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-collections",
       "state" : {
-        "revision" : "7b847a3b7008b2dc2f47ca3110d8c782fb2e5c7e",
-        "version" : "1.3.0"
-      }
-    },
-    {
-      "identity" : "swift-cwinrt",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/moreSwift/swift-cwinrt",
-      "state" : {
-        "revision" : "601287a2a89e8e56e8aa53782b6054db8be0bce8",
-        "version" : "0.1.2"
+        "revision" : "a0cb0954ecb21e4e31b0070e6ed5674e8556685a",
+        "version" : "1.6.0"
       }
     },
     {
@@ -112,10 +103,10 @@
     {
       "identity" : "swift-java",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/swiftlang/swift-java",
+      "location" : "https://github.com/stackotter/swift-java",
       "state" : {
-        "revision" : "3d52a15db42c4d5ef322fde074626106b9bf82d7",
-        "version" : "0.2.0"
+        "revision" : "e04c0ed6af98936ca6300e94be9a19869df418a2",
+        "version" : "0.5.1"
       }
     },
     {
@@ -132,8 +123,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-log.git",
       "state" : {
-        "revision" : "5073617dac96330a486245e4c0179cb0a6fd2256",
-        "version" : "1.12.0"
+        "revision" : "92448c359f00ebe36ae97d3bd9086f13c7692b5a",
+        "version" : "1.13.2"
       }
     },
     {
@@ -159,8 +150,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/swiftlang/swift-subprocess.git",
       "state" : {
-        "revision" : "13d087685b95d64d6aac9b94500d347bbe84c39b",
-        "version" : "0.4.0"
+        "revision" : "11633673a41f509f8945f23c96c7acd4adafd679",
+        "version" : "0.5.0"
       }
     },
     {
@@ -168,8 +159,17 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/swiftlang/swift-syntax.git",
       "state" : {
-        "revision" : "9de99a78f099e59caf2b2beec65a4c45d54b2081",
-        "version" : "603.0.1"
+        "revision" : "79e4b74a295b6eb74a8b585e3a39d29e70c1dbd1",
+        "version" : "603.0.2"
+      }
+    },
+    {
+      "identity" : "swift-system",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-system",
+      "state" : {
+        "revision" : "669763cfd5806a67e21972d7e5e2d6b80b1ea985",
+        "version" : "1.6.5"
       }
     },
     {
@@ -254,12 +254,30 @@
       }
     },
     {
+      "identity" : "swiftjavalang",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/stackotter/SwiftJavaLang.git",
+      "state" : {
+        "revision" : "000441db9284536a2af611745b82ec7653dca5bc",
+        "version" : "0.3.0"
+      }
+    },
+    {
+      "identity" : "swiftkotlin",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/stackotter/SwiftKotlin.git",
+      "state" : {
+        "revision" : "ad30daacb7e4666e1a56bfdd48498f5ac4ff081d",
+        "version" : "0.3.0"
+      }
+    },
+    {
       "identity" : "xmlcoder",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/CoreOffice/XMLCoder",
       "state" : {
-        "revision" : "b2b5d72345bab9e1938a483cf862b498aeed3796",
-        "version" : "0.18.1"
+        "revision" : "42f62383dbcd074440cb1f6a750b9c02df9e7325",
+        "version" : "0.18.2"
       }
     },
     {

@@ -424,7 +424,6 @@ public final class AndroidBackend: BackendFeatures.BaseStubs {
 
     public func createButton() -> Widget {
         AndroidKit.Button(Self.activity, environment: Self.env)
-            .as(AndroidKit.View.self)!
     }
 
     /// Converts a Swift String to a Java CharSequence.
@@ -450,7 +449,6 @@ public final class AndroidBackend: BackendFeatures.BaseStubs {
 
     public func createTextView() -> Widget {
         AndroidKit.TextView(Self.activity, environment: Self.env)
-            .as(AndroidKit.View.self)!
     }
 
     public func updateTextView(
