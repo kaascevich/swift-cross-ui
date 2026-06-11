@@ -74,6 +74,11 @@ extension App {
     }
 }
 
+extension EnvironmentValues {
+    @Entry public var androidActivity: AndroidKit.Activity! = nil
+    @Entry public var jniEnv: UnsafeMutablePointer<JNIEnv?>? = nil
+}
+
 // TODO: Implement the rest of `BaseAppBackend` so we can move off of `BaseStubs`
 
 public final class AndroidBackend: BackendFeatures.BaseStubs {
@@ -97,10 +102,11 @@ public final class AndroidBackend: BackendFeatures.BaseStubs {
         }
 
     public let defaultPaddingAmount = 10
-    public let scrollBarWidth = 0
-    public let requiresImageUpdateOnScaleFactorChange = false
     public let supportsMultipleWindows = false
     public let canOverrideWindowColorScheme = false
+
+    static var fileDialogCallback: (([Foundation.URL]) -> Void)?
+    static var folderDialogCallback: ((Foundation.URL?) -> Void)?
 
     /// A reference used to keep the tickler alive.
     var tickler: MainRunLoopTickler?
@@ -114,6 +120,49 @@ public final class AndroidBackend: BackendFeatures.BaseStubs {
 
     public init() {
         helpers = AndroidBackendHelpers(environment: Self.env)
+
+        let fragmentActivity = Self.activity.as(FragmentActivity.self)!
+
+        let filesCallback = FilesActivityCallback(environment: Self.env)
+        let filesAction = SwiftAction(environment: Self.env) {
+            let urls = filesCallback.getUrlStrings()
+            AndroidBackend.fileDialogCallback?(urls.map {
+                guard let url = Foundation.URL(string: $0) else {
+                    fatalError("Failed to convert Uri to Foundation.URL: \($0)")
+                }
+                return url
+            })
+            AndroidBackend.fileDialogCallback = nil
+        }
+        filesCallback.setAction(filesAction)
+
+        let folderCallback = FolderActivityCallback(environment: Self.env)
+        let folderAction = SwiftAction(environment: Self.env) {
+            let url = folderCallback.getUrlString()?.toString()
+            AndroidBackend.folderDialogCallback?(url.map {
+                guard let url = Foundation.URL(string: $0) else {
+                    fatalError("Failed to convert Uri to Foundation.URL: \($0)")
+                }
+                return url
+            })
+            AndroidBackend.folderDialogCallback = nil
+        }
+        folderCallback.setAction(folderAction)
+
+        helpers.registerActivityResults(fragmentActivity, filesCallback, folderCallback)
+    }
+
+    public convenience init(delegate: any ActivityDelegate) {
+        self.init()
+
+        let delegateObject = SwiftObject(delegate, environment: Self.env)
+        let castedActivity = Self.activity.as(FragmentActivity.self)!
+
+        // ActivityListener.init connects it to the Activity, which keeps it alive without Swift
+        // needing to keep any references to it.
+        _ = ActivityListener(castedActivity, delegateObject, environment: Self.env)
+
+        delegate.onCreate(of: castedActivity, env: Self.env)
     }
 
     public func runMainLoop(
@@ -170,12 +219,11 @@ public final class AndroidBackend: BackendFeatures.BaseStubs {
             return
         }
 
+        let matchParent = try! JavaClass<AndroidKit.ViewGroup.LayoutParams>().MATCH_PARENT
+
         let leftInset = Int(helpers.getSafeAreaLeftInset(Self.activity))
         let topInset = Int(helpers.getSafeAreaTopInset(Self.activity))
-        let fullWindowSize = SIMD2(
-            Int(helpers.getFullWindowWidth(Self.activity)),
-            Int(helpers.getFullWindowHeight(Self.activity))
-        )
+        let fullWindowSize = SIMD2(Int(matchParent), Int(matchParent))
         setSize(of: container, to: fullWindowSize)
         setPosition(ofChildAt: 0, in: container, to: SIMD2(leftInset, topInset))
 
@@ -246,6 +294,9 @@ public final class AndroidBackend: BackendFeatures.BaseStubs {
     public func computeRootEnvironment(defaultEnvironment: EnvironmentValues) -> EnvironmentValues {
         var environment = defaultEnvironment
 
+        environment.androidActivity = Self.activity
+        environment.jniEnv = Self.env
+
         if helpers.isNightMode(Self.activity) {
             environment.colorScheme = .dark
         } else {
@@ -257,8 +308,17 @@ public final class AndroidBackend: BackendFeatures.BaseStubs {
             .getConfiguration()
             .isScreenRound()
 
-        // TODO(bbrk24): Properly detect time zone and calendar, since
-        // `.current` is broken on Android.
+        if let identifier = helpers.getTimeZoneIdentifier()?.toString(),
+           let timeZone = Foundation.TimeZone(identifier: identifier)
+        {
+            environment.timeZone = timeZone
+            environment.calendar = getCurrentCalendar(timeZone: timeZone)
+        } else {
+            environment.calendar = getCurrentCalendar(timeZone: nil)
+        }
+
+        environment
+            .appStorageProvider = SharedPreferencesAppStorageProvider(activity: Self.activity)
 
         return environment
     }
@@ -355,8 +415,8 @@ public final class AndroidBackend: BackendFeatures.BaseStubs {
     }
 
     public func setSize(of widget: Widget, to size: SIMD2<Int>) {
+        guard let layoutParams = widget.getLayoutParams() else { return }
         let density = widget.getResources().getDisplayMetrics().density
-        let layoutParams = widget.getLayoutParams()!
         layoutParams.width = Int32(Float(size.x) * density)
         layoutParams.height = Int32(Float(size.y) * density)
         widget.setLayoutParams(layoutParams)
@@ -386,45 +446,6 @@ public final class AndroidBackend: BackendFeatures.BaseStubs {
         button.setOnClickListener(listener.as(AndroidView.View.OnClickListener.self))
 
         getTextStyle(from: environment).apply(to: button)
-    }
-
-    public func createTextField() -> Widget {
-        CustomEditText(activity: Self.activity, environment: Self.env)
-            .as(AndroidKit.View.self)!
-    }
-
-    public func updateTextField(
-        _ textField: Widget,
-        placeholder: String,
-        environment: EnvironmentValues,
-        onChange: @escaping (String) -> Void,
-        onSubmit: @escaping () -> Void
-    ) {
-        // TODO(stackotter): Handle environment
-        let textField = textField.as(CustomEditText.self)!
-        textField.as(AndroidKit.TextView.self)!.setHint(charSequence(from: placeholder))
-        textField.setOnChange(
-            SwiftAction(environment: Self.env) {
-                // Don't take textField as a weak reference, because otherwise it
-                // gets dropped immediately (it's not actually held anywhere; it's
-                // just a wrapper around a Java class instance). This doesn't cause
-                // a reference cycle because textField doesn't hold the SwiftAction,
-                // (Java does).
-                let content = textField.as(AndroidKit.TextView.self)!.getText().toString()
-                onChange(content)
-            }
-        )
-        textField.setOnSubmit(SwiftAction(environment: Self.env, action: onSubmit))
-    }
-
-    public func setContent(ofTextField textField: Widget, to content: String) {
-        let textField = textField.as(AndroidKit.TextView.self)!
-        textField.setText(charSequence(from: content))
-    }
-
-    public func getContent(ofTextField textField: Widget) -> String {
-        let textField = textField.as(AndroidKit.TextView.self)!
-        return textField.getText().toString()
     }
 
     public func createTextView() -> Widget {

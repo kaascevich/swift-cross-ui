@@ -40,7 +40,7 @@ public struct EnvironmentValues {
     /// Each view graph node sets its own handler when passing the environment
     /// on to its children, setting up a bottom-up update chain up which resize
     /// events can propagate.
-    var onResize: @MainActor (_ newSize: ViewSize) -> Void
+    package var onResize: @MainActor (_ newSize: ViewSize) -> Void
 
     /// Backing storage for extensible subscript
     private var values: [ObjectIdentifier: Any]
@@ -362,14 +362,14 @@ extension EnvironmentValues {
     ///   use ``appPhase`` instead.
     public package(set) var scenePhase: ScenePhase {
         get {
-            if window != nil {
-                // If there's a window but no scenePhase, we assume that the
-                // backend is actively trying to _set_ the scene phase; return
-                // a dummy value to prevent a crash.
-                return .inactive
-            }
-
             guard let phase = self[__Key_scenePhase.self] else {
+                if window != nil {
+                    // If there's a window but no scenePhase, we assume that the
+                    // backend is actively trying to _set_ the scene phase; return
+                    // a dummy value to prevent a crash.
+                    return .inactive
+                }
+
                 fatalError(
                     """
                     'scenePhase' accessed from outside a scene (most likely \

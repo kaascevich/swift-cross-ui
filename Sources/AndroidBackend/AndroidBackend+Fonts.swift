@@ -59,7 +59,7 @@ extension AndroidBackend {
             typedValue.applyDimension(
                 typedValue.COMPLEX_UNIT_SP,
                 Float(resolvedFont.lineHeight),
-                Self.activity.getResources().getDisplayMetrics()
+                environment.androidActivity.getResources().getDisplayMetrics()
             )
         )
 

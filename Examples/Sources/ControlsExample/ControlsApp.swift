@@ -26,11 +26,6 @@ enum BuiltInPickerStyle: CaseIterable, Equatable {
     }
 }
 
-#if canImport(AndroidBackend)
-    // TODO(bbrk24): Update this once AndroidBackend supports scrolling
-    typealias ScrollView = VStack
-#endif
-
 @main
 @HotReloadable
 struct ControlsApp: App {
@@ -46,7 +41,7 @@ struct ControlsApp: App {
     @State var date = Date()
     @State var datePickerStyle: DatePickerStyle? = .automatic
     @State var menuToggleState = false
-    @State var progressViewSize: Int = 10
+    @State var progressViewSize: Double = 10
     @State var isProgressViewResizable = true
     @State var pickerStyle: BuiltInPickerStyle? = .automatic
 
@@ -114,19 +109,19 @@ struct ControlsApp: App {
                                     Text("Value: \(String(format: "%.02f", sliderValue))")
                                 }
                             #endif
-
-                            VStack {
-                                Text("Text field")
-                                TextField("Text field", text: $text)
-                                Text("Value: \(text)")
-                            }
-
-                            VStack {
-                                Text("Secure text field")
-                                SecureField("Secure text field", text: $secureText)
-                                Text("Value: \(secureText)")
-                            }
                         #endif
+
+                        VStack {
+                            Text("Text field")
+                            TextField("Text field", text: $text)
+                            Text("Value: \(text)")
+                        }
+
+                        VStack {
+                            Text("Secure text field")
+                            SecureField("Secure text field", text: $secureText)
+                            Text("Value: \(secureText)")
+                        }
 
                         #if !os(tvOS)
                             VStack {

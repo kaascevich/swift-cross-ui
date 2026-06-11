@@ -20,7 +20,7 @@ struct GradientsApp: App {
 
     var body: some Scene {
         WindowGroup("Gradients Example") {
-            #if !canImport(UIKitBackend)
+            #if !canImport(UIKitBackend) && !canImport(AndroidBackend)
                 NavigationSplitView {
                     // TODO: replace with List once bug described in #556 is fixed
                     ForEach(GradientType.allCases, id: \.rawValue) { type in
@@ -48,25 +48,29 @@ struct GradientsApp: App {
         }
     }
 
-    @ViewBuilder
     func scrollViewWithGradient() -> some View {
         ScrollView {
-            switch gradientType {
-                case .linear:
-                    LinearGradientView()
-                case .radial:
-                    RadialGradientView()
-                case .angular:
-                    #if !canImport(WinUIBackend) && !canImport(GtkBackend)
-                        ScrollView(.horizontal) {
-                            AngularGradientView()
-                        }
-                    #else
-                        Text("Angular Gradients are not supported on \(App.Backend)")
-                    #endif
-                case .none:
-                    Text("Please select a gradient type.")
-            }
+            gradients()
+        }
+    }
+
+    @ViewBuilder
+    func gradients() -> some View {
+        switch gradientType {
+            case .linear:
+                LinearGradientView()
+            case .radial:
+                RadialGradientView()
+            case .angular:
+                #if !canImport(WinUIBackend) && !canImport(GtkBackend)
+                    ScrollView(.horizontal) {
+                        AngularGradientView()
+                    }
+                #else
+                    Text("Angular Gradients are not supported on \(App.Backend)")
+                #endif
+            case .none:
+                Text("Please select a gradient type.")
         }
     }
 }
